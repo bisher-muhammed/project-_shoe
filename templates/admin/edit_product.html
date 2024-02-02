@@ -1,0 +1,142 @@
+{% extends "admin_base.html" %}
+{% load static %}
+{% block content %}
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Edit Product</h2>
+             </div>
+        </div>
+        <div class="col-lg-6">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Product Name -->
+                <div class="mb-4">
+                    <label for="product_name" class="form-label">Product Name</label>
+                    <input type="text" name="product_name" class="form-control" id="product_name" value="{{ form_data.product_name }}" required>
+                </div>
+                
+                <!-- Product Category -->
+                <div class="mb-4">
+                    <label for="product_category" class="form-label">Category</label>
+                    <select name="product_category" class="form-select" required>
+                        <option value="" disabled>Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == form_data.product_category %}selected{% endif %}>{{ category.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Product Brand -->
+                <div class="mb-4">
+                    <label for="product_brand" class="form-label">Brand</label>
+                    <select name="product_brand" class="form-select" required>
+                        <option value="" disabled selected>Select a Brand</option>
+                        {% for brand in brands %}
+                            {% if brand.is_active %}
+                                <option value="{{ brand.id }}" {% if brand.id == form_data.product_brand %}selected{% endif %}>{{ brand.brand_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Product Description -->
+                <div class="mb-4">
+                    <label for="product_description" class="form-label">Product Description</label>
+                    <textarea name="product_description" class="form-control" rows="4" required>{{ form_data.product_description|default:'' }}</textarea>
+                </div>
+                
+                <!-- Original Price -->
+                <div class="mb-4">
+                    <label for="original_price" class="form-label">Original Price</label>
+                    <input type="text" name="original_price" class="form-control" id="original_price" value="{{ form_data.original_price|default:'' }}" required>
+                </div>
+                
+                <!-- Offer Price -->
+                <div class="mb-4">
+                    <label for="offer_price" class="form-label">Offer Price</label>
+                    <input type="text" name="offer_price" class="form-control" id="offer_price" value="{{ form_data.offer_price|default:'' }}" required>
+                </div>
+                
+                <!-- Size selection -->
+                <div class="mb-4">
+                    <label class="form-label">Select Sizes and Enter Quantities</label>
+                    {% for size in size_options %}
+                        <div class="form-check">
+                            <input type="checkbox" name="sizes" value="{{ size.id }}" {% if size.id in form_data.selected_sizes %}checked{% endif %} class="form-check-input">
+                            <label class="form-check-label">{{ size.name }} - Quantity:</label>
+                            <input type="number" name="quantity_{{ size.id }}" value="{% for selected_size in form_data.selected_sizes %}{% if selected_size.size.id == size.id %}{{ selected_size.quantity }}{% endif %}{% endfor %}">
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- Color selection -->
+                
+                
+                <!-- Product Image 1 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Product Image 1</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {% if product.product_img1 %}
+                                <img src="{{ product.product_img1.url }}" alt="Current Image" style="width:300px; height:300px;">
+                            {% else %}
+                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="Upload Image" style="width:300px; height:300px;">
+                            {% endif %}
+                        </div>
+                        <div class="input-upload">
+                            <label for="product_img1" class="form-label">Upload New Image</label>
+                            <input type="file" name="product_img1" class="form-control" id="product_img1">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Image 2 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Product Image 2</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <img src="{{ product.product_img2.url }}" alt="Current Image" style="width:300px; height:300px;">
+                        </div>
+                        <div class="input-upload">
+                            <label for="product_img2" class="form-label">Upload New Image</label>
+                            <input class="form-control" type="file" name="product_img2" id="product_img2" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Image 3 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Product Image 3</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <img src="{{ product.product_img3.url }}" alt="Current Image" style="width:300px; height:300px;">
+                        </div>
+                        <div class="input-upload">
+                            <label for="product_img3" class="form-label">Upload New Image</label>
+                            <input class="form-control" name="product_img3" type="file">
+                        </div>
+                    </div>
+                </div> 
+
+                <!-- Add more form fields for other product details -->
+                
+                <input type="submit" class="btn btn-primary" value="Save">
+            </form>
+        </div>
+        <p>Image 1 URL: {{ product.product_img1.url }}</p>
+        <p>Image 2 URL: {{ product.product_img2.url }}</p>
+        <p>Image 3 URL: {{ product.product_img3.url }}</p>
+    </div>
+</section>
+{% endblock content %}
+                <!-- Add more form fields for other product details -->
+                
+          

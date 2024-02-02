@@ -1,0 +1,74 @@
+{% extends "admin_base.html" %}
+{% load static %}
+{% block content %}
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Variance Management</h2>
+            <p>Add, edit, or delete sizes</p>
+        </div>
+        <div>
+            <input type="text" placeholder="Search Variants" class="form-control bg-white">
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <!-- Add Size Form -->
+                    <form method="post" action="{% url 'add_size' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="size_name" class="form-label">Size Name</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="size_name" name="size_name" />
+                        </div>
+                        <div class="mb-4">
+                            <label for="size_quantity" class="form-label">Size Quantity</label>
+                            <input type="number" placeholder="Quantity" class="form-control" id="size_quantity" name="size_quantity" />
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary">Add New Size</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-9">
+                    <div class="table-responsive">
+                        <!-- Sizes Table -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Name</th>
+                                    <th>Quantity</th>
+                                    <th>List/Unlist</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for size in size_list %}
+                                    <tr>
+                                        <td>Size</td>
+                                        <td><b>{{ size.name }}</b></td>
+                                        <td>{{ size.quantity }}</td>
+                                        <td>
+                                            {% if size.is_active %}
+                                                <a class="btn btn-danger btn-sm" href="{% url 'deactivate_size' size.id %}">Block</a>
+                                            {% else %}
+                                                <a class="btn btn-success btn-sm" href="{% url 'activate_size' size.id %}">Active</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <!-- Display common fields for size -->
+                                            <!-- ... -->
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

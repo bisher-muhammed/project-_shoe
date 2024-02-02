@@ -1,0 +1,317 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Add New Product</h2>
+                <div>
+                    <button class="btn btn-light rounded font-sm mr-5 text-body hover-up">Save to draft</button>
+                    <button class="btn btn-md rounded font-sm hover-up">Publish</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <form method="post" action="{% url 'add_product' %}" enctype="multipart/form-data" id="productForm">
+                {% csrf_token %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Basic</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if error_message %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error_message }}
+                            </div>
+                        {% endif %}
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <input type="text" name="product_name" class="form-control" id="product_name" required>
+                        </div>
+                        <div>
+                            <label class="form-label">Full description</label>
+                            <textarea placeholder="Type here" name="product_description" class="form-control" rows="4" required>{{ form_data.product_description|default:'' }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Regular price</label>
+                                    <div class="row gx-2">
+                                        <input placeholder="" type="text" name="original_price" class="form-control" id="original_price" value="{{ form_data.original_price|default:'' }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Promotional price</label>
+                                    <input placeholder="$" type="text" name="offer_price" class="form-control" id="offer_price" value="{{ form_data.offer_price|default:'' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="form-label">Category</label>
+                                <select name="product_category" class="form-select" required>
+                                    <option value="" disabled selected>Select a category</option>
+                                    {% for category in categories %}
+                                        {% if category.is_blocked %}
+                                            <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_brand" class="form-label">Brand</label>
+                            <select name="product_brand" class="form-select" required>
+                                <option value="" disabled selected>Select a Brand</option>
+                                {% for brand in brands %}
+                                    {% if brand.is_active %}
+                                        <option value="{{ brand.id }}">{{ brand.brand_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- For Size -->
+                        <label>Select Sizes:</label>
+                        {% for size in size_options %}
+                            <div>
+                                <input type="checkbox" name="sizes" id="size_{{ size.id }}" value="{{ size.id }}">
+                                <label for="size_{{ size.id }}">{{ size.name }}</label>
+                                
+                                <label for="quantity_{{ size.id }}">Quantity:</label>
+                                <input type="number" name="quantity_{{ size.id }}" min="0" value="0">
+                            </div>
+                        {% endfor %}
+    <div id="quantity-container">
+        <!-- Quantity input will be dynamically added here based on selected size -->
+    </div>
+
+    
+    
+    <script>
+        // JavaScript to dynamically show/hide quantity input based on selected size
+        document.getElementById('sizes').addEventListener('change', function() {
+            var selectedSizes = this.selectedOptions;
+            var quantityContainer = document.getElementById('quantity-container');
+            
+            // Clear previous quantity inputs
+            quantityContainer.innerHTML = '';
+
+            for (var i = 0; i < selectedSizes.length; i++) {
+                var sizeId = selectedSizes[i].value;
+                
+                // Create quantity input for the selected size
+                var quantityInput = document.createElement('input');
+                quantityInput.type = 'number';
+                quantityInput.name = 'quantity_' + sizeId;
+                quantityInput.min = 0;
+                quantityInput.value = 0;
+
+                // Label for the quantity input
+                var label = document.createElement('label');
+                label.textContent = 'Quantity for ' + selectedSizes[i].text + ': ';
+
+                // Append label and quantity input to the container
+                quantityContainer.appendChild(label);
+                quantityContainer.appendChild(quantityInput);
+            }
+        });
+    </script>
+                        
+
+                        <!-- For Color -->
+                        {% comment %} <div class="mb-4">
+                            <label for="colors" class="form-label">Color</label> {% endcomment %}
+                            {% comment %} {% for color_option in color_options %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="colors" value="{{ color_option.id }}" id="color_{{ color_option.id }}">
+                                    <label class="form-check-label" for="color_{{ color_option.id }}">
+                                        {{ color_option.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div> {% endcomment %}
+
+                        
+
+                <!-- Product Image 1 -->
+                {% comment %} <div class="card-body">
+                    <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
+                        {% if product.product_img1 %}
+                            <img src="{{ product.product_img1.url }}" alt="Product Image 1" class="img-fluid">
+                        {% else %}
+                            <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
+                        {% endif %}
+                        <input placeholder="" type="file" name="product_img1" class="form-control" id="product_img1" value="{{ form_data.product_img1|default:'' }}" required>
+
+                        <!-- Hidden inputs for Cropper.js data -->
+                        <input type="hidden" name="product_img1_x" id="product_img1_x">
+                        <input type="hidden" name="product_img1_y" id="product_img1_y">
+                        <input type="hidden" name="product_img1_width" id="product_img1_width">
+                        <input type="hidden" name="product_img1_height" id="product_img1_height">
+                    </div>
+                </div> {% endcomment %}
+
+                    <div id="imageContainer1">
+                        <label class="form-label">Image 1</label>
+                        <input class="form-control" type="file" id="image1" name="image1">
+                        <div id="imageWrapper1" style="display: none;">
+                            <img id="imagePreview1" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
+                            <button type="button" id="cropButton1" class="btn btn-primary small-btn">Crop</button>
+                        </div>
+                        <input type="hidden" name="crop_x1" id="cropX1">
+                        <input type="hidden" name="crop_y1" id="cropY1">
+                        <input type="hidden" name="crop_width1" id="cropWidth1">
+                        <input type="hidden" name="crop_height1" id="cropHeight1">
+                    </div>
+                    <div id="imageContainer2">
+                        <label class="form-label">Image 2</label>
+                        <input class="form-control" type="file" id='image2' name='image2'>
+                        <div id="imageWrapper2" style="display: none;">
+                            <img id="imagePreview2" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
+                            <button type="button" id="cropButton2" class="btn btn-primary small-btn">Crop</button>
+                        </div>
+                        <input type="hidden" name="crop_x2" id="cropX2">
+                        <input type="hidden" name="crop_y2" id="cropY2">
+                        <input type="hidden" name="crop_width2" id="cropWidth2">
+                        <input type="hidden" name="crop_height2" id="cropHeight2">
+                    </div>
+                    <div id="imageContainer3">
+                        <label class="form-label">Image 3</label>
+                        <input class="form-control" type="file" id='image3' name='image3'>
+                        <div id="imageWrapper3" style="display: none;">
+                            <img id="imagePreview3" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
+                            <button type="button" id="cropButton3" class="btn btn-primary small-btn">Crop</button>
+                        </div>
+                        <input type="hidden" name="crop_x3" id="cropX3">
+                        <input type="hidden" name="crop_y3" id="cropY3">
+                        <input type="hidden" name="crop_width3" id="cropWidth3">
+                        <input type="hidden" name="crop_height3" id="cropHeight3">
+                    </div>
+            
+
+                <!-- Product Image 2 -->
+                {% comment %} <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
+                            {% if product.product_img2 %}
+                                <img src="{{ product.product_img2.url }}" alt="Product Image 2" class="img-fluid">
+                            {% else %}
+                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
+                            {% endif %}
+                            <input class="form-control" type="file" name="product_img2" id="product_img2" value="{{ form_data.product_img2|default:'' }}" required>
+
+                            <!-- Hidden inputs for Cropper.js data -->
+                            <input type="hidden" name="product_img2_x" id="product_img2_x">
+                            <input type="hidden" name="product_img2_y" id="product_img2_y">
+                            <input type="hidden" name="product_img2_width" id="product_img2_width">
+                            <input type="hidden" name="product_img2_height" id="product_img2_height">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Image 3 -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
+                            {% if product.product_img3 %}
+                                <img src="{{ product.product_img3.url }}" alt="Product Image 3" class="img-fluid">
+                            {% else %}
+                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
+                            {% endif %}
+                            <input class="form-control" name="product_img3" type="file" value="{{ form_data.product_img3|default:'' }}" required>
+
+                            <!-- Hidden inputs for Cropper.js data -->
+                            <input type="hidden" name="product_img3_x" id="product_img3_x">
+                            <input type="hidden" name="product_img3_y" id="product_img3_y">
+                            <input type="hidden" name="product_img3_width" id="product_img3_width">
+                            <input type="hidden" name="product_img3_height" id="product_img3_height">
+                        </div>
+                    </div>
+                </div> {% endcomment %}
+
+                <input type="submit" class="btn btn-primary" value="Save">
+            </form>
+        </div>
+    </div>
+</section>
+
+{% comment %} <script src="path/to/cropper.js"></script> {% endcomment %}
+
+<!-- Add Cropper.js library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- Add this script to your HTML file -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('productForm');
+        var croppers = [];
+
+        function initializeCropper(imageIndex) {
+            var input = document.getElementById('image' + imageIndex);
+            var cropButton = document.getElementById('cropButton' + imageIndex);
+            var imageContainer = document.getElementById('imageContainer' + imageIndex);
+            var imageWrapper = document.getElementById('imageWrapper' + imageIndex);
+
+            var cropper;
+
+            input.addEventListener('change', function (e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+
+                reader.onload = function (event) {
+                    // Show the image container
+                    imageContainer.style.display = 'block';
+
+                    // Show the image wrapper
+                    imageWrapper.style.display = 'block';
+
+                    var image = document.getElementById('imagePreview' + imageIndex);
+                    image.src = event.target.result;
+
+                    // Set up Cropper.js after the image has loaded
+                    image.onload = function () {
+                        croppers[imageIndex] = new Cropper(image, {
+                            aspectRatio: 16 / 9,  // Set your desired aspect ratio
+                            crop: function (event) {
+                                // Update hidden input fields with cropping data
+                                document.getElementById('cropX' + imageIndex).value = event.detail.x;
+                                document.getElementById('cropY' + imageIndex).value = event.detail.y;
+                                document.getElementById('cropWidth' + imageIndex).value = event.detail.width;
+                                document.getElementById('cropHeight' + imageIndex).value = event.detail.height;
+                            }
+                        });
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            cropButton.addEventListener('click', function () {
+                // Trigger manual crop
+                croppers[imageIndex].crop();
+
+                // Hide the image wrapper
+                imageWrapper.style.display = 'none';
+            });
+        }
+
+        // Initialize croppers for each image
+        for (var i = 1; i <= 3; i++) {
+            initializeCropper(i);
+        }
+
+        form.addEventListener('submit', function () {
+            // Do additional form validation if needed
+            // Submit the form
+            form.submit();
+        });
+    });
+</script>
+
+
+
+{% endblock content %}

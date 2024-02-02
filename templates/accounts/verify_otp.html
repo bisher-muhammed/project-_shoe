@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP verification UI using bootstrap</title>
+
+    <!-- bootstrap 5 stylesheet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.1/css/bootstrap.min.css" integrity="sha512-Ez0cGzNzHR1tYAv56860NLspgUGuQw16GiOOp/I2LuTmpSK9xDXlgJz3XN4cnpXWDmkNBKXR/VDMTCnAaEooxA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- fontawesome 6 stylesheet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <main class="main">
+        <div class="container">
+            <div class="row justify-content-center align-items-center vh-100">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-body text-center">
+                            <h2 class="mb-4">OTP Verification</h2>
+                            
+                            {% for message in messages %}
+                                <p class="alert alert-info">{{ message }}</p>
+                            {% endfor %}
+    
+                            <form method="post" action="{% url 'verify_otp' %}" class="otp-form">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <input type="text" class="form-control otp-input" name="otp" maxlength="4" placeholder="Enter OTP" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Verify OTP</button>
+                                <p class="mt-3"><a href="{% url 'resend_otp' %}">Resend OTP</a></p>
+                                <p class="text-muted"><a href="{% url 'login_view' %}">Back to Login</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+   
+    

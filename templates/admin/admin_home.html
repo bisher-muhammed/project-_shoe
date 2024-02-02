@@ -1,0 +1,282 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="content-main">
+    <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="content-title card-title">Dashboard </h2>
+                <p>Whole data about your business here</p>
+            </div>
+            <div>
+                <a href="{% url 'salesreport' %}" class="btn btn-primary">
+                    <i class="text-muted material-icons md-post_add"></i> Sales Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-primary-light">
+                            <i class="text-primary material-icons md-monetization_on"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Revenue</h6>
+                            <span>₹{{ total_revenue }}</span>
+                            <span class="text-sm">
+                                Shipping fees are not included
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-success-light">
+                            <i class="text-success material-icons md-local_shipping"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Orders</h6>
+                            <span>{{ total_orders }}</span>
+                            <span class="text-sm">
+                                Excluding orders in transit
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-warning-light">
+                            <i class="text-warning material-icons md-qr_code"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Products</h6>
+                            <span>{{ total_products }}</span>
+                            <span class="text-sm">
+                                In {{ total_categories }} Categories
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="icontext">
+                        <span class="icon icon-sm rounded-circle bg-info-light">
+                            <i class="text-info material-icons md-shopping_basket"></i>
+                        </span>
+                        <div class="text">
+                            <h6 class="mb-1 card-title">Monthly Earning</h6>
+                            <span>{{ monthly_earning }}</span>
+                            <span class="text-sm">
+                                Based on your local time.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% comment %} </section> {% endcomment %}
+
+
+<div class="row">
+{% for stat in dashboard_stats %}
+    <div class="col-lg-3">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="icontext">
+                    <span class="icon icon-sm rounded-circle {{ stat.icon_bg_class }}">
+                        <i class="{{ stat.icon_class }}"></i>
+                    </span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">{{ stat.title }}</h6>
+                        <span>{{ stat.value }}</span>
+                        <span class="text-sm">{{ stat.description }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<div class="row">
+<div class="col-xl-8 col-lg-12">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Sale Statistics</h5>
+            <canvas id="monthly-orders-chart" width="400" height="200"></canvas>
+
+            <div id="button-container" class="mt-3">
+                <button class="btn btn-primary mx-auto rounded-pill opacity-1" id="changeLabelsButton">Yearly Orders</button>
+                <button class="btn btn-secondary mx-auto rounded-pill opacity-1" id="changeLabelsButton1">Monthly Orders</button>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Monthly Orders Chart
+                var monthlyOrdersChartCanvas = document.getElementById('monthly-orders-chart');
+                var monthlyOrdersChart;
+
+                if (monthlyOrdersChartCanvas) {
+                    monthlyOrdersChart = new Chart(monthlyOrdersChartCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                            datasets: [{
+                                label: 'Monthly Order',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                                borderColor: 'rgba(44, 120, 210)',
+                                data: [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}]
+                            }]
+                        }
+                    });
+                } else {
+                    console.error('Monthly Orders Chart Canvas not found.');
+                }
+
+                var changeLabelsButton = document.getElementById('changeLabelsButton');
+                var changeLabelsButton1 = document.getElementById('changeLabelsButton1');
+
+                changeLabelsButton.addEventListener('click', function () {
+                    // Update chart labels for yearly orders with years
+                    monthlyOrdersChart.data.labels = [{% for item in yearly_orders %}'{{ item.year }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+                    monthlyOrdersChart.data.datasets[0].data = [{% for item in yearly_orders %}{{ item.yearly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
+                    monthlyOrdersChart.data.datasets[0].label = "Yearly Order";
+
+                    // Update the chart
+                    monthlyOrdersChart.update();
+                });
+
+                changeLabelsButton1.addEventListener('click', function () {
+                    // Update chart labels for monthly orders
+                    monthlyOrdersChart.data.labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    monthlyOrdersChart.data.datasets[0].data = [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
+                    monthlyOrdersChart.data.datasets[0].label = "Monthly Order";
+
+                    // Update the chart
+                    monthlyOrdersChart.update();
+                });
+            });
+        </script>
+    </div>
+</div>
+
+<div class="col-xl-4 col-lg-12">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Revenue Based on Category</h5>
+            <canvas id="myChart2" height="217"></canvas>
+
+            <!-- Add JavaScript to populate the chart data and render it -->
+            <script>
+                // Assuming you have data available in the template context
+                var orderChartData = {
+                    labels: {{ category_labels|safe }},  // Replace with your category labels
+                    datasets: [{
+                        data: {{ order_counts|safe }},  // Replace with your actual order counts
+                        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]  // Replace with your desired colors
+                    }]
+                };
+
+                // Get the canvas element and create a chart
+                var ctx = document.getElementById('myChart2').getContext('2d');
+                var orderChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: orderChartData,
+                });
+            </script>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="card mb-4">
+<header class="card-header">
+    <h4 class="card-title">Latest Orders</h4>
+    <div class="row align-items-center">
+        <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+            <div class="custom_select">
+                <!-- Your filter options go here -->
+            </div>
+        </div>
+    </div>
+</header>
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table align-middle table-nowrap mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" class="text-center">
+                        <div class="form-check align-middle">
+                            <input class="form-check-input" type="checkbox" id="transactionCheckHeader">
+                            <label class="form-check-label" for="transactionCheckHeader"></label>
+                        </div>
+                    </th>
+                    <th class="align-middle" scope="col">Order ID</th>
+                    <th class="align-middle" scope="col">Billing Name</th>
+                    <th class="align-middle" scope="col">Date</th>
+                    <th class="align-middle" scope="col">Total</th>
+                    <th class="align-middle" scope="col">Payment Status</th>
+                    <th class="align-middle" scope="col">Payment Method</th>
+                    <th class="align-middle" scope="col">View Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in latest_orders %}
+                    <tr>
+                        <td class="text-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="{{ 'transactionCheck' }}{{ forloop.counter }}">
+                                <label class="form-check-label" for="{{ 'transactionCheck' }}{{ forloop.counter }}"></label>
+                            </div>
+                        </td>
+                        <td><a href="#" class="fw-bold">#{{ order.order_number }}</a></td>
+                        <td>{{ order.user.username }}</td>
+                        <td>{{ order.created_at|date:"d M, Y" }}</td>
+                        <td>₹{{ order.order_total }}</td>
+                        <td>
+                            <span class="badge badge-pill badge-soft-{{ order.status_class }}">{{ order.status }}</span>
+                        </td>
+                        <td>
+                            <i class="material-icons md-payment font-xxl text-muted mr-5"></i> {{ order.payment_method }}
+                        </td>
+                        <td>
+                            <a href="{% url 'view_order' order.id %}" class="btn btn-xs">View Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="pagination-area mt-30 mb-50">
+    <!-- Your pagination goes here -->
+</div>
+</div>
+</section>
+
+{% endblock content %}

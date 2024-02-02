@@ -1,0 +1,70 @@
+{% extends "user_base.html" %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Your head content goes here -->
+</head>
+<body>
+    <div id="page">
+        <nav class="colorlib-nav" role="navigation">
+            <div class="top-menu">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7 col-md-9">
+                            <a href="{% url 'home' %}">
+                                <img src="{% static 'user/assets/imgs/my images/logo.png' %}" alt="logo">
+                            </a>
+                        <div class="col-sm-5 col-md-3">
+                            <!-- Your other navigation content goes here -->
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="col-sm-12 text-left menu-1">
+                            
+                                
+                               
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Your other navigation content goes here -->
+        </nav>
+
+        <div class="breadcrumbs">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="colorlib-about">
+            <div class="container">
+                <div class="row row-pb-lg">
+                    <div class="col-md-6 mb-3">
+                        <img src="{% static 'user/assets/imgs/my images/about.jpg' %}" alt="About Image" class="img-fluid about-image">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="about-wrap">
+                            <h2 class="section-title">Trendy Traides - Your Fashion Destination</h2>
+                    <p class="lead">Discover the latest trends and shop with confidence at Trendy Traides, the leading eCommerce store around the globe.</p>
+                    <p>Our curated collection of fashion items ensures that you stay on trend. Explore our wide range of products and experience the joy of shopping with us.</p>
+                    <p>At Trendy Traides, we believe in providing high-quality products that reflect the latest fashion trends. Our team of experts carefully selects each item in our collection to offer you a unique and stylish shopping experience.</p>
+                    <p>Whether you're looking for trendy clothing, accessories, or footwear, we have something for everyone. Our user-friendly website makes it easy for you to browse, select, and purchase your favorite items from the comfort of your home.</p>
+                    <p>Join the Trendy Traides community today and elevate your fashion game with our exclusive and affordable collection. We are committed to delivering exceptional service and ensuring your satisfaction with every purchase.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional styling and enhancements for other sections... -->
+
+    </div>
+</body>
+</html>
+{% endblock content %}

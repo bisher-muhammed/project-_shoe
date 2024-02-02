@@ -1,0 +1,176 @@
+{% extends "user_base.html" %}
+{% block content %}
+{% load static %}
+<style>
+.cart-header {
+    font-size: 24px; /* Adjust the font size as needed */
+    font-family: 'Your Chosen Font', sans-serif; /* Change to your preferred font */
+    font-weight: bold;
+    color: #333; /* Set the desired text color */
+    margin-bottom: 20px; /* Adjust spacing as needed */
+}
+</style>
+
+<main class="main">
+    <div class="page-header text-center">
+        <h2 class="cart-header">Your Shopping Cart</h2>
+    </div>
+    
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover shopping-summery text-center">
+                            <thead>
+                                <tr class="main-heading">
+                                    <th scope="col">Image</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Subtotal</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}   
+                                <p>{{message}}</p>
+                                {% endfor %}
+                                {% for cart_item in cart_items %}
+    
+
+                                <tr>
+                                    <td class="image"><img src="{{ cart_item.product.product_img1.url }}" alt="#"></td>
+                                    <td class="product-des product-name">
+                                        <h5 class="product-name"><a href="shop-product-right.html">{{cart_item.product.product_name}}</a></h5>
+                                        <p class="font-xs">Product details here...</p>
+                                    </td>
+                                    <td class="price" id='price' data-title="Price"><span>₹{{cart_item.product.offer_price}}</span></td>
+                                    <td class="text-center" data-title="Stock">
+                                        <div class="detail-qty border radius m-auto">
+                                            <button type="button" class="qty-down" id="qty-down-{{ cart_item.id }}" data-action="decrease" data-cart-item-id="{{ cart_item.id }}">
+                                                <i class="fi-rs-angle-small-down"></i>
+                                            </button>
+                                            <span class="qty-val" id="qty-val-{{ cart_item.id }}">{{ cart_item.quantity }}</span>
+                                            <button type="button" class="qty-up" id="qty-up-{{ cart_item.id }}" data-action="increase" data-cart-item-id="{{ cart_item.id }}">
+                                                <i class="fi-rs-angle-small-up"></i>
+                                            </button>
+                                            
+                                        </div>
+                                    </td>
+                                    <td class="text-right subtotal" id="subtotal-{{ cart_item.id }}" data-title="Subtotal">
+                                        <span>₹{{ cart_item.total_price}}</span>
+                                    </td>
+                                    <td class="action" data-title="Remove">
+                                        <a href="{% url 'remove_cart' cart_item.id %}" class="text-muted"><i class="fi-rs-trash"></i></a>
+                                    </td>
+                                </tr>
+                                
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <!-- Add this link in your cart template -->
+                            <a href="{% url 'clear_cart' %}" class="text-muted"> <i class="fi-rs-cross-small"></i> Clear Cart</a>
+
+                        <a href="{% url 'checkout' %}" class="btn btn-primary"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.4/fetch.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var buttons = document.querySelectorAll(".qty-up, .qty-down");
+    
+        buttons.forEach(function(button) {
+            button.addEventListener("click", function(e) {
+                e.preventDefault();
+    
+                var action = this.getAttribute("data-action");
+                console.log("actiobn :",action)
+                var cartItemId = this.getAttribute("data-cart-item-id");
+                var quantityElement = document.getElementById("qty-val-" + cartItemId);
+                var subtotalElement = document.getElementById("subtotal-" + cartItemId);
+    
+                // Check if the elements exist before trying to update them
+                if (quantityElement && subtotalElement) {
+                    console.log('Before Fetch - Quantity:', quantityElement.textContent, 'Subtotal:', subtotalElement.textContent);
+    
+                    fetch("/core/cart_update/" + cartItemId + "/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCookie("csrftoken"), // Replace with your actual method to get CSRF token
+                        },
+                        body: JSON.stringify({ action: action }),
+                    })
+                    .then(handleResponse)
+                    .then(data => {
+                        console.log("respponse from Backebd",data)
+                        // Handle the data received from the server
+                        if (data) {
+                            quantityElement.textContent = data.quantity;
+                            subtotalElement.textContent = data.subtotal;
+                            console.log('After Fetch - Quantity:', quantityElement.textContent, 'Subtotal:', subtotalElement.textContent);
+                        } else {
+                            console.error('Invalid data received from the server.');
+                        }
+                    })
+                    .catch(handleError);
+                } else {
+                    console.error("Quantity or subtotal element not found.");
+                }
+            });
+        });
+    
+        // Function to handle the fetch response
+        function handleResponse(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }
+    
+        // Function to handle fetch errors
+        function handleError(error) {
+            console.error('Fetch error:', error);
+            console.log("CSRF Token:", getCookie("csrftoken"));
+            
+            // Move inside the if block to ensure variables are accessible
+            if (quantityElement && subtotalElement) {
+                console.log('After Fetch - Quantity:', quantityElement.textContent, 'Subtotal:', subtotalElement.textContent);
+            } else {
+                console.error("Quantity or subtotal element not found.");
+            }
+        }
+    
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    </script>
+    {% endblock content %}
+
+                                               
+                                          
+                                 
+                                
+             

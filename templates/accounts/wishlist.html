@@ -1,0 +1,74 @@
+{% extends "user_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="mobile-header-active mobile-header-wrapper-style">
+    <!-- ... (your existing mobile header content) ... -->
+</div>
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Wishlist
+            </div>
+        </div>
+    </div>
+
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table shopping-summery text-center">
+                            <thead>
+                                <tr class="main-heading">
+                                    <th scope="col" colspan="2">Product</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                    <p>{{ message }}</p>
+                                {% endfor %}
+                                {% for product in wishlist_items %}
+                                    <tr>
+                                        <td class="image product-thumbnail">
+                                            <img src="{{ product.product_img1.url }}" alt="#">
+                                        </td>
+                                        <td class="product-des product-name">
+                                            <h5 class="product-name">
+                                                <a href="shop-product-right.html">{{ product.product_name }}</a>
+                                            </h5>
+                                            <p class="font-xs"></p>
+                                        </td>
+                                        <td class="price" data-title="Price"><span>{{ product.offer_price }}</span></td>
+                                        <td class="text-right" data-title="Cart">
+                                            <form method="post" action="{% url 'product_detials' product.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm">
+                                                    <i class="fi-rs-shopping-bag mr-5"></i>Add to cart
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="action" data-title="Remove">
+                                            <a href="{% url 'delete_wishlist_item' product.id %}">
+                                                <i class="fi-rs-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+{% endblock content %}

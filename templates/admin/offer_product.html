@@ -1,0 +1,74 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block content %}
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Product Offer</h2>
+                <p>Add percentage discount and expiry date for a product</p>
+            </div>
+            <div>
+                {% for message in messages %}
+                    <div class="mt-4">
+                        <h4>Error:</h4>
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="product" class="form-label">Select Product</label>
+                        <select id="product" class="form-select" name="product">
+                            {% for product in products %}
+                                <option value="{{ product.id }}">{{ product.product_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="offer_percentage" class="form-label">Offer Percentage</label>
+                        <input type="number" placeholder="Enter percentage" class="form-control" id="offer_percentage" name="offer_percentage" />
+                    </div>
+                    <div class="mb-4">
+                        <label for="expiry_date" class="form-label">Expiry Date</label>
+                        <input type="date" class="form-control" id="expiry_date" name="expiry_date" />
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Apply Offer</button>
+                    </div>
+                </form>
+            </div>
+
+            <h3>Products with Offers</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Offer Percentage</th>
+                        <th>Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products_with_offers %}
+                        <tr>
+                            <td>{{ product.product_name }}</td>
+                            {% if product.productoffer_set.all %}
+                                {% for offer in product.productoffer_set.all %}
+                                    <td>{{ offer.percentage }}%</td>
+                                    <td>{{ offer.expiry_date|date:"F d, Y" }}</td>
+                                {% endfor %}
+                            {% else %}
+                                <td colspan="2">No offer currently available</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endblock content %} 
+    

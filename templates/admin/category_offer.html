@@ -1,0 +1,110 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block content %}
+    <section class="content-main">
+        <div class="content-header">
+            <div>
+                <h2 class="content-title card-title">Categories</h2>
+                <p>Add, edit, or delete a category</p>
+            </div>
+            <div>
+                {% for message in messages %}
+                        <div class="mt-4">
+                            <h4>Error:</h4>
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                <input type="text" placeholder="Search Categories" class="form-control bg-white">
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-4">
+                            <label for="selectCategory" class="form-label">Select Category</label>
+                            <select id="selectCategory" class="form-select">
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data" id="categoryForm">
+                            {% csrf_token %}
+                            <!-- Form fields -->
+                            <div class="mb-4">
+                                <label for="offer_percentage" class="form-label">Offer Percentage</label>
+                                <input type="number" placeholder="Enter percentage" class="form-control" id="offer_percentage" name="offer_percentage" />
+                            </div>
+                            <div class="mb-4">
+                                <label for="expiry_date" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="expiry_date" name="expiry_date" />
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Apply Offer</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-md-9"> <!-- Add this div for the second loop -->
+                        <!-- Display all offers -->
+                        {% for offer in all_offers %}
+                            <div class="mt-4">
+                                <h4>Offer for {{ offer.category.category_name }}:</h4>
+                                <p>Offer Percentage: {{ offer.percentage }}%</p>
+                                <p>Expiry Date: {{ offer.expiry_date }}</p>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Display the applied offer information -->
+                        {% if applied_offer %}
+                            <div class="mt-4">
+                                <h4>Applied Offer:</h4>
+                                <p>Category: {{ applied_offer.category.category_name }}</p>
+                                <p>Offer Percentage: {{ applied_offer.percentage }}%</p>
+                                <p>Expiry Date: {{ applied_offer.expiry_date }}</p>
+
+                                <!-- Display product-specific information -->
+                                {% for product in products_in_category %}
+                                    <div class="mb-3">
+                                        <p>Product: {{ product.product_name }}</p>
+                                        <p>Original Price: ${{ product.original_price }}</p>
+                                        <p>Discounted Price: ${{ product.offer_price }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div> <!-- Close the div for the second loop -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('selectCategory').addEventListener('change', function () {
+            var categoryForm = document.getElementById('categoryForm');
+            if (this.value) {
+                categoryForm.style.display = 'block';
+            } else {
+                categoryForm.style.display = 'none';
+            }
+        });
+    
+        // Add this function to set the selected category ID before form submission
+        document.getElementById('categoryForm').addEventListener('submit', function () {
+            var selectCategory = document.getElementById('selectCategory');
+            if (selectCategory.value) {
+                // Add a hidden input field to include the selected category ID in the form data
+                var hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'selectCategory';
+                hiddenInput.value = selectCategory.value;
+                this.appendChild(hiddenInput);
+            }
+        });
+    </script>
+{% endblock content %}

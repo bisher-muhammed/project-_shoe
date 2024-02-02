@@ -1,0 +1,114 @@
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Orders</title>
+    <!-- Add Bootstrap CSS CDN for Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbs5mQHAaE5K3uMuFzL/G2xFIqICtqgqGcsl8s0C+AFv5COb9tQ8ba3hpeXW2fXJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'user/assets/css/main.css'%}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbs5mQHAaE5K3uMuFzL/G2xFIqICtqgqGcsl8s0C+AFv5COb9tQ8ba3hpeXW2fXJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<!-- Optional: Popper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+    
+</head>
+<body>
+
+<section class="h-100 gradient-custom">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-lg-10 col-xl-8">
+        <div class="card" style="border-radius: 10px;">
+          <div class="card-header px-4 py-5">
+            <h5 class="text-muted mb-0">Thanks for your Order, <span style="color: #a8729a;">{{user.username}}</span>!</h5>
+          </div>
+          <div class="card-body p-4">
+            <h2>Order Details</h2>
+            <p>Order Number: {{ order.order_number }}</p>
+            <p>Status: <span style="background-color: green; color: white; padding: 3px; border-radius: 3px;">{{ order.status }}</span></p>
+
+            <p><strong>Shipping Address:</strong></p>
+<p><strong>First Name:</strong> {{ order.address.first_name }}</p>
+<p><strong>Last Name:</strong> {{ order.address.last_name }}</p>
+<p><strong>Address:</strong> {{ order.address.address_1 }}</p>
+<p><strong>City:</strong> {{ order.address.city }}</p>
+<p><strong>State:</strong> {{ order.address.state }}</p>
+<p><strong>Zip Code:</strong> {{ order.address.zipcode }}</p>
+
+            
+            <!-- Add more order details as needed -->
+
+            <h3>Order Products</h3>
+            {% for product_order in order_products %}
+            <div class="card shadow-0 border mb-4">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-2">
+                    <img src="{{ product_order.product.product_img1.url }}" class="img-fluid" alt="{{ product_order.product.product_name }}">
+                  </div>
+                  <p class="text-muted mb-0">{{ product_order.product.product_name }}</p>
+                  <p class="text-muted mb-0 small">{{ product_order.product.color }}</p>
+                  <p class="text-muted mb-0 small">Capacity: {{ product_order.product.capacity }}</p>
+                  <p class="text-muted mb-0 small">Qty: {{ product_order.quantity }}</p>
+                  <p class="text-muted mb-0 small">₹{{ product_order.product_price }}</p>
+                  </div>
+                </div>
+                <!-- Add more product details as needed -->
+              </div>
+            </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-between pt-2">
+              <p class="fw-bold mb-0">Order Details</p>
+              {% if order.coupon %}
+                                            <!-- Display price_value if a coupon is applied -->
+                  <td>₹{{ order.order_value }}</td>
+              {% else %}
+                  <!-- Display grand_total if no coupon is applied -->
+                  <td>₹{{ order.order_total }}</td>
+              {% endif %}
+            </div>
+
+           
+            
+            <div class="d-flex justify-content-between pt-2">
+                <p class="text-muted mb-0">Order Number : {{ order.order_number }}</p>
+                <p class="text-muted mb-0"><span class="fw-bold me-4">Discount</span> ₹{{ order.coupon.discount_amount }}</p>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <p class="text-muted mb-0">Order Date : {{ order.created_at|date:"F d, Y" }}</p>
+                
+            </div>
+            
+            
+          </div>
+          <div class="card-footer border-0 px-4 py-5"
+            style="background-color: #a8729a; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <h5 class="d-flex align-items-center justify-content-end text-white text-uppercase mb-0">Total
+              paid: {% if order.coupon %}
+              <!-- Display price_value if a coupon is applied -->
+              <td>₹{{ order.order_value }}</td>
+          {% else %}
+              <!-- Display grand_total if no coupon is applied -->
+              <td>₹{{ order.order_total }}</td>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-VGWWaDCaRygWs2pfH1F5ZGJIP4IVQ1RbOV2l4GzXJQ8v8/4SgUHE6mMA2xiqE6qD" crossorigin="anonymous"></script>
+
+</body>
+</html>
+
+{% endblock content %}

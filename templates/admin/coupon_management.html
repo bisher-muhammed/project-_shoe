@@ -1,0 +1,136 @@
+{% extends "admin_base.html" %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon and Category Management</title>
+    <!-- Bootstrap CSS Link -->
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        .form-container {
+            width: 300px;
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-container input[type="text"],
+        .form-container input[type="number"],
+        .form-container input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        btn-rounded {
+            border-radius: 20px; } 
+        
+    </style>
+</head>
+<body>
+
+    <section class="content-main container">
+        
+        <div class="card">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <div class="card-body">
+                <div class="row">
+                    <div class="form-container col-md-4">
+                        <form method='post' enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="coupon_code" class="form-label">Coupon Code</label>
+                                <input type="text" placeholder="Type here" id="coupon_code" name="coupon_code" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="discount_amount" class="form-label">Discount Amount</label>
+                                <input type="number" placeholder="Type here" id="discount_amount" name="discount_amount" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="min_purchase" class="form-label">Minimum Purchase</label>
+                                <input type="number" placeholder="Type here" id="minimum_purchase" name="minimum_purchase" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="expiry_date" class="form-label">Expiry Date</label>
+                                <input type="date" id="expiry_date" name="expiry_date" class="form-control" />
+                            </div>
+                            <div class="d-grid">
+                                <button class="btn btn-primary">Create Coupon</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-md-8">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Coupon Code</th>
+                                    <th>Discount Amount</th>
+                                    <th>Minimum Purchase</th>
+                                    <th>Expiry Date</th>
+                                    <th>List/unlist</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coupon in coupon_list %}
+                                <!-- Loop through your coupons and display them -->
+                                <tr>
+                                    <td>{{ coupon.coupon_code }}</td>
+                                    <td>{{ coupon.discount_amount }}</td>
+                                    <td>{{ coupon.minimum_purchase }}</td>
+                                    <td>{{ coupon.expiry_date }}</td>
+                                    <td>
+                                        {% if coupon.is_blocked %}
+                                            <a class="btn btn-danger btn-sm btn-rounded" href="{% url 'unblock_coupon' coupon.id %}">Unlist</a>
+                                        {% else %}
+                                            <a class="btn btn-success btn-sm btn-rounded"  href="{% url 'block_coupon' coupon.id %}" style="background-color: #83B08A;">List</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!-- Add more rows as needed -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS and Popper.js Links -->
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
+{% endblock content %}

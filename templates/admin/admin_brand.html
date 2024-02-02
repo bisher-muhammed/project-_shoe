@@ -1,0 +1,93 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Brands</h2>
+            <p>Add, edit, or delete a brand</p>
+        </div>
+        <div>
+            <input type="text" placeholder="Search brands" class="form-control bg-white">
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="brand_name" class="form-label">Name</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="brand_name" name="brand_name" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea placeholder="Type here" class="form-control" name="brand_description"></textarea>
+
+                        </div>
+                        <div class="mb-4">
+                            <label for="brand_image" class="form-label">Brand Image </label>
+                            <input type="file" name="brand_image" class="form-control" id="brand_image">
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary">Add New Brand</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-9">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Image</th>
+                                    <th>List/Unlist</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for brand in brand_list %}
+                                    <tr>
+                                        <td><b>{{ brand.brand_name }}</b></td>
+                                        <td>{{ brand.brand_description|default:"No description available" }}</td>
+                                        <td>
+                                            {% if brand.brand_image %}
+                                                <!-- Debugging: Output the image URL to see if it's correct -->
+                                                <p>{{ brand.brand_image.url }}</p>
+                                        
+                                                <!-- Display the image with a maximum size -->
+                                                <img src="{{ brand.brand_image.url }}" alt="{{ brand.brand_name }} Image" style="max-width: 100px; max-height: 100px;">
+                                            {% else %}
+                                                No Image Available
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if brand.is_active %}
+                                                <a class="btn btn-danger btn-s" href="{% url 'deactivate_brand' brand.id %}">Block</a>
+                                            {% else %}
+                                                <a class="btn btn-success btn-sm" href="{% url 'activate_brand' brand.id %}">Active</a>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="dropdown">
+                                                <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> </a>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="#">View detail</a>
+                                                    <a class="dropdown-item" href="#">Edit info</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
