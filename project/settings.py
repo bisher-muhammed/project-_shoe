@@ -92,7 +92,7 @@ DATABASES = {
 
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'shoes',
+        'NAME': config ('NAME'),
         'USER': config('USER'),
         'PASSWORD': config('PASSWORD'),
         'HOST': 'localhost',
