@@ -750,14 +750,31 @@ def add_address(request):
         except Exception as e:
             print(f"Error creating or updating address: {e}")
             messages.error(request, 'Error adding address. Please try again.')
+            print("Addresses:", addresses)
 
     return render(request, 'accounts/add_address.html')
 
 
 
+# @login_required
+# def addresses(request):
+#     user_profile = get_object_or_404(UserProfile, user=request.user)
+#     addresses = AddressUS.objects.filter(user_profile=user_profile)
+
+#     # Check if there is no default address set, and set the first address as default
+#     if not any(address.is_default for address in addresses):
+#         first_address = addresses.first()
+#         if first_address:
+#             with transaction.atomic():
+#                 first_address.is_default = True
+#                 first_address.save()
+
+#     return render(request, 'accounts/address.html', {'addresses': addresses})
 @login_required
 def addresses(request):
-    user_profile = get_object_or_404(UserProfile, user=request.user)
+    # Try to get the UserProfile, or create a new one if it doesn't exist
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
     addresses = AddressUS.objects.filter(user_profile=user_profile)
 
     # Check if there is no default address set, and set the first address as default
@@ -770,6 +787,9 @@ def addresses(request):
 
     return render(request, 'accounts/address.html', {'addresses': addresses})
 
+
+
+
 def set_default_address(request, address_id):
     address = get_object_or_404(AddressUS, id=address_id)
     address.is_default = True
@@ -779,6 +799,8 @@ def set_default_address(request, address_id):
 
     # Corrected redirect statement
     return redirect('addresses')
+
+
 
 
 

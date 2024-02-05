@@ -1,13 +1,15 @@
+from pyexpat.errors import messages
 from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
+from django.shortcuts import redirect
 from adminapp.models import Product, ProductOffer, ProductSize, Size
 from django.db.models import Sum
 from user.models import AddressUS, Coupon
 from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 
 from django.db import models, transaction
@@ -88,20 +90,32 @@ class Order(models.Model):
         with transaction.atomic():
             for item in self.productorder_set.all():
                 if item.size:
-                    product_size = ProductSize.objects.get(product=item.product, size=item.size)
-                    print(f"Before reduction - Product: {item.product}, Size: {item.size}, Quantity: {product_size.quantity}")
-                    
-                    product_size.quantity -= item.quantity
+                    try:
+                        product_sizes = ProductSize.objects.filter(product=item.product, size=item.size)
+                        for product_size in product_sizes:
+                            print(f"Before reduction - Product: {item.product}, Size: {item.size}, Quantity: {product_size.quantity}")
 
-                    # Ensure that the quantity doesn't go below zero
-                    if product_size.quantity < 0:
-                        product_size.quantity = 0
+                            # Print information about item and product_size
+                            print(f"Item details: {item}")
+                            print(f"ProductSize details: {product_size}")
 
-                    product_size.save()
-                    
-                    print(f"After reduction - Product: {item.product}, Size: {item.size}, Quantity: {product_size.quantity}")
+                            # Multiply the item quantity with the size quantity when reducing
+                            reduction_quantity = item.quantity
 
+                            # Ensure that the quantity doesn't go below zero
+                            if product_size.quantity >= reduction_quantity:
+                                product_size.quantity -= reduction_quantity
+                            else:
+                                product_size.quantity = 0
 
+                            product_size.save() 
+
+                            print(f"After reduction - Product: {item.product}, Size: {item.size}, Quantity: {product_size.quantity}")
+                    except ObjectDoesNotExist:
+                        print(f"No ProductSize found for Product: {item.product}, Size: {item.size}")
+                    except MultipleObjectsReturned:
+                        # Handle the case when multiple ProductSize instances are found
+                        raise MultipleObjectsReturned(f"Multiple ProductSize instances found for Product: {item.product}, Size: {item.size}")
 
     def cancel_or_return_order(self):
     # Increase product sizes when an order is cancelled or returned
@@ -166,7 +180,20 @@ class Payment(models.Model):
     discount = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    
+
+
+
     def __str__(self):
         return self.payment_method 
     
+
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    def check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
+        if user_wallet.balance < order_total_decimal:
+            messages.error(request, 'Insufficient balance')
+            return redirect('payments', order_id=order_id)
+
     

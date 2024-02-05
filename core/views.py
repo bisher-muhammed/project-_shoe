@@ -78,7 +78,7 @@ def add_to_cart(request, product_id):
                 # Update the cart total
                 cart.update_total()
 
-            messages.success(request, "Product added to the cart!")
+            # messages.success(request, "Product added to the cart!")
             return redirect('cart_list')
 
         else:
@@ -393,36 +393,40 @@ def payments(request, order_id):
     cart_items = CartItem.objects.filter(user=current_user)
     cart_count = cart_items.count()
 
-    # Fetch the order and related details
-    order = Order.objects.get(user=current_user, is_ordered=False, id=order_id)
-    address = order.address
-    grand_total = order.order_total  # Use the order_total from the Order model
+    try:
+        # Fetch the order and related details
+        order = get_object_or_404(Order, user=current_user, is_ordered=False, id=order_id)
+        address = order.address
+        grand_total = order.order_total  # Use the order_total from the Order model
 
-    # Retrieve discount_amount from the session
-    discount_amount = request.session.get('discount_amount', 0)
+        # Retrieve discount_amount from the session
+        discount_amount = request.session.get('discount_amount', 0)
 
-    # Calculate the price_value
-    price_value = grand_total - discount_amount
+        # Calculate the price_value
+        price_value = grand_total - discount_amount
 
-    # Retrieve other details like selected_coupon_code, quantity, etc.
-    selected_coupon_code = request.session.get('selected_coupon_code', '')
-    quantity = request.GET.get('quantity', '')
+        # Retrieve other details like selected_coupon_code, quantity, etc.
+        selected_coupon_code = request.session.get('selected_coupon_code', '')
+        quantity = request.GET.get('quantity', '')
 
-    context = {
-        'address': address,
-        'order': order,
-        'cart_items': cart_items,
-        'total': sum(cart_item.product.offer_price * cart_item.quantity for cart_item in cart_items),
-        'grand_total': grand_total,
-        'selected_address': address,
-        'discount_amount': discount_amount,
-        'price_value': price_value,  # Use the calculated price_value
-        'selected_coupon_code': selected_coupon_code,
-        'quantity': quantity,
-    }
-    
+        context = {
+            'address': address,
+            'order': order,
+            'cart_items': cart_items,
+            'total': sum(cart_item.product.offer_price * cart_item.quantity for cart_item in cart_items),
+            'grand_total': grand_total,
+            'selected_address': address,
+            'discount_amount': discount_amount,
+            'price_value': price_value,  # Use the calculated price_value
+            'selected_coupon_code': selected_coupon_code,
+            'quantity': quantity,
+        }
 
-    return render(request, 'CART/placeorder.html', context)
+        return render(request, 'CART/placeorder.html', context)
+
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found or already processed.')
+        return redirect('home') 
 
 
 
@@ -435,10 +439,10 @@ def cash_on_delivery(request, order_id):
 
     try:
         # Ensure the order belongs to the current user and is not already ordered
-        order = Order.objects.get(id=order_id, user=current_user, is_ordered=False)
+        order = Order.objects.filter(id=order_id, user=current_user, is_ordered=False)
         
     except Order.DoesNotExist:
-        return redirect('order_confirmed')  # Redirect to some page, adjust as needed
+        return redirect('home')  # Redirect to some page, adjust as needed
 
     total_amount = order.order_total
     payment = Payment(user=current_user, payment_method="Cash on delivery", amount_paid=total_amount, status="Not Paid")
@@ -553,7 +557,7 @@ def confirm_razorpay_payment(request, order_id):
 
     try:
         # Ensure the order belongs to the current user and is not already ordered
-        order = Order.objects.get(id=order_id, user=current_user, is_ordered=False)
+        order = Order.objects.filter(id=order_id, user=current_user, is_ordered=False)
     except Order.DoesNotExist:
         # Order has already been marked as ordered, redirect to order_confirmed
         return redirect('order_confirmed', order_id=order_id)
@@ -648,12 +652,11 @@ def wallet_pay(request, order_id):
     order_total_decimal = Decimal(str(order.order_total))
 
     # Check if the user has sufficient balance in the wallet
-    if user_wallet.balance < order_total_decimal:
+    if not Payment.check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
         # If insufficient balance, handle accordingly (e.g., redirect with an error message)
-        return redirect('order_confirmed')  # Redirect to some page with an error message
-    print(f'befor_: {user_wallet.balance}')
+        return redirect('payments',order_id)  # Redirect to some page with an error message
 
-# Deduct the amount from the user's wallet
+    # Deduct the amount from the user's wallet
     user_wallet.balance -= order_total_decimal
     updated_wallet_balance = user_wallet.balance  # Assign the updated balance to a variable
     user_wallet.save()
@@ -663,8 +666,6 @@ def wallet_pay(request, order_id):
 
     request.session['updated_wallet_balance'] = float_updated_wallet_balance
     request.session.save()
-    
-    
 
     # Add debugging statements
     print(f"Order ID: {order_id}")

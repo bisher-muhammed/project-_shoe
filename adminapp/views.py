@@ -187,6 +187,7 @@ def unblock_category(request, category_id):
     return redirect('admin_category')
 
 
+
 def add_product(request):
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -253,8 +254,10 @@ def add_product(request):
                         # Add size with quantity to the product using ProductSize model
                         ProductSize.objects.create(product=product, size=size, quantity=quantity)
 
-                        # Append selected size to the list
-                        selected_sizes.append(size)
+                    selected_sizes = request.POST.getlist('sizes')
+                    product.sizes.set(selected_sizes)
+
+                    product.save()
 
                 return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes})
 
