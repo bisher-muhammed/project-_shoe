@@ -54,10 +54,15 @@
       </div>
         <h1>Success</h1> 
         <p>We received your purchase request;<br/> we'll be in touch shortly!</p>
-        <a href="{% url 'home' %}" class="btn btn-primary btn-continue-shopping">
+        <a onclick="redirect()" class="btn btn-primary btn-continue-shopping">
           <i class="fi-rs-shopping-bag mr-2"></i>
-          Continue Shopping
+          Continue Shoppingg
         </a>
       </div>
     </body>
+    <script>
+      function redirect(){
+        window.location.href = "/"
+      }
+    </script>
 </html>

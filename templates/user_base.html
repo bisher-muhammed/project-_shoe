@@ -112,48 +112,41 @@
 
 <body>
 <!-- Header -->
+
+
+<!-- Quick view -->
+
+
+
 <header class="header-area header-style-1 header-height-2">
-    <!-- Top Header -->
     <div class="header-top header-top-ptb-1 d-none d-lg-block">
         <div class="container">
             <div class="row align-items-center">
-                <!-- Left Section -->
                 <div class="col-xl-3 col-lg-4">
                     <div class="header-info">
                         <ul>
-                            <li><i class="fi-rs-smartphone"></i> <a href="#"></li>
-                            <li><i class="fi-rs-marker"></i><a href="page-contact.html">Our location</a></li>
+                            <li><i class="fi-rs-smartphone"></i> <a href="#">(+01) - 2345 - 6789</a></li>
+                            <li><i class="fi-rs-marker"></i><a  href="page-contact.html">Our location</a></li>
                         </ul>
                     </div>
                 </div>
-                <!-- Center Section -->
                 <div class="col-xl-6 col-lg-4">
                     <div class="text-center">
-                        {% comment %} <div id="news-flash" class="d-inline-block">
+                        <div id="news-flash" class="d-inline-block">
                             <ul>
                                 <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li>
                                 <li>Supper Value Deals - Save more with coupons</li>
-                                <li>Trendy 25silver jewelry, save up 35% off today <a
-                                        href="shop-grid-right.html">Shop now</a></li>
+                                <li>Trendy 25silver jewelry, save up 35% off today <a href="shop-grid-right.html">Shop now</a></li>
                             </ul>
-                        </div> {% endcomment %}
+                        </div>
                     </div>
                 </div>
-                <!-- Right Section -->
                 <div class="col-xl-3 col-lg-4">
                     <div class="header-info header-info-right">
                         <ul>
-                            {% comment %} <li>
-                                <a class="language-dropdown-active" href="#"> <i class="fi-rs-world"></i> English
-                                    <i class="fi-rs-angle-small-down"></i></a>
-                                <ul class="language-dropdown">
-                                    <li><a href="#"><img src="assets/imgs/theme/flag-fr.png" alt="">Français</a></li>
-                                    <li><a href="#"><img src="assets/imgs/theme/flag-dt.png" alt="">Deutsch</a></li>
-                                    <li><a href="#"><img src="assets/imgs/theme/flag-ru.png" alt="">Pусский</a></li>
-                                </ul>
-                            </li> {% endcomment %}
                             <li><i class="fas fa-user mr-2"></i><a href="{% url 'view_profile' %}">{{ user.username }}
-                                </a></li>
+                            </a></li>
+
                             {% if user.is_authenticated %}
                             <li><i class="fi-rs-user"></i><a href="{% url 'logout_view' %}">Logout</a></li>
                             {% else %}
@@ -166,26 +159,19 @@
             </div>
         </div>
     </div>
-    <!-- Main Header -->
     <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
         <div class="container">
-            <div class="header-wrap d-flex justify-content-between align-items-center">
-                <!-- Logo -->
+            <div class="header-wrap">
                 <div class="logo logo-width-1">
-                    <a href="{% url 'home' %}">
-                        <img src="{% static 'user/assets/imgs/my_images/logo.peng' %}" alt="logo">
-                    </a>
+                    <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
                 </div>
-                <!-- Navigation Menu -->
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <!-- Navigation Links -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_lists' %}">Shop</a></li>
-                    </ul>
-                    <!-- Search Bar -->
+                <div class="header-right">
+                    {% comment %} <div class="search-style-2">
+                        <form action="#">
+                       
+                            <input type="text" placeholder="Search for items...">
+                        </form>
+                    </div> {% endcomment %}
                     <div class="search-bar ml-auto">
                         <form class="form-inline" method="get" action="{% url 'home' %}">
                             <div class="input-group">
@@ -197,78 +183,23 @@
                                 </div>
                             </div>
                         </form>
-                        {% if search_query %}
-                        <p class="mt-2">Search results for "{{ search_query }}":</p>
-                        {% endif %}
+                       
                     </div>
-                    <!-- Mobile Promotion -->
-                    <p class="mobile-promotion">Happy <span class="text-brand">Mother's Day</span>. Big Sale Up to
-                        40%</p>
-                    <!-- Header Actions -->
                     <div class="header-action-right">
                         <div class="header-action-2">
-                            <!-- Wishlist Icon -->
                             <div class="header-action-icon-2">
                                 <a href="{% url 'wishlist' %}">
-                                    <img class="svg" alt="Evara"
-                                        src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}">
+                                    <img class="svgInject" alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg'%}">
+                                   
                                 </a>
                             </div>
                             <div class="header-action-icon-2">
                                 <a class="mini-cart-icon" href="{% url 'cart_list' %}">
-                                    <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg'%}">
-                                    {% comment %} <span class="pro-count blue"></span> {% endcomment %}
+                                    <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg' %}">
+
+                                    
                                 </a>
-                            </div>
-                                <!-- Cart Dropdown -->
-                                 <div class="cart-dropdown-wrap cart-dropdown-hm2">
-                                    <ul>
-                                        <li>
-                                            <div class="shopping-cart-img">
-                                                <a href="shop-product-right.html"><img alt="Evara"
-                                                        src="assets/imgs/shop/thumbnail-3.jpg"></a>
-                                            </div>
-                                            <div class="shopping-cart-title">
-                                                <h4><a href="shop-product-right.html">Plain Striola
-                                                        Shirts</a></h4>
-                                                <h3><span>1 × </span>$800.00</h3>
-                                            </div>
-                                            <div class="shopping-cart-delete">
-                                                <a href="#"><i class="fi-rs-cross-small"></i></a>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="shopping-cart-img">
-                                                <a href="shop-product-right.html"><img alt="Evara"
-                                                        src="assets/imgs/shop/thumbnail-4.jpg"></a>
-                                            </div>
-                                            <div class="shopping-cart-title">
-                                                <h4><a href="shop-product-right.html">Macbook Pro 2022</a></h4>
-                                                <h3><span>1 × </span>$3500.00</h3>
-                                            </div>
-                                            <div class="shopping-cart-delete">
-                                                <a href="#"><i class="fi-rs-cross-small"></i></a>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div class="shopping-cart-footer">
-                                        <div class="shopping-cart-total">
-                                            <h4>Total <span>$383.00</span></h4>
-                                        </div>
-                                        <div class="shopping-cart-button">
-                                            <a href="{% url 'cart_list' %}" class="outline">View cart</a>
-                                            <a href="shop-checkout.html">Checkout</a>
-                                        </div>
-                                    </div>
-                                </div> 
-                            </div>
-                            <!-- Mobile Menu Toggle -->
-                            <div class="header-action-icon-2 d-block d-lg-none">
-                                <div class="burger-icon burger-icon-white">
-                                    <span class="burger-icon-top"></span>
-                                    <span class="burger-icon-mid"></span>
-                                    <span class="burger-icon-bottom"></span>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -276,130 +207,72 @@
             </div>
         </div>
     </div>
-    <!-- Header Bottom -->
-    <div class="header-bottom header-bottom-bg-color">
+    <div class="header-bottom header-bottom-bg-color sticky-bar">
         <div class="container">
-            <div class="header-wrap d-flex justify-content-between align-items-center position-relative">
-                <!-- Logo (Mobile) -->
+            <div class="header-wrap header-space-between position-relative">
                 <div class="logo logo-width-1 d-block d-lg-none">
-                    <a href="{% url 'home' %}">
-                        <img src="{% static 'user/assets/imgs/my images/logo.peng' %}" alt="logo">
-                    </a>
+                    <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
                 </div>
-                <!-- Navigation Menu (Mobile) -->
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <!-- Mobile Menu Toggle Button -->
-                    <div class="burger-icon d-lg-none">
-                        <span class="burger-icon-top"></span>
-                        <span class="burger-icon-mid"></span>
-                        <span class="burger-icon-bottom"></span>
+                <div class="header-nav d-none d-lg-flex">
+                   
+                    <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
+                        <nav>
+                            <ul>
+                                <li><a class="active" href="{% url 'home' %}">Home </a>
+                                    
+                                </li>
+                                <li>
+                                    <a href="{% url 'about' %}">About</a>
+                                </li>
+                                <li><a href="{% url 'shop_lists' %}">Shop <i ></i></a>
+                                    
+                                </li>
+                                
+                                <li><a href="#">Pages <i class="fi-rs-angle-down"></i></a>
+                                    <ul class="sub-menu">
+                                        <li><a href="{% url 'about' %}">About Us</a></li>
+                                        <li><a href="{% url 'contact' %}">Contact</a></li>
+                                        <li><a href="{% url 'view_profile' %}">My Account</a></li>
+                                        
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="{% url 'contact' %}">Contact</a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                    <!-- Mobile Menu Links -->
-                    {% comment %} <div class="collapse navbar-collapse">
-                        <ul class="navbar-nav">
-                            <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                         <li class="nav-item"><a class="nav-link" href="{% url 'shop_lists' %}">Shop</a></li>
-                        </ul>
-                    </div> {% endcomment %}
-                </nav>
-                <!-- Logo (Desktop) -->
-                {% comment %} <div class="logo logo-width-1 d-none d-lg-block">
-                    <a href="{% url 'home' %}">
-                        <img src="{% static 'user/assets/imgs/theme/logo.svg' %}" alt="logo">
-                    </a>
-                </div> {% endcomment %}
+                </div>
+               
+                <p class="mobile-promotion">Happy <span class="text-brand">Mother's Day</span>. Big Sale Up to 40%</p>
+                <div class="header-action-right d-block d-lg-none">
+                    <div class="header-action-2">
+                        <div class="header-action-icon-2">
+                            <a href="shop-wishlist.html">
+                                <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg'%}">
+                                
+                            </a>
+                        </div>
+                        <div class="header-action-icon-2">
+                            <a class="mini-cart-icon" href="shop-cart.html">
+                                <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg'%}">
+                                
+                            </a>
+                            
+                        </div>
+                        <div class="header-action-icon-2 d-block d-lg-none">
+                            <div class="burger-icon burger-icon-white">
+                                <span class="burger-icon-top"></span>
+                                <span class="burger-icon-mid"></span>
+                                <span class="burger-icon-bottom"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </header>
-<div class="mobile-header-active mobile-header-wrapper-style">
-    <div class="mobile-header-wrapper-inner">
-        <div class="mobile-header-top">
-            <div class="mobile-header-logo">
-                <a href="index.html"><img src="assets/imgs/theme/logo.svg" alt="logo"></a>
-            </div>
-            <div class="mobile-menu-close close-style-wrap close-style-position-inherit">
-                <button class="close-style search-close">
-                    <i class="icon-top"></i>
-                    <i class="icon-bottom"></i>
-                </button>
-            </div>
-        </div>
-        <div class="mobile-header-content-area">
-            <div class="mobile-search search-style-3 mobile-header-border">
-                <form action="#">
-                    <input type="text" placeholder="Search for items…">
-                    <button type="submit"><i class="fi-rs-search"></i></button>
-                </form>
-            </div>
-            <div class="mobile-menu-wrap mobile-header-border">
-                <div class="main-categori-wrap mobile-header-border">
-                    <a class="categori-button-active-2" href="#">
-                        <span class="fi-rs-apps"></span> Browse Categories
-                    </a>
-                    <div class="categori-dropdown-wrap categori-dropdown-active-small">
-                        <ul>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-dress"></i>Women's Clothing</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-tshirt"></i>Men's Clothing</a></li>
-                            <li> <a href="shop-grid-right.html"><i class="evara-font-smartphone"></i> Cellphones</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-desktop"></i>Computer & Office</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-cpu"></i>Consumer Electronics</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-home"></i>Home & Garden</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-high-heels"></i>Shoes</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-teddy-bear"></i>Mother & Kids</a></li>
-                            <li><a href="shop-grid-right.html"><i class="evara-font-kite"></i>Outdoor fun</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <!-- mobile menu start -->
-                <nav>
-                    <ul class="mobile-menu">
-                        <li class="menu-item-has-children"><span class="menu-expand"></span><a href="{% url 'home' %}">Home</a>
-                            <ul class="dropdown">
-                                <li><a href="index.html">Home 1</a></li>
-                                
-                            </ul>
-                        </li>
-                        
-                        
-                        <li class="menu-item-has-children"><span class="menu-expand"></span><a href="#">Pages</a>
-                            <ul class="dropdown">
-                                <li><a href="{% url 'about'%}">About Us</a></li>
-                                <li><a href="{% url 'contact'%}">Contact</a></li>
-                                <li><a href="{% url 'shop_lists'%}">shop</a></li>
-                                
-                            </ul>
-                        </li>
-                        
-                    </ul>
-                </nav>
-                <!-- mobile menu end -->
-            </div>
-            <div class="mobile-header-info-wrap mobile-header-border">
-                <div class="single-mobile-header-info mt-30">
-                    <a  href="page-contact.html"> Our location </a>
-                </div>
-                <div class="single-mobile-header-info">
-                    <a href="page-login-register.html">Log In / Sign Up </a>
-                </div>
-                <div class="single-mobile-header-info">
-                    <a href="#">(+01) - 2345 - 6789 </a>
-                </div>
-            </div>
-            <div class="mobile-social-icon">
-                <h5 class="mb-15 text-grey-4">Follow Us</h5>
-                <a href="#"><img src="assets/imgs/theme/icons/icon-facebook.svg" alt=""></a>
-                <a href="#"><img src="assets/imgs/theme/icons/icon-twitter.svg" alt=""></a>
-                <a href="#"><img src="assets/imgs/theme/icons/icon-instagram.svg" alt=""></a>
-                <a href="#"><img src="assets/imgs/theme/icons/icon-pinterest.svg" alt=""></a>
-                <a href="#"><img src="assets/imgs/theme/icons/icon-youtube.svg" alt=""></a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Content -->
 <div class="modal fade custom-modal" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel"
     aria-hidden="true">
@@ -439,7 +312,7 @@
                     <div class="col-lg-4 col-md-6">
                         <div class="widget-about font-md mb-md-5 mb-lg-0">
                             <div class="logo logo-width-1 wow fadeIn animated">
-                                <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my images/logo.peng' %}" alt="logo"></a> 
+                                <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
                             </div>
                             <h5 class="mt-20 mb-10 fw-600 text-grey-4 wow fadeIn animated">Contact</h5>
                             <p class="wow fadeIn animated">

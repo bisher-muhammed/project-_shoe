@@ -10,6 +10,8 @@ from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.contrib import messages
+from django.shortcuts import redirect
 
 
 from django.db import models, transaction
@@ -36,6 +38,7 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, blank=True, swappable=True)
+    product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE, null=True, blank=True)
 
     def total_price(self):
         return self.quantity * self.product.offer_price
@@ -180,6 +183,14 @@ class Payment(models.Model):
     discount = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @staticmethod
+    def check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
+        if user_wallet.balance < order_total_decimal and user_wallet.balance == 0.00:
+            messages.error(request, 'Insufficient balance')
+            return True  # Indicate insufficient balance
+
+        return False
+
     
 
 
@@ -188,12 +199,8 @@ class Payment(models.Model):
         return self.payment_method 
     
 
-    from django.contrib import messages
-    from django.shortcuts import redirect
+    
 
-    def check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
-        if user_wallet.balance < order_total_decimal:
-            messages.error(request, 'Insufficient balance')
-            return redirect('payments', order_id=order_id)
+    
 
     

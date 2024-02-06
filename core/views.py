@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from core.models import *
 import datetime
 from django.contrib.auth.models import User
+from django.views.decorators.cache import cache_page
 
 
 
@@ -38,56 +39,57 @@ def add_to_cart(request, product_id):
         cart, created = Cart.objects.get_or_create(user=request.user, active=True)
 
         # Filter the ProductSize instances based on the selected product and size
-        product_sizes = ProductSize.objects.filter(product=product, size=selected_size)
+        product_size = ProductSize.objects.filter(product=product, size=selected_size).first()
 
-        if product_sizes.exists():
-            # Choose one ProductSize instance based on your criteria (e.g., highest quantity)
-            product_size = product_sizes.order_by('-quantity').first()
-        else:
-            # If there are no instances, create a new one
-            product_size = ProductSize.objects.create(product=product, size=selected_size)
+        if product_size:
+            quantity = int(request.POST.get('quantity', 1))
 
-        quantity = int(request.POST.get('quantity', 1))
+            if product_size.quantity >= quantity:
+                with transaction.atomic():
+                    # If the order is placed, reduce the available quantity
+                    order = Order.objects.filter(cart=cart, is_ordered=True).order_by('-created_at').first()
+                    if order:
+                        product_size.quantity -= quantity
+                        product_size.save()
 
-        if product_size.quantity >= quantity:
-            with transaction.atomic():
-                # If the order is placed, reduce the available quantity
-                order = Order.objects.filter(cart=cart, is_ordered=True).order_by('-created_at').first()
-                if order:
-                    product_size.quantity -= quantity
-                    product_size.save()
+                    # Check if the item is already in the cart
+                    cart_item, created = CartItem.objects.get_or_create(
+                        user=request.user,
+                        cart=cart,
+                        product=product,
+                        size=selected_size,
+                        defaults={'quantity': 0}  # set quantity to 0 initially
+                    )
 
-                # Check if the item is already in the cart
-                cart_item, created = CartItem.objects.get_or_create(
-                    user=request.user,
-                    cart=cart,
-                    product=product,
-                    size=selected_size,
-                    defaults={'quantity': 0}  # set quantity to 0 initially
-                )
+                    if not created:
+                        # If the item is already in the cart, update the quantity
+                        cart_item.quantity += quantity
+                        cart_item.save()
 
-                if not created:
-                    # If the item is already in the cart, update the quantity
-                    cart_item.quantity += quantity
+                    # Assign the corresponding ProductSize to the CartItem
+                    cart_item.product_size = product_size
                     cart_item.save()
 
-                # Calculate the price and save the cart item
-                cart_item.price = cart_item.quantity * cart_item.product.offer_price
-                cart_item.save()
+                    # Calculate the price and save the cart item
+                    cart_item.price = cart_item.quantity * cart_item.product.offer_price
+                    cart_item.save()
 
-                # Update the cart total
-                cart.update_total()
+                    # Update the cart total
+                    cart.update_total()
 
-            # messages.success(request, "Product added to the cart!")
-            return redirect('cart_list')
+                # messages.success(request, "Product added to the cart!")
+                return redirect('cart_list')
 
+            else:
+                messages.error(request, "Insufficient quantity available for the selected size.")
+                return redirect('product_detials', product_id=product_id)
         else:
-            messages.error(request, "Insufficient quantity available for the selected size.")
+            messages.error(request, "Selected size is not available for the product.")
             return redirect('product_detials', product_id=product_id)
 
     else:
         return HttpResponseBadRequest("Invalid request method")
-    
+
 
 
 def cart_list(request):
@@ -95,6 +97,15 @@ def cart_list(request):
 
     if cart:
         cart_items = cart.cartitem_set.all()
+
+        # Fetch available quantity for each cart item
+        for cart_item in cart_items:
+            product_size = ProductSize.objects.filter(product=cart_item.product, size=cart_item.size).first()
+            if product_size:
+                cart_item.available_quantity = product_size.quantity
+            else:
+                cart_item.available_quantity = 0
+
     else:
         cart_items = []
 
@@ -156,6 +167,8 @@ def cart_update(request, cart_item_id):
     action = data.get('action')
     print(action)
     
+    
+    
 
     
     if action == 'increase':
@@ -171,7 +184,6 @@ def cart_update(request, cart_item_id):
     }
     logger.info(f"Cart update data: {json.dumps(data)}")
     return JsonResponse(data)
-
 
 # def cart_update(request, cart_item_id):
 #     cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
@@ -390,14 +402,11 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["GET", "POST"])
 def payments(request, order_id):
     current_user = request.user
-    cart_items = CartItem.objects.filter(user=current_user)
-    cart_count = cart_items.count()
 
     try:
-        # Fetch the order and related details
         order = get_object_or_404(Order, user=current_user, is_ordered=False, id=order_id)
         address = order.address
-        grand_total = order.order_total  # Use the order_total from the Order model
+        grand_total = order.order_total
 
         # Retrieve discount_amount from the session
         discount_amount = request.session.get('discount_amount', 0)
@@ -412,21 +421,48 @@ def payments(request, order_id):
         context = {
             'address': address,
             'order': order,
-            'cart_items': cart_items,
-            'total': sum(cart_item.product.offer_price * cart_item.quantity for cart_item in cart_items),
+            'cart_items': CartItem.objects.filter(user=current_user),  # Ensure consistent cart item retrieval
+            'total': sum(cart_item.product.offer_price * cart_item.quantity for cart_item in CartItem.objects.filter(user=current_user)),
             'grand_total': grand_total,
             'selected_address': address,
             'discount_amount': discount_amount,
-            'price_value': price_value,  # Use the calculated price_value
+            'price_value': price_value,
             'selected_coupon_code': selected_coupon_code,
             'quantity': quantity,
         }
+
+        if request.method == 'POST':
+            # Handle POST request for processing payment
+            user_wallet, _ = Wallet.objects.get_or_create(user_profile__user=current_user)
+
+            # Convert order.order_total to Decimal
+            order_total_decimal = Decimal(str(order.order_total))
+
+# Check if the user has sufficient balance in the wallet
+            if not Payment.check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
+                # If insufficient balance, handle accordingly (e.g., redirect with an error message)
+                error_message = 'Insufficient balance'
+                messages.error(request, error_message)
+                return redirect('payments', order_id=order_id)
+            
+            if 'some_key_to_clear' in request.session:
+                del request.session['some_key_to_clear']
+                request.session.save()
+
+            # Deduct the amount from the user's wallet
+            user_wallet.balance -= order_total_decimal
+            user_wallet.save()
+
+            # Add logic for other payment processing steps if needed
+
+            messages.success(request, 'Payment successful!')  # You can use messages.success for successful actions
+            return redirect('success_page')  # Redirect to a success page or wherever needed
 
         return render(request, 'CART/placeorder.html', context)
 
     except Order.DoesNotExist:
         messages.error(request, 'Order not found or already processed.')
-        return redirect('home') 
+        return redirect('home')
 
 
 
@@ -439,7 +475,7 @@ def cash_on_delivery(request, order_id):
 
     try:
         # Ensure the order belongs to the current user and is not already ordered
-        order = Order.objects.filter(id=order_id, user=current_user, is_ordered=False)
+        order = Order.objects.get(id=order_id, user=current_user, is_ordered=False)
         
     except Order.DoesNotExist:
         return redirect('home')  # Redirect to some page, adjust as needed
@@ -448,12 +484,10 @@ def cash_on_delivery(request, order_id):
     payment = Payment(user=current_user, payment_method="Cash on delivery", amount_paid=total_amount, status="Not Paid")
 
     payment.save()
-    order.is_ordered = True
-    order.payment = payment
-    order.save()
-
+    
     # Update the order to mark it as ordered and set the payment method
     order.is_ordered = True
+    order.payment = payment
     order.payment_method = "Cash on delivery"
     order.save()
 
@@ -461,7 +495,6 @@ def cash_on_delivery(request, order_id):
     cart_items = CartItem.objects.filter(user=current_user)
 
     for cart_item in cart_items: 
-        
         order_product = ProductOrder(
             order=order,
             user=current_user,
@@ -469,22 +502,20 @@ def cash_on_delivery(request, order_id):
             quantity=cart_item.quantity,
             product_price=cart_item.product.offer_price,
             ordered=True,
-            address=order.address ,
-            size=cart_item.size 
-            # Set the address based on the order
+            address=order.address,
+            size=cart_item.size
         )
         order_product.save()
 
     # Clear the cart after completing the order
     cart_items.delete()
-    order_products = ProductOrder.objects.filter(order=order)
     
-
     # Redirect to 'order_confirmed' with necessary parameters
     return redirect('order_confirmed', order_id=order_id)
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@cache_page(0)
 def order_confirmed(request, order_id):
     order = get_object_or_404(Order, id=order_id, is_ordered=True)
     order_products = ProductOrder.objects.filter(user=request.user, order=order)
@@ -516,7 +547,7 @@ def order_confirmed(request, order_id):
     
     if 'some_key_to_clear' in request.session:
         del request.session['some_key_to_clear']
-        request.session.clear()
+        request.session.save()
         
 
     return render(request, 'CART/order_confirmed.html', context)
@@ -557,7 +588,7 @@ def confirm_razorpay_payment(request, order_id):
 
     try:
         # Ensure the order belongs to the current user and is not already ordered
-        order = Order.objects.filter(id=order_id, user=current_user, is_ordered=False)
+        order = Order.objects.get(id=order_id, user=current_user, is_ordered=False)
     except Order.DoesNotExist:
         # Order has already been marked as ordered, redirect to order_confirmed
         return redirect('order_confirmed', order_id=order_id)
@@ -599,6 +630,7 @@ def confirm_razorpay_payment(request, order_id):
 
 
 
+
 @transaction.atomic
 def wallet_pay(request, order_id):
     current_user = request.user
@@ -608,9 +640,29 @@ def wallet_pay(request, order_id):
         order = Order.objects.get(id=order_id, user=current_user, is_ordered=False)
 
     except Order.DoesNotExist:
-        return redirect('order_confirmed')  # Redirect to some page, adjust as needed
+        messages.error(request, 'Order not found or already processed.')
+        return redirect('home')
 
     total_amount = order.order_total
+
+    # Get or create user profile and wallet
+    user_profile, created = UserProfile.objects.get_or_create(user=current_user)
+    user_wallet, created = Wallet.objects.get_or_create(user_profile=user_profile)
+
+    # Convert order.order_total to Decimal
+    order_total_decimal = Decimal(str(order.order_total))
+
+    # Check if the user has sufficient balance in the wallet
+    if not Payment.check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
+        # If insufficient balance, handle accordingly (e.g., redirect with an error message)
+        error_message = 'Insufficient balance'
+        messages.error(request, error_message)
+        return redirect('payments', order_id=order_id)
+
+    # Deduct the amount from the user's wallet
+    user_wallet.balance -= order_total_decimal
+    updated_wallet_balance = user_wallet.balance
+    user_wallet.save()
 
     # Create Payment instance with 'wallet_pay' as the payment method
     payment = Payment(user=current_user, payment_method="wallet_pay", amount_paid=total_amount, status="Not Paid")
@@ -626,8 +678,6 @@ def wallet_pay(request, order_id):
     cart_items = CartItem.objects.filter(user=current_user)
 
     for cart_item in cart_items:
-        print(f"Creating ProductOrder for product: {cart_item.product.product_name}")
-        print(f"CartItem size: {cart_item.size.name}")
         order_product = ProductOrder(
             order=order,
             user=current_user,
@@ -637,29 +687,11 @@ def wallet_pay(request, order_id):
             ordered=True,
             address=order.address,
             size=cart_item.size 
-            # Set the address based on the order
         )
         order_product.save()
 
     # Clear the cart after completing the order
     cart_items.delete()
-
-    # Get or create user profile and wallet
-    user_profile, created = UserProfile.objects.get_or_create(user=current_user)
-    user_wallet, created = Wallet.objects.get_or_create(user_profile=user_profile)
-
-    # Convert order.order_total to Decimal
-    order_total_decimal = Decimal(str(order.order_total))
-
-    # Check if the user has sufficient balance in the wallet
-    if not Payment.check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
-        # If insufficient balance, handle accordingly (e.g., redirect with an error message)
-        return redirect('payments',order_id)  # Redirect to some page with an error message
-
-    # Deduct the amount from the user's wallet
-    user_wallet.balance -= order_total_decimal
-    updated_wallet_balance = user_wallet.balance  # Assign the updated balance to a variable
-    user_wallet.save()
 
     # Convert Decimal to float before saving to session
     float_updated_wallet_balance = float(updated_wallet_balance)
@@ -670,12 +702,10 @@ def wallet_pay(request, order_id):
     # Add debugging statements
     print(f"Order ID: {order_id}")
     print(f"Total Amount: {order.order_total}")
-    print(f"Updated wallet balance: {updated_wallet_balance}")  # Print or log the updated balance
-    print(f'updated_: {user_wallet.balance}')
+    print(f"Updated wallet balance: {updated_wallet_balance}")
 
     # Redirect to 'order_confirmed' with necessary parameters
     return redirect('order_confirmed', order_id=order_id)
-
 
 
 def add_to_cart_from_wishlist(request, product_id, quantity=1):
