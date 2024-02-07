@@ -475,86 +475,120 @@ def deactivate_product(request, product_id):
 
 from django.core.exceptions import ObjectDoesNotExist
 def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    # Fetch categories, brands, and active sizes
     categories = Category.objects.all()
     brands = Brand.objects.all()
     size_options = Size.objects.filter(is_active=True)
+
+    # Initialize variables
     error_message = None
+    form_data = {}
+    selected_sizes = {}
 
-    # Retrieve the existing sizes for the product
-    existing_sizes = product.sizes.all()
-
-    # Initialize image variables with default values
-    product_img1 = None
-    product_img2 = None
-    product_img3 = None
-
-    form_data = {
-        'product_name': product.product_name,
-        'product_category': product.category.id if product.category else None,
-        'product_brand': product.brand.id if product.brand else None,
-        'product_description': product.product_description,
-        'original_price': product.original_price,
-        'offer_price': product.offer_price,
-        'product_img1': product.product_img1.url if product.product_img1 else None,
-        'product_img2': product.product_img2.url if product.product_img2 else None,
-        'product_img3': product.product_img3.url if product.product_img3 else None,
-        'selected_sizes': [size.id for size in existing_sizes],
-    }
+    # Fetch the product
+    product = get_object_or_404(Product, pk=product_id)
 
     if request.method == 'POST':
-        fields_to_validate = ['product_name', 'product_category', 'product_brand', 'product_description', 'original_price', 'offer_price']
+        # Get images from the form
+        product_img1 = request.FILES.get('image1')
+        product_img2 = request.FILES.get('image2')
+        product_img3 = request.FILES.get('image3')
+
+        # Fields to validate
+        fields_to_validate = [
+            'product_name',
+            'product_category',
+            'product_brand',
+            'product_description',
+            'original_price',
+            'offer_price',
+        ]
+
         for field in fields_to_validate:
+            # Get value for each field from the form data
             value = request.POST.get(field)
-            
             form_data[field] = value
             if not value:
+                # If value is missing, set error message and break the loop
                 error_message = f"Please enter a value for {field.replace('_', ' ')}"
                 break
 
-        if not error_message:
-            try:
-                # Update product fields
-                product.product_name = request.POST.get('product_name')
-                product.category_id = request.POST.get('product_category')
-                product.brand_id = request.POST.get('product_brand')
-                product.product_description = request.POST.get('product_description')
-                product.original_price = request.POST.get('original_price')
-                product.offer_price = request.POST.get('offer_price')
+        try:
+            if not error_message:
+                # Extract product details from form data
+                product_name = form_data['product_name']
+                product_category_id = form_data['product_category']
+                product_brand_id = form_data['product_brand']
+                product_description = form_data['product_description']
+                original_price = form_data['original_price']
+                offer_price = form_data['offer_price']
 
-                # Update product images
-                for img_field in ['product_img1', 'product_img2', 'product_img3']:
-                    img_file = request.FILES.get(img_field)
-                    if img_file:
-                        setattr(product, img_field, img_file)
+                # Validate offer price
+                if offer_price >= original_price:
+                    return HttpResponse("Offer price must be less than original price.")
 
-                # Update sizes
-                selected_sizes = request.POST.getlist('sizes')
-                product.sizes.set(selected_sizes)
+                # Get category and brand objects
+                category = Category.objects.get(id=product_category_id)
+                brand = Brand.objects.get(id=product_brand_id)
 
-                product.save()
+                with transaction.atomic():
+                    # Update product details
+                    product.product_name = product_name
+                    product.product_description = product_description
+                    product.original_price = original_price
+                    product.offer_price = offer_price
+                    product.category = category
+                    product.brand = brand
 
-                return redirect('edit_product', product_id=product.id)
+                    # Update product images if provided
+                    if product_img1:
+                        product.product_img1 = product_img1
+                    if product_img2:
+                        product.product_img2 = product_img2
+                    if product_img3:
+                        product.product_img3 = product_img3
 
-            except ObjectDoesNotExist as e:
-                error_message = f"Error updating product: {e}"
+                    # Update product sizes and quantities
+                    product_size_ids = request.POST.getlist('sizes')
+                    ProductSize.objects.filter(product=product).delete()
+                    for size_id in product_size_ids:
+                        size = Size.objects.get(id=size_id)
+                        quantity = request.POST.get(f'quantity_{size_id}')
+                        ProductSize.objects.create(product=product, size=size, quantity=quantity)
 
-    return render(
-        request,
-        'admin/edit_product.html',
-        {
-            'categories': categories,
-            'brands': brands,
-            'size_options': size_options,
-            'error_message': error_message,
-            'form_data': form_data,
-            'product_img1': product_img1,
-            'product_img2': product_img2,
-            'product_img3': product_img3
-        }
-    )
+                    # Set selected sizes
+                    selected_sizes = {size.id: int(request.POST.get(f'quantity_{size.id}', 0)) for size in size_options}
+                    product.sizes.set(selected_sizes.keys())
 
+                    # Save the product
+                    product.save()
 
+                return redirect('edit_product', product_id=product_id)
+
+        except (Category.DoesNotExist, Brand.DoesNotExist, Size.DoesNotExist) as e:
+            error_message = f"Error updating product: {e}"
+
+    # Populate form data with existing product details
+    form_data['product_name'] = product.product_name
+    form_data['product_description'] = product.product_description
+    form_data['original_price'] = product.original_price
+    form_data['offer_price'] = product.offer_price
+    form_data['product_category'] = product.category.id
+    form_data['product_brand'] = product.brand.id
+
+    # Fetch product sizes and quantities
+    product_sizes = ProductSize.objects.filter(product=product).values_list('size_id', 'quantity')
+    selected_sizes = {size_id: quantity for size_id, quantity in product_sizes}
+
+    return render(request, 'admin/edit_product.html', {
+        'product': product,
+        'categories': categories,
+        'brands': brands,
+        'size_options': size_options,
+        'error_message': error_message,
+        'form_data': form_data,
+        'selected_sizes': selected_sizes,
+    })
 
 
 @never_cache
