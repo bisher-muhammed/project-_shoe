@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 
 
-
+@login_required(login_url="login_view")
 def add_to_cart(request, product_id):
     if request.method == 'POST':
         try:
