@@ -10,7 +10,6 @@ urlpatterns = [
     path('signup_view/',views.signup_view, name='signup_view'),
     path('send_otp/',views.send_otp, name='send_otp'),
     path('verify_otp/',views.verify_otp,name='verify_otp'),
-    # path('otp_verification/',views.otp_verification, name='otp_verification'),
     path('logout_view/',views.logout_view, name='logout_view'),
     path('product_list/', views.product_list, name='product_list'),
     path('product_detials/<int:product_id>/',views.product_detials, name='product_detials'),
@@ -29,16 +28,12 @@ urlpatterns = [
     path('wishlist/', views.wishlist_view, name='wishlist'),
     path('delete_wishlist_item/<int:product_id>/', views.delete_wishlist_item, name='delete_wishlist_item'),
     path('wallet/', views.wallet, name='wallet'),
-    # path('forgot_password/', views.forgot_password, name='forgot_password'),
-    # path('email_valid/', views.email_valid,name='email_valid'),
+
     path('shop/',views.shop_lists,name='shop_lists'),
-    # path('reset_password/',views.reset_password,name='reset_password')
     path('forgot_password/',views.forgot_password,name='forgot_password'),
     path('confirm_password/',views.confirm_password,name='confirm_password'),
     path('profile_forget_password/<int:user_id>/',views.profile_forget_password,name='profile_forget_password'),
-    path('confrim_password/',views.profile_confrim_password,name='profile_confrim_password'),   
-
-    # path('reason_view/<int:order_id>/', views.reason_view, name='reason_view'),
+    path('pconfrim_password/',views.profile_confrim_password,name='profile_confrim_password'),   
     path('filter/<str:category_name>/',views. filter_products_by_category, name='filter_products_by_category'),
     path('filter_brand/<str:brand_name>/',views. filter_products_by_brand, name='filter_products_by_brand'),
     path('about/',views.about,name='about'),

@@ -2,48 +2,54 @@
 {% load static %}
 {% block content %}
 
-<div class="page-header breadcrumb-wrap">
+<div class="bg-gray-100 py-4">
     <div class="container">
-        <div class="breadcrumb">
-            <a href="index.html" rel="nofollow">Home</a>
-            <span></span> Shop
-            <span></span> Checkout
-        </div>
+        <nav class="text-sm text-gray-500">
+            <a href="{% url 'home' %}" class="hover:text-gray-800">Home</a>
+            <span class="mx-2">/</span> 
+            <span>Shop</span>
+            <span class="mx-2">/</span> 
+            <span class="text-gray-700 font-semibold">Checkout</span>
+        </nav>
     </div>
 </div>
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="mb-4">
-                <h4 class="fw-bold">Address</h4>
-                <div class="box">
-                    {% if default_address %}
-                        <p>
-                            <strong>{{ default_address.first_name }} {{ default_address.last_name }}</strong><br>
-                            {{ default_address.address_1 }}, {{ default_address.city }},
-                            {{ default_address.state }} {{ default_address.zipcode }}
-                        </p>
-                    {% elif selected_address %}
-                        <p>
-                            <strong>{{ selected_address.first_name }} {{ selected_address.last_name }}</strong><br>
-                            {{ selected_address.address_1 }}, {{ selected_address.city }},
-                            {{ selected_address.state }} {{ selected_address.zipcode }}
-                        </p>
-                    {% else %}
-                        <p>No address found. Please <a href="{% url 'add_address' %}">add an address</a>.</p>
-                    {% endif %}
-                </div>
-            </div>
+<div class="col-md-3">
+    <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-200">
+        <div class="d-flex align-items-center mb-4">
+            <i class="fas fa-map-marker-alt text-primary me-2 fs-5"></i>
+            <h5 class="fw-semibold text-dark mb-0">Shipping Address</h5>
         </div>
+
+        {% if default_address %}
+            <div class="text-secondary small lh-lg">
+                <div class="fw-semibold text-dark">{{ default_address.first_name }} {{ default_address.last_name }}</div>
+                <div>{{ default_address.address_1 }}</div>
+                <div>{{ default_address.city }}, {{ default_address.state }} - {{ default_address.zipcode }}</div>
+            </div>
+        {% elif selected_address %}
+            <div class="text-secondary small lh-lg">
+                <div class="fw-semibold text-dark">{{ selected_address.first_name }} {{ selected_address.last_name }}</div>
+                <div>{{ selected_address.address_1 }}</div>
+                <div>{{ selected_address.city }}, {{ selected_address.state }} - {{ selected_address.zipcode }}</div>
+            </div>
+        {% else %}
+            <div class="text-muted small">
+                <p class="mb-0">No address found.</p>
+                <a href="{% url 'add_address' %}" class="text-primary fw-semibold d-inline-block mt-1 text-decoration-none hover-underline">+ Add Address</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+        <!-- Order Summary -->
         <div class="col-md-9">
-            <div class="order_review">
-                <div class="mb-4">
-                    <h4 class="fw-bold">Your Orders</h4>
-                </div>
-                <div class="table-responsive order_table">
-                    <table class="table">
-                        <thead>
+            <div class="bg-white p-4 rounded shadow-sm mb-4">
+                <h4 class="fw-bold text-xl text-gray-800 mb-4">Your Orders</h4>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="bg-gray-50 text-gray-700">
                             <tr>
                                 <th colspan="2">Product</th>
                                 <th>Total</th>
@@ -52,39 +58,35 @@
                         <tbody>
                             {% for item in cart_items %}
                                 <tr>
-                                    <td class="image product-thumbnail">
-                                        <img src="{{ item.product.product_img1.url }}" alt="{{ item.product.product_name }}" class="img-fluid">
+                                    <td class="w-25">
+                                        <img src="{{ item.product.product_img1.url }}" alt="{{ item.product.product_name }}" class="img-fluid rounded">
                                     </td>
                                     <td>
-                                        <h5><a href="#" class="text-dark">{{ item.product.product_name }}</a></h5>
-                                        <span class="product-qty">x {{ item.quantity }}</span>
+                                        <h6 class="mb-1 text-gray-800">{{ item.product.product_name }}</h6>
+                                        <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
                                     </td>
-                                    <td>₹{{ item.total_price }}</td>
+                                    <td class="text-gray-800">₹{{ item.total_price }}</td>
                                 </tr>
                             {% endfor %}
-
-                            <tr>
-                                <th>SubTotal</th>
-                                <td class="product-subtotal" colspan="2">₹{{ total }}</td>
+                            <tr class="border-t">
+                                <td colspan="2" class="text-end fw-bold text-gray-700">SubTotal</td>
+                                <td>₹{{ total }}</td>
                             </tr>
-
                             <tr>
-                                <th>Discount Amount</th>
-                                <td class="discount_amount" colspan="2">₹{{ discount_amount }}</td>
+                                <td colspan="2" class="text-end fw-bold text-gray-700">Discount</td>
+                                <td>₹{{ discount_amount }}</td>
                             </tr>
-
                             <tr>
-                                <th>Shipping</th>
-                                <td colspan="2"><em>Free Shipping</em></td>
+                                <td colspan="2" class="text-end fw-bold text-gray-700">Shipping</td>
+                                <td><em>Free Shipping</em></td>
                             </tr>
-
-                            <tr>
-                                <th>Total</th>
-                                <td colspan="2" class="product-subtotal">
+                            <tr class="text-lg text-brand fw-bold">
+                                <td colspan="2" class="text-end">Total</td>
+                                <td>
                                     {% if selected_coupon_code and not selected_coupon_code.is_blocked %}
-                                        <span class="font-xl text-brand fw-bold" name="total" value="{{ price_value }}">₹{{ price_value }}</span>
+                                        ₹{{ price_value }}
                                     {% else %}
-                                        <span class="font-xl text-brand fw-bold">₹{{ grand_total }}</span>
+                                        ₹{{ grand_total }}
                                     {% endif %}
                                 </td>
                             </tr>
@@ -92,70 +94,52 @@
                     </table>
                 </div>
             </div>
-            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-            <div class="payment_method">
-                <div class="mb-25">
-                    <h5>Payment</h5>
-                </div>
-                <div class="payment_option">
-                    <div class="custome-radio">
-                        <input class="form-check-input" required="" type="radio" name="payment_option" id="cash_on_delivery" value="cash_on_delivery">
-                        <label class="form-check-label" for="cash_on_delivery">Cash On Delivery</label>
+
+            <!-- Payment Section -->
+            <div class="bg-white p-4 rounded shadow-sm mb-4">
+                <h5 class="fw-bold mb-3 text-lg text-gray-800">Select Payment Method</h5>
+                <div class="space-y-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_option" id="cash_on_delivery" value="cash_on_delivery">
+                        <label class="form-check-label" for="cash_on_delivery">Cash on Delivery</label>
                     </div>
-                    <div class="custome-radio">
-                        <input class="form-check-input" required="" type="radio" name="payment_option" id="wallet" value="wallet">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_option" id="wallet" value="wallet">
                         <label class="form-check-label" for="wallet">Pay with Wallet</label>
                     </div>
-                    <div class="custome-radio">
-                        <input class="form-check-input" required="" type="radio" name="payment_option" id="razorpay" value="razorpay">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_option" id="razorpay" value="razorpay">
                         <label class="form-check-label" for="razorpay">Pay with Razorpay</label>
                     </div>
                 </div>
             </div>
-            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+
+            <!-- Buttons Section -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <button id="printButton" class="btn btn-outline-secondary">Download Summary</button>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'cash_on_delivery' order.id %}" id="cash-on-delivery-btn" class="btn btn-primary" style="display: none;">Confirm COD</a>
+                    <a id="rzp-button1" class="btn btn-success" style="display: none;">Pay with Razorpay</a>
+                    <a href="{% url 'wallet_pay' order.id %}" id="wallet-btn" class="btn btn-info text-white" style="display: none;">Pay with Wallet</a>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Move the download button to the right side -->
-    <div class="row justify-content-end mt-3">
-        <div class="col-md-9">
-            <button id="printButton" class="btn btn-primary mb-3">Download</button>
-        </div>
-    </div>
-
-    <div class="row justify-content-end">
-        <div class="col-md-9">
-            <a href="{% url 'cash_on_delivery' order.id %}" id="cash-on-delivery-btn" style="display: none;" class="btn btn-primary btn-lg btn-block">Cash on Delivery Button</a>
-            <a id="rzp-button1" class="btn btn-primary btn-lg btn-block" style="display: none;" >Pay with Razorpay</a>
-            <a href="{% url 'wallet_pay' order.id %}" id="wallet-btn" class="btn btn-primary btn-lg btn-block" style="display: none;" >Pay with Wallet</a>
-        </div>
-    </div>
-
 </div>
 
+<!-- Razorpay Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const cashOnDeliveryBtn = document.getElementById('cash-on-delivery-btn');
+        const codBtn = document.getElementById('cash-on-delivery-btn');
         const razorpayBtn = document.getElementById('rzp-button1');
-        const walletPayBtn = document.getElementById('wallet-btn');
+        const walletBtn = document.getElementById('wallet-btn');
 
-        document.querySelectorAll('input[name="payment_option"]').forEach(function(radio) {
+        document.querySelectorAll('input[name="payment_option"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                if (this.value === 'cash_on_delivery') {
-                    cashOnDeliveryBtn.style.display = 'block';
-                    razorpayBtn.style.display = 'none';
-                    walletPayBtn.style.display = 'none';
-                } else if (this.value === 'razorpay') {
-                    cashOnDeliveryBtn.style.display = 'none';
-                    razorpayBtn.style.display = 'block';
-                    walletPayBtn.style.display = 'none';
-                } else if (this.value === 'wallet') {
-                    cashOnDeliveryBtn.style.display = 'none';
-                    razorpayBtn.style.display = 'none';
-                    walletPayBtn.style.display = 'block';
-                }
+                codBtn.style.display = this.value === 'cash_on_delivery' ? 'block' : 'none';
+                razorpayBtn.style.display = this.value === 'razorpay' ? 'block' : 'none';
+                walletBtn.style.display = this.value === 'wallet' ? 'block' : 'none';
             });
         });
 
@@ -163,14 +147,10 @@
             window.print();
         });
     });
-</script>
 
-<script>
-    var orderAmountInPaise = {{ order.order_total|floatformat:2 }} * 100;
-    var roundedAmount = Math.round(orderAmountInPaise);
     var options = {
         "key": "rzp_test_zzvnNnxalKyZJn",
-        "amount": roundedAmount,
+        "amount": Math.round({{ order.order_total|floatformat:2 }} * 100),
         "currency": "INR",
         "name": "Sofa",
         "description": "Purchase",
@@ -178,28 +158,21 @@
         "order_id": "{{ payment.id }}",
         "handler": function (response) {
             if (response.razorpay_payment_id) {
-                var orderid = "{{ order.id }}";
-                window.location.href = '/core/confirm_razorpay_payment/' + orderid + '/';
+                window.location.href = '/core/confirm_razorpay_payment/{{ order.id }}/';
             } else {
                 alert("Payment failed or canceled!");
             }
         },
         "theme": {
-            "color": "#3399cc"
+            "color": "#0d6efd"
         }
     };
 
     var rzp1 = new Razorpay(options);
-
     document.getElementById('rzp-button1').addEventListener('click', function (e) {
         rzp1.open();
         e.preventDefault();
     });
-
-    {% comment %} window.onload = function() {
-        window.location.reload();
-    } {% endcomment %}
-    
 </script>
 
 {% endblock content %}

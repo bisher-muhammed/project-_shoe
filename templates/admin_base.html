@@ -1,7 +1,7 @@
 {% load static %}
 <!DOCTYPE HTML>
 <html lang="en">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">    
+     
 
 
     
@@ -18,10 +18,11 @@
         <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/imgs/theme/favicon.svg' %}">
         <!-- Template CSS -->
         
-        <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+<!-- Main Stylesheet -->
+<link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
 
-
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css">
+<!-- CSS Libraries -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icomoon@{{ version }}/style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ionicons@{{ version }}/dist/css/ionicons.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@{{ version }}/dist/css/bootstrap.min.css">
@@ -31,19 +32,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel@{{ version }}/dist/assets/owl.theme.default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@{{ version }}/dist/css/bootstrap-datepicker.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flaticon@{{ version }}/font/flaticon.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/style.css@{{ version }}">
-<a href="?format=pdf&start_date=2022-01-01&end_date=2022-12-31"></a>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
 
-<!-- Optional: Popper.js -->
+<!-- Optional: Bootstrap 4.0 CSS (if needed for fallback) -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<!-- JS Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 
 <!-- Bootstrap JS -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
-
-   
-
 
     </head>
     
@@ -52,7 +49,7 @@
         <div class="screen-overlay"></div>
         <aside class="navbar-aside" id="offcanvas_aside">
             <div class="aside-top">
-                <a href="index.html" class="brand-wrap">
+                <a  href="{% url 'admin_home' %}"> 
                     <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo" style="filter: grayscale(100%);">
 
                 </a>
@@ -68,6 +65,7 @@
                             <span class="text">Dashboard</span>
                         </a>
                     </li>
+            
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="#">
                             <i class="icon material-icons md-shopping_bag"></i>
@@ -82,184 +80,109 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="menu-item has-menu">
+            
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'admin_order' %}">
                             <i class="icon material-icons md-shopping_cart"></i>
                             <span class="text">Orders</span>
                         </a>
-                        {% comment %} <div class="submenu">
-                            <a href="page-orders-1.html">Order list 1</a>
-                            <a href="page-orders-2.html">Order list 2</a>
-                            <a href="page-orders-detail.html">Order detail</a>
-                        </div> {% endcomment %}
                     </li>
-                    <li class="menu-item has-menu">
+            
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'admin_userlist' %}">
                             <i class="icon material-icons md-store"></i>
                             <span class="text">Users</span>
-                        {% comment %} </
-                        <div class="submenu">
-                            
-                            <a href="{% url 'admin_userlist' %}">user list</a>
-                            <a href="page-seller-detail.html">user profile</a>
-                        </div> {% endcomment %}
+                        </a>
                     </li>
-                    <li class="menu-item ">
+            
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'add_product' %}">
                             <i class="icon material-icons md-add_box"></i>
-                            <span class="text">Add product</span>
+                            <span class="text">Add Product</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+            
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'coupon_management' %}">
-                            <i class="icon material-icons md-add_box"></i>
-                            <span class="text">Coupon_management</span>
+                            <i class="icon material-icons md-card_giftcard"></i>
+                            <span class="text">Coupon Management</span>
                         </a>
                     </li>
-
-                    <li class="menu-item ">
+            
+                    <li class="menu-item">
                         <a class="menu-link" href="{% url 'admin_banner' %}">
-                            <i class="icon material-icons md-add_box"></i>
-                            <span class="text">Banner_management</span>
+                            <i class="icon material-icons md-image"></i>
+                            <span class="text">Banner Management</span>
                         </a>
                     </li>
-
+            
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'variance_management' %}">
-                            <i class="icon material-icons md-add_box"></i>
+                            <i class="icon material-icons md-tune"></i>
                             <span class="text">Variance Management</span>
                         </a>
                     </li>
-                    <li class="menu-item">
+            
+                    <li class="menu-item has-submenu">
                         <a class="menu-link" href="{% url 'admin_category' %}">
                             <i class="icon material-icons md-monetization_on"></i>
                             <span class="text">Category</span>
                         </a>
+                        <ul class="submenu">
+                            <li class="submenu-item">
+                                <a href="{% url 'category_offer' %}">Category Offer</a>
+                            </li>
+                        </ul>
                     </li>
-                    <ul class="menu-aside">
-                        <li class="menu-item has-submenu">
-                            <a class="menu-link"href="{% url 'admin_category' %}">
-                                <i class="icon material-icons md-settings"></i>
-                                <span class="text">Category</span>
-                            </a>
-                            <div class="submenu">
-                                <a href="{% url 'category_offer' %}">category_offer</a>
-                                
-                            </div>
-                        </li>
-                    {% comment %} <li class="menu-item has-submenu">
-                        <a class="menu-link" href="#">
-                            <i class="icon material-icons md-person"></i>
-                            <span class="text">Account</span>
-                        </a>
-                        <div class="submenu">
-                            <a href="page-account-login.html">User login</a>
-                            <a href="page-account-register.html">User registration</a>
-                            <a href="page-error-404.html">Error 404</a>
-                        </div>
-                    </li>
-                    <li class="menu-item">
-                        <a class="menu-link" href="page-reviews.html">
-                            <i class="icon material-icons md-comment"></i>
-                            <span class="text">Reviews</span>
-                        </a>
-                    </li> {% endcomment %}
+            
                     <li class="menu-item">
                         <a class="menu-link" href="{% url 'admin_brand' %}">
                             <i class="icon material-icons md-stars"></i>
                             <span class="text">Brands</span>
                         </a>
                     </li>
-                    
-                    {% comment %} <li class="menu-item">
-                        <a class="menu-link" disabled href="#">
-                            <i class="icon material-icons md-pie_chart"></i>
-                            <span class="text">Statistics</span>
-                        </a>
-                    </li>
                 </ul>
-                <hr> {% endcomment %}
-                {% comment %} <ul class="menu-aside">
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="#">
-                            <i class="icon material-icons md-settings"></i>
-                            <span class="text">Settings</span>
-                        </a>
-                        <div class="submenu">
-                            <a href="page-settings-1.html">Setting sample 1</a>
-                            <a href="page-settings-2.html">Setting sample 2</a>
-                        </div>
-                    </li> {% endcomment %}
-                    {% comment %} <li class="menu-item">
-                        <a class="menu-link" href="page-blank.html">
-                            <i class="icon material-icons md-local_offer"></i>
-                            <span class="text"> Starter page </span>
-                        </a>
-                    </li>
-                </ul> {% endcomment %}
-                <br>
-                <br>
             </nav>
+            
         </aside>
         <main class="main-wrap">
-            <header class="main-header navbar">
-                <div class="col-search">
-                    <form class="searchform">
-                        <div class="input-group">
-                            <input list="search_terms" type="text" class="form-control" placeholder="Search term">
-                            <button class="btn btn-light bg" type="button"> <i class="material-icons md-search"></i></button>
-                        </div>
-                        <datalist id="search_terms">
-                            <option value="Products">
-                            <option value="New orders">
-                            <option value="Apple iphone">
-                            <option value="Ahmed Hassan">
-                        </datalist>
-                    </form>
-                </div>
-                <div class="col-nav">
-                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
-                    <ul class="nav">
+            <header class="main-header navbar d-flex justify-content-between align-items-center">
+            
+                <!-- Navigation and Mobile Menu Button -->
+                <div class="col-nav d-flex align-items-center">
+                    <button class="btn btn-icon btn-mobile me-3" data-trigger="#offcanvas_aside" aria-label="Open Menu">
+                        <i class="material-icons md-apps"></i>
+                    </button>
+            
+                    <ul class="nav mb-0 d-flex align-items-center">
+                        <!-- Dark Mode Toggle -->
                         <li class="nav-item">
-                            <a class="nav-link btn-icon" href="#">
-                                <i class="material-icons md-notifications animation-shake"></i>
-                                <span class="badge rounded-pill">3</span>
+                            <a class="nav-link btn-icon darkmode" href="#" aria-label="Toggle Dark Mode">
+                                <i class="material-icons md-nights_stay"></i>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
-                                {% comment %} <a class="dropdown-item text-brand" href="#"><img src="{% static 'assets/imgs/theme/flag-us.png' %}" alt="English">English</a>
-                                <a class="dropdown-item" href="#"><img src="{% static 'assets/imgs/theme/flag-fr.png' %}" alt="Français">Français</a>
-                                <a class="dropdown-item" href="#"><img src="{% static 'assets/imgs/theme/flag-jp.png' %}" alt="Français">日本語</a>
-                                <a class="dropdown-item" href="#"><img src="{% static 'assets/imgs/theme/flag-cn.png' %}" alt="Français">中国人</a> {% endcomment %}
-                            </div>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="{% static 'assets/imgs/people/avatar2.jpg' %}" alt="User"></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
-                                <a class="dropdown-item" href=""><i class="material-icons md-settings"></i>Account Settings</a>
-                                <a class="dropdown-item" href="{% url 'wallet' %}"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
-                                {% comment %} <a class="dropdown-item" href="{%}"><i class="material-icons md-receipt"></i>Billing</a> {% endcomment %}
-                                {% comment %} <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a> {% endcomment %}
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="">
-                                    <i class="material-icons md-exit_to_app"></i>Logout
-                                </a>
-                                
-    
-                            </div
+            
+                        <!-- Logout Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons md-exit_to_app"></i> Logout
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'admin_logout' %}">
+                                        <i class="material-icons md-exit_to_app"></i> Logout
+                                    </a>
+
+                                    <button id="darkModeToggle" class="toggle-btn">
+                                        🌙
+                                      </button>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
             </header>
+            
     
             {% block content %}
     

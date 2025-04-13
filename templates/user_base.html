@@ -7,110 +7,47 @@
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:20:36 GMT -->
 <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>{% block title %}My Page{% endblock %}</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- SEO & Social Sharing -->
     <meta property="og:title" content="">
     <meta property="og:type" content="">
     <meta property="og:url" content="">
     <meta property="og:image" content="">
+
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg'%}">
-    <!-- Template CSS -->
-    <link rel="stylesheet" href="{% static 'user/assets/css/main.css'%}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg' %}">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'user/assets/css/main.css' %}">
+
+    <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icomoon@{{ version }}/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ionicons@{{ version }}/dist/css/ionicons.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@{{ version }}/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@{{ version }}/dist/magnific-popup.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flexslider@{{ version }}/dist/flexslider.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel@{{ version }}/dist/assets/owl.carousel.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel@{{ version }}/dist/assets/owl.theme.default.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@{{ version }}/dist/css/bootstrap-datepicker.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flaticon@{{ version }}/font/flaticon.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/style.css@{{ version }}">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-ez0JUnzWt0Vw5hDA9l4YrWyO7ZB1BUrvSddGtcFLeQvvcVVqCx/K9WBO5SpgvfbT" crossorigin="anonymous"> 
-    <!-- Bootstrap CSS -->
- {% comment %} <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> {% endcomment %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-ez0JUnzWt0Vw5hDA9l4YrWyO7ZB1BUrvSddGtcFLeQvvcVVqCx/K9WBO5SpgvfbT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous">
 
- <!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>  
-
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous">
-
-<!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous"></script>
-
-
-<!-- jQuery CDN -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"></script>
-
-<!-- Font Awesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha384-VvRlOX5rVVtr3LCriZJbDYzmYM5R1fPEcQI/luRU0FZP2cVMkJbLo6jl19sbcXWp" crossorigin="anonymous"> 
-
+   
     
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup/dist/magnific-popup.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel/dist/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel/dist/assets/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker.css">
+    
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous"></script>
 </head>
 
-
-<style>
-    /* Add your custom styles here */
-
-    /* Improve responsiveness of the product images */
-    .detail-gallery {
-        text-align: center;
-    }
-
-    .product-image-slider figure {
-        display: inline-block;
-        margin: 0 5px;
-    }
-
-    .slider-nav-thumbnails div {
-        display: inline-block;
-        margin: 0 5px;
-    }
-
-    /* Adjust product details on mobile view */
-    .product-price-cover {
-        text-align: center;
-    }
-
-    .product-extra-link2 {
-        text-align: center;
-    }
-
-    .product-meta {
-        text-align: center;
-        margin-top: 15px;
-    }
-
-    .product-meta li {
-        margin-bottom: 5px;
-    }
-
-    /* Improve spacing in the header */
-    .header-info,
-    .header-info-right {
-        text-align: center;
-    }
-
-    /* Improve spacing in the top header */
-    .header-top {
-        padding: 10px 0;
-    }
-</style>
-</head>
 
 <body>
+    <div class="body-overlay-1"></div>
 <!-- Header -->
 
 
@@ -119,39 +56,44 @@
 
 
 <header class="header-area header-style-1 header-height-2">
+    <!-- Top Header Section -->
     <div class="header-top header-top-ptb-1 d-none d-lg-block">
         <div class="container">
             <div class="row align-items-center">
+                <!-- Contact Info (optional - currently commented out) -->
                 <div class="col-xl-3 col-lg-4">
                     <div class="header-info">
+                        {% comment %}
                         <ul>
                             <li><i class="fi-rs-smartphone"></i> <a href="#">(+01) - 2345 - 6789</a></li>
-                            <li><i class="fi-rs-marker"></i><a  href="page-contact.html">Our location</a></li>
+                            <li><i class="fi-rs-marker"></i><a href="page-contact.html">Our location</a></li>
+                        </ul>
+                        {% endcomment %}
+                    </div>
+                </div>
+
+                <!-- News Flash -->
+                <div class="col-xl-6 col-lg-4 text-center">
+                    <div id="news-flash" class="d-inline-block">
+                        <ul>
+                            <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li>
+                            <li>Super Value Deals - Save more with coupons</li>
+                            <li>Trendy silver jewelry, save up 35% today <a href="shop-grid-right.html">Shop now</a></li>
                         </ul>
                     </div>
                 </div>
-                <div class="col-xl-6 col-lg-4">
-                    <div class="text-center">
-                        <div id="news-flash" class="d-inline-block">
-                            <ul>
-                                <li>Get great devices up to 50% off <a href="shop-grid-right.html">View details</a></li>
-                                <li>Supper Value Deals - Save more with coupons</li>
-                                <li>Trendy 25silver jewelry, save up 35% off today <a href="shop-grid-right.html">Shop now now</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+
+                <!-- User Auth Links -->
                 <div class="col-xl-3 col-lg-4">
                     <div class="header-info header-info-right">
                         <ul>
-                            <li><i class="fas fa-user mr-2"></i><a href="{% url 'view_profile' %}">{{ user.username }}
-                            </a></li>
+                            <li><i class="fas fa-user mr-2"></i><a href="{% url 'view_profile' %}">{{ user.username }}</a></li>
 
                             {% if user.is_authenticated %}
-                            <li><i class="fi-rs-user"></i><a href="{% url 'logout_view' %}">Logout</a></li>
+                                <li><i class="fi-rs-user"></i><a href="{% url 'logout_view' %}">Logout</a></li>
                             {% else %}
-                            <li><i class="fi-rs-user"></i><a href="{% url 'login_view' %}">Login / Sign Up</a></li>
-                            <li><i class="fi-rs-user"></i><a href="{% url 'signup_view' %}">Sign Up</a></li>
+                                <li><i class="fi-rs-user"></i><a href="{% url 'login_view' %}">Login</a></li>
+                                <li><i class="fi-rs-user"></i><a href="{% url 'signup_view' %}">Sign Up</a></li>
                             {% endif %}
                         </ul>
                     </div>
@@ -159,107 +101,102 @@
             </div>
         </div>
     </div>
+
+    <!-- Middle Header: Logo + Search + Actions -->
     <div class="header-middle header-middle-ptb-1 d-none d-lg-block">
         <div class="container">
             <div class="header-wrap">
+                <!-- Logo -->
                 <div class="logo logo-width-1">
-                    <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
+                    <a href="{% url 'home' %}">
+                        <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo">
+                    </a>
                 </div>
-                <div class="header-right">
-                    {% comment %} <div class="search-style-2">
-                        <form action="#">
-                       
-                            <input type="text" placeholder="Search for items...">
-                        </form>
-                    </div> {% endcomment %}
-                    <div class="search-bar ml-auto">
-                        <form class="form-inline" method="get" action="{% url 'home' %}">
-                            <div class="input-group">
-                                <input class="form-control" type="text" name="search" placeholder="Search products"
-                                    value="{{ search_query }}" style="width: 300px;">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-success" type="submit"><i
-                                            class="fi-rs-search"></i></button>
-                                </div>
-                            </div>
-                        </form>
-                       
-                    </div>
-                    <div class="header-action-right">
-                        <div class="header-action-2">
-                            <div class="header-action-icon-2">
-                                <a href="{% url 'wishlist' %}">
-                                    <img class="svgInject" alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg'%}">
-                                   
-                                </a>
-                            </div>
-                            <div class="header-action-icon-2">
-                                <a class="mini-cart-icon" href="{% url 'cart_list' %}">
-                                    <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg' %}">
 
-                                    
-                                </a>
-                                
+                <!-- Search Bar -->
+                <div class="search-bar ml-auto">
+                    <form class="form-inline" method="get" action="{% url 'home' %}">
+                        <div class="input-group">
+                            <input class="form-control" type="text" name="search" placeholder="Search products"
+                                value="{{ search_query }}" style="width: 300px;">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-success" type="submit">
+                                    <i class="fi-rs-search"></i>
+                                </button>
                             </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Wishlist and Cart Icons -->
+                <div class="header-action-right">
+                    <div class="header-action-2">
+                        <div class="header-action-icon-2">
+                            <a href="{% url 'wishlist' %}">
+                                <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}">
+                            </a>
+                        </div>
+                        <div class="header-action-icon-2">
+                            <a class="mini-cart-icon" href="{% url 'cart_list' %}">
+                                <img alt="Cart" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg' %}">
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Bottom Header: Navigation -->
     <div class="header-bottom header-bottom-bg-color sticky-bar">
         <div class="container">
             <div class="header-wrap header-space-between position-relative">
+                <!-- Logo (Mobile) -->
                 <div class="logo logo-width-1 d-block d-lg-none">
-                    <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
+                    <a href="{% url 'home' %}">
+                        <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo">
+                    </a>
                 </div>
+
+                <!-- Navigation Menu -->
                 <div class="header-nav d-none d-lg-flex">
-                   
-                    <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
+                    <div class="main-menu main-menu-padding-1 main-menu-lh-2">
                         <nav>
                             <ul>
-                                <li><a class="active" href="{% url 'home' %}">Home</a>
-                                    
-                                </li>
+                                <li><a class="active" href="{% url 'home' %}">Home</a></li>
+                                <li><a href="{% url 'about' %}">About</a></li>
+                                <li><a href="{% url 'shop_lists' %}">Shop</a></li>
                                 <li>
-                                    <a href="{% url 'about' %}">About</a>
-                                </li>
-                                <li><a href="{% url 'shop_lists' %}">Shop<i ></i></a>
-                                    
-                                </li>
-                                
-                                <li><a href="#">Pages <i class="fi-rs-angle-down"></i></a>
+                                    <a href="#">Pages <i class="fi-rs-angle-down"></i></a>
                                     <ul class="sub-menu">
                                         <li><a href="{% url 'about' %}">About Us</a></li>
                                         <li><a href="{% url 'contact' %}">Contact</a></li>
                                         <li><a href="{% url 'view_profile' %}">My Account</a></li>
-                                        
                                     </ul>
                                 </li>
-                                <li>
-                                    <a href="{% url 'contact' %}">Contact</a>
-                                </li>
+                                <li><a href="{% url 'contact' %}">Contact</a></li>
                             </ul>
                         </nav>
                     </div>
                 </div>
-               
+
+                <!-- Mobile Promo Text -->
                 <p class="mobile-promotion">Happy <span class="text-brand">Mother's Day</span>. Big Sale Up to 40%</p>
+
+                <!-- Mobile Icons -->
                 <div class="header-action-right d-block d-lg-none">
                     <div class="header-action-2">
                         <div class="header-action-icon-2">
                             <a href="{% url 'wishlist' %}">
-                                <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg'%}">
-                                
+                                <img alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}">
                             </a>
                         </div>
                         <div class="header-action-icon-2">
                             <a class="mini-cart-icon" href="{% url 'cart_list' %}">
-                                <img alt="Evara" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg'%}">
-                                
+                                <img alt="Cart" src="{% static 'user/assets/imgs/theme/icons/icon-cart.svg' %}">
                             </a>
-                            
                         </div>
+                        <!-- Hamburger Icon for Mobile -->
                         <div class="header-action-icon-2 d-block d-lg-none">
                             <div class="burger-icon burger-icon-white">
                                 <span class="burger-icon-top"></span>
@@ -271,8 +208,52 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 </header>
+
+
+<!-- Mobile Navigation Menu -->
+<div class="mobile-header-active mobile-header-wrapper-style">
+    <div class="mobile-header-wrapper-inner">
+        <div class="mobile-header-top">
+            <div class="mobile-header-logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo">
+                </a>
+            </div>
+            <div class="mobile-menu-close close-style-wrap close-style-position-inherit">
+                <button class="close-style search-close">
+                    <i class="icon-top"></i>
+                    <i class="icon-bottom"></i>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-header-content-area">
+            <div class="mobile-menu-wrap">
+                <nav>
+                    <ul class="mobile-menu font-heading">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'about' %}">About</a></li>
+                        <li><a href="{% url 'shop_lists' %}">Shop</a></li>
+                        <li class="menu-item-has-children">
+                            <a href="#">Pages</a>
+                            <ul class="dropdown">
+                                <li><a href="{% url 'about' %}">About Us</a></li>
+                                <li><a href="{% url 'contact' %}">Contact</a></li>
+                                <li><a href="{% url 'view_profile' %}">My Account</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="{% url 'contact' %}">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 <!-- Content -->
 <div class="modal fade custom-modal" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel"
     aria-hidden="true">
@@ -282,61 +263,58 @@
     {% endblock content %}
 
     <footer class="main">
+        <!-- Newsletter Section -->
         <section class="newsletter p-30 text-white wow fadeIn animated">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-lg-7 mb-md-3 mb-lg-0">
-                        <div class="row align-items-center">
-                            <div class="col flex-horizontal-center">
-                                {% comment %} <img class="icon-email" src="{% static 'user/assets/imgs/theme/icons/icon-email.svg'%}" alt=""> {% endcomment %}
-                                {% comment %} <h4 class="font-size-20 mb-0 ml-3">Sign up to Newsletter</h4> {% endcomment %}
-                            </div>
-                            <div class="col my-4 my-md-0 des">
-                                
+                        <div class="d-flex align-items-center">
+                            <img class="icon-email" src="{% static 'user/assets/imgs/theme/icons/icon-email.svg' %}" alt="Newsletter">
+                            <h4 class="font-size-20 mb-0 ml-3">Sign up to Newsletter</h4>
                         </div>
                     </div>
-                    {% comment %} <div class="col-lg-5">
-                        <!-- Subscribe Form -->
-                        <form class="form-subcriber d-flex wow fadeIn animated">
+                    <div class="col-lg-5">
+                        <form class="form-subcriber d-flex">
                             <input type="email" class="form-control bg-white font-small" placeholder="Enter your email">
                             <button class="btn bg-dark text-white" type="submit">Subscribe</button>
                         </form>
-                        <!-- End Subscribe Form -->
-                    </div> {% endcomment %}
+                    </div>
                 </div>
             </div>
         </section>
+    
+        <!-- Footer Content -->
         <section class="section-padding footer-mid">
             <div class="container pt-15 pb-20">
                 <div class="row">
+                    <!-- About Section -->
                     <div class="col-lg-4 col-md-6">
                         <div class="widget-about font-md mb-md-5 mb-lg-0">
-                            <div class="logo logo-width-1 wow fadeIn animated">
-                                <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a> 
+                            <div class="logo logo-width-1">
+                                <a href="{% url 'home' %}">
+                                    <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="Logo">
+                                </a>
                             </div>
-                            <h5 class="mt-20 mb-10 fw-600 text-grey-4 wow fadeIn animated">Contact</h5>
-                            <p class="wow fadeIn animated">
-                                <strong>Address: </strong>brotoTYPE MARADU KOCHI 
-                            </p>
-                            <p class="wow fadeIn animated">
-                                <strong>Phone: </strong>91+9847112068
-                            </p>
-                            <p class="wow fadeIn animated">
-                                <strong>Hours: </strong>10:00 - 18:00, Mon - Sat
-                            </p>
-                            {% comment %} <h5 class="mb-10 mt-30 fw-600 text-grey-4 wow fadeIn animated">Follow Us</h5>
-                            <div class="mobile-social-icon wow fadeIn animated mb-sm-5 mb-md-0">
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-youtube.svg'%}" alt=""></a>
-                            </div> {% endcomment %}
+                            <h5 class="mt-20 mb-10 fw-600 text-grey-4">Contact</h5>
+                            <p><strong>Address:</strong> brotoTYPE MARADU KOCHI</p>
+                            <p><strong>Phone:</strong> +91 98471 12068</p>
+                            <p><strong>Hours:</strong> 10:00 - 18:00, Mon - Sat</p>
+    
+                            <h5 class="mb-10 mt-30 fw-600 text-grey-4">Follow Us</h5>
+                            <div class="mobile-social-icon mb-sm-5 mb-md-0">
+                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg' %}" alt="Facebook"></a>
+                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg' %}" alt="Twitter"></a>
+                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg' %}" alt="Instagram"></a>
+                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg' %}" alt="Pinterest"></a>
+                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-youtube.svg' %}" alt="YouTube"></a>
+                            </div>
                         </div>
                     </div>
+    
+                    <!-- About Links -->
                     <div class="col-lg-2 col-md-3">
-                        <h5 class="widget-title wow fadeIn animated">About</h5>
-                        <ul class="footer-list wow fadeIn animated mb-sm-5 mb-md-0">
+                        <h5 class="widget-title">About</h5>
+                        <ul class="footer-list mb-sm-5 mb-md-0">
                             <li><a href="#">About Us</a></li>
                             <li><a href="#">Delivery Information</a></li>
                             <li><a href="#">Privacy Policy</a></li>
@@ -345,53 +323,58 @@
                             <li><a href="#">Support Center</a></li>
                         </ul>
                     </div>
-                    <div class="col-lg-2  col-md-3">
-                        <h5 class="widget-title wow fadeIn animated">My Account</h5>
-                        <ul class="footer-list wow fadeIn animated">
+    
+                    <!-- My Account Links -->
+                    <div class="col-lg-2 col-md-3">
+                        <h5 class="widget-title">My Account</h5>
+                        <ul class="footer-list">
                             <li><a href="{% url 'login_view' %}">Sign In</a></li>
                             <li><a href="{% url 'cart_list' %}">View Cart</a></li>
                             <li><a href="{% url 'wishlist' %}">My Wishlist</a></li>
-                            {% comment %} <li><a href="#">Track My Order</a></li> {% endcomment %}
-                            <li><a href="{% url 'add_address'%}">add address</a></li>
-                            <li><a href="{% url 'order_list' %}">Order</a></li>
+                            <li><a href="{% url 'add_address' %}">Add Address</a></li>
+                            <li><a href="{% url 'order_list' %}">Orders</a></li>
                             <li><a href="{% url 'view_profile' %}">Dashboard</a></li>
                         </ul>
                     </div>
+    
+                    <!-- App Download & Payments -->
                     <div class="col-lg-4">
-                        <h5 class="widget-title wow fadeIn animated">
                         <div class="row">
                             <div class="col-md-8 col-lg-12">
-                                <p class="wow fadeIn animated"></p>
-                                <div class="download-app wow fadeIn animated">
-                                    <a href="#" class="hover-up mb-sm-4 mb-lg-0"><img class="active" src="{% static 'user/assets/imgs/theme/app-store.jpg'%}" alt=""></a>
-                                    <a href="#" class="hover-up"><img src="{% static 'user/assets/imgs/theme/google-play.jpg'%}" alt=""></a>
+                                <h5 class="widget-title">Download Our App</h5>
+                                <div class="download-app">
+                                    <a href="#"><img class="active" src="{% static 'user/assets/imgs/theme/app-store.jpg' %}" alt="App Store"></a>
+                                    <a href="#"><img src="{% static 'user/assets/imgs/theme/google-play.jpg' %}" alt="Google Play"></a>
                                 </div>
                             </div>
                             <div class="col-md-4 col-lg-12 mt-md-3 mt-lg-0">
-                                <p class="mb-20 wow fadeIn animated">Secured Payment Gateways</p>
-                                <img class="wow fadeIn animated" src="{% static 'user/assets/imgs/theme/payment-method.png'%}" alt="">
+                                <p class="mb-20">Secured Payment Gateways</p>
+                                <img src="{% static 'user/assets/imgs/theme/payment-method.png' %}" alt="Payment Methods">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        <div class="container pb-20 wow fadeIn animated">
+    
+        <!-- Footer Bottom -->
+        <div class="container pb-20">
             <div class="row">
                 <div class="col-12 mb-20">
-                    <div class="footer-bottom"></div>
+                    <hr class="footer-bottom">
                 </div>
                 <div class="col-lg-6">
-                    {% comment %} <p class="float-md-left font-sm text-muted mb-0">&copy; 2021, <strong class="text-brand">Evara</strong> - HTML Ecommerce Template </p> {% endcomment %}
+                    <p class="float-md-left font-sm text-muted mb-0">&copy; 2025, <strong class="text-brand">YourSiteName</strong>. All rights reserved.</p>
                 </div>
                 <div class="col-lg-6">
                     <p class="text-lg-end text-start font-sm text-muted mb-0">
-                        Designed by <a href="" target="_blank">Alithemes.com</a>. All rights reserved
+                        Designed by <a href="https://alithemes.com" target="_blank">Alithemes.com</a>.
                     </p>
                 </div>
             </div>
         </div>
     </footer>
+    
     <!-- Preloader Start -->
     <div id="preloader-active">
         <div class="preloader d-flex align-items-center justify-content-center">

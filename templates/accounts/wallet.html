@@ -1,123 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Wallet</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+{% extends "user_base.html" %}
+{% load static %}
 
-<!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 d-flex flex-column gap-4">
 
-<!-- Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+            <!-- Wallet Summary Section -->
+            <section class="bg-light border rounded-4 p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-semibold mb-1 text-secondary">Wallet Balance</h4>
+                        <p class="text-muted mb-0 small">Last updated balance</p>
+                    </div>
+                    <div class="text-end">
+                        <h3 class="fw-bold text-primary mb-0">₹{{ user_wallet.balance|floatformat:2 }}</h3>
+                        <span class="text-muted small">Updated: ₹{{ updated_wallet_balance|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </section>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
 
-        header {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            text-align: center;
-            padding: 0.8em;
-        }
+            <!-- Transaction History Section -->
+            <section class="bg-light border rounded-4">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-secondary fw-semibold">Transaction History</h5>
+                        <span class="badge bg-warning bg-opacity-10 text-black px-3 py-2 rounded-pill">
+                            {{ order_list|length }} Transactions
+                        </span>
+                    </div>
+                </div>
 
-        .wallet-container {
-            max-width: 400px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .balance {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .balance i {
-            margin-right: 8px;
-        }
-
-        .transaction-list {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 15px;
-        }
-
-        .transaction-item {
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-            background-color: #ecf0f1;
-        }
-
-        .transaction-item span {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .add-money-button {
-            background-color: #3498db;
-            color: #fff;
-            padding: 12px;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Add hover effect for the button */
-        .add-money-button:hover {
-            background-color: #2980b9;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Your Wallet</h1>
-    </header>
-
-    <div class="wallet-container">
-        <div class="balance">
-            <span><i class="fas fa-wallet"></i> ₹{{ user_wallet.balance }}</span>
-            <span>Updated: ₹{{ updated_wallet_balance|floatformat:2 }}</span>
-        </div>
-        
-        {% if order_list %}
-            <h2>Recent Transactions</h2>
-            <ul class="transaction-list">
-                {% for order in order_list %}
-                    {% if order.status == "Returned" or order.status == "Cancelled" %}
-                        <li class="transaction-item">
-                            <span>Date: {{ order.created_at }}</span>
-                            <span>Product: {{ order.product_name }}</span>
-                            <span>Amount: ₹{{ order.order_total|floatformat:2 }}</span>
-                        </li>
+                <div class="card-body p-0">
+                    {% if order_list %}
+                        <ul class="list-group list-group-flush">
+                            {% for order in order_list %}
+                                {% if order.status == "Returned" or order.status == "Cancelled" %}
+                                    <li class="list-group-item px-4 py-3 border-0 border-top bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="icon-circle bg-white text-{{ order.status|yesno:"info,danger" }}">
+                                                    <i class="fas {% if order.status == 'Returned' %}fa-undo{% else %}fa-times{% endif %}"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-medium text-dark">{{ order.product.product_name }}</div>
+                                                    <div class="small text">Date: {{ order.created_at|date:"M d, Y H:i" }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-semibold text-{{ order.status|yesno:"info,danger" }}">
+                                                    ₹{{ order.order_total|floatformat:2 }}
+                                                </div>
+                                                <span class="badge bg-{{ order.status|yesno:"info,danger" }} text-white rounded-pill small mt-1">
+                                                    {{ order.status }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <img src="{% static 'user/assets/imgs/theme/empty-wallet.svg' %}" alt="No Transactions" class="mb-3" style="height: 100px; opacity: 0.4;">
+                            <h6 class="text-muted">No transactions yet</h6>
+                            <p class="small text-muted">Returns or cancellations will appear here.</p>
+                        </div>
                     {% endif %}
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="no-transactions">No recent transactions.</p>
-        {% endif %}
-        
-        <button class="add-money-button"><i class="fas fa-wallet"></i> Add Money</button>
+                </div>
+
+                {% if order_list %}
+                    <div class="card-footer bg-light border-0 p-4 text-center">
+                        <a href="#" class="btn btn-outline-primary w-100 rounded-pill">View All Transactions</a>
+                    </div>
+                {% endif %}
+            </section>
+
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<!-- Custom Soft UI Styles -->
+<style>
+    .rounded-4 {
+        border-radius: 1rem;
+    }
+
+    .icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .hover-soft {
+        transition: all 0.25s ease-in-out;
+    }
+
+    .hover-soft:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    .text-info {
+        color: #0dcaf0 !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-primary.bg-opacity-10 {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .wallet-summary h3 {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+{% endblock %}

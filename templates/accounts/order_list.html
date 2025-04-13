@@ -1,113 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your Orders</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbs5mQHAaE5K3uMuFzL/G2xFIqICtqgqGcsl8s0C+AFv5COb9tQ8ba3hpeXW2fXJ" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+{% extends "user_base.html" %}
+{% load static %}
+{% block content %}
 
-<!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-    
-    <!-- Add your custom styles here -->
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            margin-top: 30px;
-        }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .card-header h5 {
-            margin-bottom: 0;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #212529;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-
-        .btn-action {
-            margin-right: 5px;
-        }
-
-        .pagination {
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .pagination a {
-            color: #007bff;
-            border: 1px solid #007bff;
-            margin: 0 5px;
-        }
-
-        .pagination .current {
-            font-weight: bold;
-        }
-
-        .details-btn {
-            color: #007bff;
-            text-decoration: underline;
-            margin-right: 5px;
-            cursor: pointer;
-        }
-
-        .cancel-btn {
-            margin-right: 5px;
-        }
-
-        .return-btn {
-            margin-right: 5px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Your Orders</h5>
+<div class="container mt-5">
+    <div class="card shadow-sm rounded-lg border-light">
+        <div class="card-header bg-dark">
+            <h5 class="mb-0 text-white">Your Orders</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
+                <table class="table table-hover table-bordered">
+                    <thead class="thead-light">
                         <tr>
                             <th>Order</th>
                             <th>Date</th>
@@ -118,54 +21,75 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr>
+                        <tr class="order-row">
                             <td>{{ order.order_number }}</td>
                             <td>{{ order.created_at|date:"F d, Y" }}</td>
-                            <td>{{ order.status }}</td>
+                            <td>
+                                <span class="badge 
+                                {% if order.status == 'pending' %}
+                                     text-warning
+                                {% elif order.status == 'Delivered' %}
+                                     text-success
+                                {% elif order.status == 'Cancelled' %}
+                                     text-danger
+                                {% elif order.status == 'Returned' %}
+                                     text-secondary
+                                {% else %}
+                                     text-crimson
+                                {% endif %}">
+                                <i class="fi-rs-circle"></i> {{ order.status }}
+                            </span>
+
+                            </td>
                             <td>
                                 {% if order.coupon %}
-                                ₹{{ order.order_value }}
+                                    ₹{{ order.order_value }}
                                 {% else %}
-                                ₹{{ order.order_total }}
+                                    ₹{{ order.order_total }}
                                 {% endif %}
                             </td>
                             <td>
                                 {% if order.status == 'pending' %}
-                                <a href="{% url 'cancel_order' order.id %}" class="btn btn-danger btn-sm btn-action cancel-btn">Cancel</a>
+                                    <!-- Cancel Button -->
+                                    <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="fi-rs-cross-circle"></i> Cancel
+                                    </a>
                                 {% elif order.status == 'Delivered' %}
-                                <a href="{% url 'return_order' order.id %}" class="btn btn-warning btn-sm btn-action return-btn">Return</a>
-                                {% else %}
-                                <!-- Add any other conditions or buttons related to order status -->
+                                    <!-- Return Button -->
+                                    <a href="{% url 'return_order' order.id %}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fi-rs-reply"></i> Return
+                                    </a>
                                 {% endif %}
-                                <span class="details-btn" onclick="window.location.href='{% url 'view_order' order.id %}'">Details</span>
+
+                                <!-- View Details -->
+                                <a href="{% url 'view_order' order.id %}" class="btn btn-outline-info btn-sm">
+                                    <i class="fi-rs-eye"></i> Details
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div class="pagination">
-                <span class="step-links">
-                    {% if orders.has_previous %}
-                    <a href="?page=1" class="btn btn-sm btn-primary">&laquo; first</a>
-                    <a href="?page={{ orders.previous_page_number }}" class="btn btn-sm btn-primary">previous</a>
-                    {% endif %}
 
-                    <span class="current">
-                        Page {{ orders.number }} of {{ orders.paginator.num_pages }}.
+            <!-- Pagination Section -->
+            <div class="pagination mt-3">
+                <div class="d-flex justify-content-between">
+                    <span class="step-links">
+                        {% if orders.has_previous %}
+                            <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; First</a>
+                            <a href="?page={{ orders.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% endif %}
+                        <span class="current">Page {{ orders.number }} of {{ orders.paginator.num_pages }}.</span>
+                        {% if orders.has_next %}
+                            <a href="?page={{ orders.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
+                            <a href="?page={{ orders.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Last &raquo;</a>
+                        {% endif %}
                     </span>
-
-                    {% if orders.has_next %}
-                    <a href="?page={{ orders.next_page_number }}" class="btn btn-sm btn-primary">next</a>
-                    <a href="?page={{ orders.paginator.num_pages }}" class="btn btn-sm btn-primary">last &raquo;</a>
-                    {% endif %}
-                </span>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-VGWWaDCaRygWs2pfH1F5ZGJIP4IVQ1RbOV2l4GzXJQ8v8/4SgUHE6mMA2xiqE6qD" crossorigin="anonymous"></script>
-
-</body>
-</html>
+{% endblock content %}

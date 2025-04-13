@@ -1038,6 +1038,10 @@ def offer_product(request):
     return render(request, 'admin/offer_product.html', {'products': products, 'products_with_offers': products_with_offers})
     
     
-# def admin_logout(request)
+def admin_logout(request):
+    logout(request)
+
+    return redirect('admin_login')
+
 
         

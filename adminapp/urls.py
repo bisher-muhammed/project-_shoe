@@ -1,5 +1,5 @@
 from django.urls import path
-from .import views
+from .import views 
 
 urlpatterns = [
     path('', views.admin_login, name='admin_login'),
@@ -38,7 +38,8 @@ urlpatterns = [
 
     path('salesreport/',views.salesreport,name='salesreport'),
     path('category_offer/', views.category_offer, name='category_offer'),
-    path('offer_product/',views.offer_product,name='offer_product')
+    path('offer_product/',views.offer_product,name='offer_product'),
+    path('admin_logout/', views.admin_logout,name='admin_logout')
     
 ]
 

@@ -3,68 +3,128 @@
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <!-- Your head content goes here -->
-</head>
-<body>
-    <div id="page">
-        <nav class="colorlib-nav" role="navigation">
-            <div class="top-menu">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-7 col-md-9">
-                            <a href="{% url 'home' %}">
-                                {% comment %} <a href="{% url 'home' %}"><img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo"></a>  {% endcomment %}
-                            </a>
-                        <div class="col-sm-5 col-md-3">
-                            <!-- Your other navigation content goes here -->
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="col-sm-12 text-left menu-1">
-                            
-                                
-                               
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Your other navigation content goes here -->
-        </nav>
 
-        <div class="breadcrumbs">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
+
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #f8f9fa;
+        }
+        
+
+        .navbar {
+            background-color: #343a40;
+            padding: 15px 0;
+        }
+
+        .navbar a {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #ffc107;
+        }
+
+        .breadcrumbs {
+            background-color: #f1f1f1;
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        .breadcrumbs .container {
+            max-width: 1200px;
+        }
+
+        .colorlib-about {
+            padding: 80px 0;
+        }
+
+        .colorlib-about .section-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .colorlib-about p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .about-image {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        .about-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 30px;
+        }
+
+        /* For responsive design */
+        @media (max-width: 768px) {
+            .colorlib-about .section-title {
+                font-size: 2rem;
+                text-align: center;
+            }
+
+            .about-wrap {
+                padding-left: 0;
+                text-align: center;
+            }
+
+            .about-image {
+                width: 100%;
+                margin-bottom: 30px;
+            }
+            .section-title{
+                font-family: "Times New Roman", Times, serif
+
+            }
+        }
+    </style>
+
+
+
+ 
 
         <div class="colorlib-about">
             <div class="container">
-                <div class="row row-pb-lg">
-                    <div class="col-md-6 mb-3">
+                <div class="row">
+                    <div class="col-md-6 mb-4 mb-md-0">
                         <img src="{% static 'user/assets/imgs/my_images/about.jpg' %}" alt="About Image" class="img-fluid about-image">
                     </div>
                     <div class="col-md-6">
                         <div class="about-wrap">
                             <h2 class="section-title">Trendy Traides - Your Fashion Destination</h2>
-                    <p class="lead">Discover the latest trends and shop with confidence at Trendy Traides, the leading eCommerce store around the globe.</p>
-                    <p>Our curated collection of fashion items ensures that you stay on trend. Explore our wide range of products and experience the joy of shopping with us.</p>
-                    <p>At Trendy Traides, we believe in providing high-quality products that reflect the latest fashion trends. Our team of experts carefully selects each item in our collection to offer you a unique and stylish shopping experience.</p>
-                    <p>Whether you're looking for trendy clothing, accessories, or footwear, we have something for everyone. Our user-friendly website makes it easy for you to browse, select, and purchase your favorite items from the comfort of your home.</p>
-                    <p>Join the Trendy Traides community today and elevate your fashion game with our exclusive and affordable collection. We are committed to delivering exceptional service and ensuring your satisfaction with every purchase.</p>
+                            <p class="lead">Discover the latest trends and shop with confidence at Trendy Traides, the leading eCommerce store around the globe.</p>
+                            <p>Our curated collection of fashion items ensures that you stay on trend. Explore our wide range of products and experience the joy of shopping with us.</p>
+                            <p>At Trendy Traides, we believe in providing high-quality products that reflect the latest fashion trends. Our team of experts carefully selects each item in our collection to offer you a unique and stylish shopping experience.</p>
+                            <p>Whether you're looking for trendy clothing, accessories, or footwear, we have something for everyone. Our user-friendly website makes it easy for you to browse, select, and purchase your favorite items from the comfort of your home.</p>
+                            <p>Join the Trendy Traides community today and elevate your fashion game with our exclusive and affordable collection. We are committed to delivering exceptional service and ensuring your satisfaction with every purchase.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Additional styling and enhancements for other sections... -->
-
+        <footer class="bg-dark text-white text-center py-4">
+            <p>&copy; 2025 Trendy Traides. All Rights Reserved.</p>
+        </footer>
     </div>
-</body>
-</html>
+
+    <!-- Bootstrap JS (Optional but recommended for dropdowns and responsive behavior) -->
+   
+
+
 {% endblock content %}

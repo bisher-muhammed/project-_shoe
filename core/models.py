@@ -63,7 +63,7 @@ class Order(models.Model):
     order_number = models.CharField(max_length=200)
     address = models.ForeignKey(AddressUS, on_delete=models.SET_NULL, blank=True, null=True)
     order_total = models.FloatField()
-    status = models.CharField(max_length=100, choices=STATUS, default='New')
+    status = models.CharField(max_length=100, choices=STATUS, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, blank=True)

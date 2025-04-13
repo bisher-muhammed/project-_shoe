@@ -1,81 +1,187 @@
-
 {% extends "user_base.html" %}
-{% block content  %}
+{% block content %}
 <!-- Add styles within your existing HTML -->
 <style>
-    /* Adjustments for color and styling */
+    /* Global Styles */
     body {
-      font-family: 'Your Chosen Font', sans-serif;
-      background-color: #f8f9fa;
-      color: #333;
+        font-family: 'Roboto', sans-serif;
+        background-color: #f4f7fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
     }
-  
-    /* Header styles */
+
+    h1, h2, h3 {
+        font-weight: 600;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Header Styles */
     #colorlib-logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2c3e50;
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
     }
-  
+
+    .colorlib-nav {
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-menu .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+    }
+
+    .menu-1 ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    .menu-1 ul li {
+        margin-left: 20px;
+    }
+
     .breadcrumbs {
-      background-color: #ecf0f1;
-      padding: 15px;
+        background-color: #ecf0f1;
+        padding: 20px 0;
     }
-  
-    /* Contact Information styles */
+
+    .breadcrumbs .bread {
+        font-size: 16px;
+        color: #7f8c8d;
+    }
+
+    /* Contact Section */
+    #colorlib-contact {
+        background-color: #fff;
+        padding: 60px 0;
+    }
+
     .contact-info-wrap {
-      margin-top: 20px;
+        margin-top: 20px;
     }
-  
+
     .contact-info-wrap p {
-      margin-bottom: 10px;
+        font-size: 16px;
+        color: #7f8c8d;
+        margin-bottom: 15px;
     }
-  
-    /* Form styles */
+
+    .contact-info-wrap i {
+        color: #3498db;
+    }
+
+    /* Contact Form */
     .contact-form {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-  
-    .form-group {
-      margin-bottom: 20px;
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: #333;
     }
-  
-    /* Button styles */
+
+    .form-control {
+        width: 100%;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
+    }
+
     .btn-primary {
-      background-color: #3498db;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+        background-color: #3498db;
+        color: #fff;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 30px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
     }
-  </style>
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+
+    /* About Section */
+    .colorlib-about {
+        padding: 60px 0;
+        background-color: #fff;
+    }
+
+    .about-image {
+        border-radius: 8px;
+        width: 100%;
+        height: auto;
+    }
+
+    .about-wrap h2 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .about-wrap p {
+        font-size: 16px;
+        color: #7f8c8d;
+        line-height: 1.8;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+        .contact-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .top-menu .container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .menu-1 ul {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+
   
-<div id="page">
-    <nav class="colorlib-nav" role="navigation">
-        <div class="top-menu">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-7 col-md-9">
-                        <div id="colorlib-logo"><a href="{% url 'home' %}">Trendy Traides</a></div>
-                    </div>
-                    <div class="col-sm-5 col-md-3">
-                        <!-- Your other navigation content goes here -->
-                    </div>
+                <div class="col-sm-5 col-md-3">
+                    <!-- Additional Navigation Content -->
                 </div>
-                <div class="row">
-                    <div class="col-sm-12 text-left menu-1">
-                        <ul>
-                            <!-- Your navigation links go here -->
-                        </ul>
-                    </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 text-left menu-1">
+                    <ul>
+                        <!-- Your navigation links go here -->
+                    </ul>
                 </div>
             </div>
         </div>
-        <!-- Your other navigation content goes here -->
     </nav>
 
     <div class="breadcrumbs">
