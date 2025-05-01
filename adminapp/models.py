@@ -8,7 +8,7 @@ from django.utils import timezone
 
 
 class  Category(models.Model):
-    category_name=models.CharField(100,null=True,blank=True)
+    category_name=models.CharField(max_length=100,null=True,blank=True)
     description=models.TextField()
     category_image=models.ImageField(upload_to='media/category', null=False, blank=False)
     is_blocked=models.BooleanField(default=False)
