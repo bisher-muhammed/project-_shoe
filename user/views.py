@@ -321,25 +321,25 @@ def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
-        request.session["email"] = email
-        request.session["password"] = password
 
-        if not email and not password:
-            messages.warning(request, "Enter details to field")
+        if not email or not password:
+            messages.warning(request, "Please fill in both email and password.")
             return redirect("login_view")
 
         user = authenticate(request, username=email, password=password)
         print(user, email, password)
 
         if user is not None and user.is_active:
-            request.session["verification_type"] = "login_view"
-            send_otp(request)
-            return redirect("otp_page")
+            login(request, user)
+            request.session["username"] = user.username  # Optional: track in session
+            messages.success(request, "Logged in successfully.")
+            return redirect("home")
         else:
-            messages.error(request, "Invalid username or password")
+            messages.error(request, "Invalid username or password.")
             return redirect("login_view")
 
     return render(request, "accounts/login_view.html")
+
 
 
 def signup_view(request):
@@ -724,6 +724,11 @@ def add_address(request):
         state = request.POST.get('state')
         zip_code = request.POST.get('zip_code')
 
+        # Validate all required fields
+        if not all([first_name, last_name, address_1, city, state, zip_code]):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'accounts/add_address.html')
+
         try:
             new_address = AddressUS.objects.create(
                 first_name=first_name,
@@ -732,25 +737,22 @@ def add_address(request):
                 city=city,
                 state=state,
                 zipcode=zip_code,
-                user_profile=request.user.profile  # Use 'user_profile' to link to the UserProfile
+                user_profile=request.user.profile
             )
 
-            # Check if the user has any addresses and set the first one as default if none is set
+            # If no address is marked default, set this one as default
             user_addresses = AddressUS.objects.filter(user_profile=request.user.profile)
             if not any(address.is_default for address in user_addresses):
-                first_address = user_addresses.first()
-                if first_address:
-                    with transaction.atomic():
-                        first_address.is_default = True
-                        first_address.save()
+                with transaction.atomic():
+                    new_address.is_default = True
+                    new_address.save()
 
             messages.success(request, 'Address added successfully.')
-            return redirect('view_profile')  # Redirect to an appropriate page
+            return redirect('view_profile')
 
         except Exception as e:
-            print(f"Error creating or updating address: {e}")
+            print(f"Error creating address: {e}")
             messages.error(request, 'Error adding address. Please try again.')
-            print("Addresses:", addresses)
 
     return render(request, 'accounts/add_address.html')
 
@@ -801,6 +803,18 @@ def set_default_address(request, address_id):
     return redirect('addresses')
 
 
+
+
+@login_required
+def delete_address(request, address_id):
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    address = get_object_or_404(AddressUS, id=address_id, user_profile=user_profile)
+
+    if request.method == 'POST':
+        address.delete()
+        return redirect('addresses')  # Replace with the actual name of your address list view
+
+    return render(request, 'accounts/confirm_delete.html', {'address': address})
 
 
 
@@ -1124,6 +1138,43 @@ def wallet(request):
 #             messages.error(request, f'Error updating password: {e}')
 
 #     return render(request, 'accounts/forgot_password.html')
+
+@login_required
+def edit_address(request, address_id):
+    address = get_object_or_404(AddressUS, id=address_id, user_profile=request.user.profile)
+
+    if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        address_1 = request.POST.get('address')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        zip_code = request.POST.get('zip_code')
+
+        # Validation
+        if not all([first_name, last_name, address_1, city, state, zip_code]):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'accounts/edit_address.html', {'address': address})
+
+        try:
+            address.first_name = first_name
+            address.last_name = last_name
+            address.address_1 = address_1
+            address.city = city
+            address.state = state
+            address.zipcode = zip_code
+            address.save()
+
+            messages.success(request, 'Address updated successfully.')
+            return redirect('view_profile')
+
+        except Exception as e:
+            print(f"Error updating address: {e}")
+            messages.error(request, 'Error updating address. Please try again.')
+
+    return render(request, 'accounts/edit_address.html', {'address': address})
+
+
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 def shop_lists(request):

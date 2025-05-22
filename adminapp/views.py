@@ -258,6 +258,7 @@ def add_product(request):
                     product.sizes.set(selected_sizes)
 
                     product.save()
+                    return redirect('product_list')
 
                 return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes})
 
@@ -474,27 +475,33 @@ def deactivate_product(request, product_id):
     return redirect('product_list')
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db import transaction
+from .models import Product, Category, Brand, Size, ProductSize
+
 def edit_product(request, product_id):
-    # Fetch categories, brands, and active sizes
     categories = Category.objects.all()
     brands = Brand.objects.all()
-    size_options = Size.objects.filter(is_active=True)
+    all_sizes = Size.objects.filter(is_active=True)
 
-    # Initialize variables
     error_message = None
     form_data = {}
     selected_sizes = {}
 
-    # Fetch the product
     product = get_object_or_404(Product, pk=product_id)
 
     if request.method == 'POST':
-        # Get images from the form
-        product_img1 = request.FILES.get('image1')
-        product_img2 = request.FILES.get('image2')
-        product_img3 = request.FILES.get('image3')
+        print("Request method:", request.method) 
+        
+        # Get images from the form (if any)
+        product_img1 = request.FILES.get('product_img1')
+        print("Received product_img1:", product_img1)
+        product_img2 = request.FILES.get('product_img2')
+        print("Received product_img2:", product_img2)
+        product_img3 = request.FILES.get('product_img3')
+        print("Received product_img3:", product_img3)
 
-        # Fields to validate
+        # Validate form fields
         fields_to_validate = [
             'product_name',
             'product_category',
@@ -513,33 +520,25 @@ def edit_product(request, product_id):
 
         if not error_message:
             try:
-                # Convert prices to float
                 original_price = float(form_data['original_price'])
                 offer_price = float(form_data['offer_price'])
-
                 if offer_price >= original_price:
                     error_message = "Offer price must be less than original price."
-
             except ValueError:
                 error_message = "Please enter valid numbers for prices."
 
         if not error_message:
             try:
-                product_name = form_data['product_name']
-                product_description = form_data['product_description']
-                product_category = Category.objects.get(id=form_data['product_category'])
-                product_brand = Brand.objects.get(id=form_data['product_brand'])
-
                 with transaction.atomic():
                     # Update product fields
-                    product.product_name = product_name
-                    product.product_description = product_description
+                    product.product_name = form_data['product_name']
+                    product.product_description = form_data['product_description']
                     product.original_price = original_price
                     product.offer_price = offer_price
-                    product.category = product_category
-                    product.brand = product_brand
+                    product.category = Category.objects.get(id=form_data['product_category'])
+                    product.brand = Brand.objects.get(id=form_data['product_brand'])
 
-                    # Update images
+                    # Only update images if new images were uploaded
                     if product_img1:
                         product.product_img1 = product_img1
                     if product_img2:
@@ -551,9 +550,9 @@ def edit_product(request, product_id):
 
                     # Handle sizes and quantities
                     ProductSize.objects.filter(product=product).delete()
-                    product_size_ids = request.POST.getlist('sizes')
+                    selected_size_ids = request.POST.getlist('sizes')
 
-                    for size_id in product_size_ids:
+                    for size_id in selected_size_ids:
                         size = Size.objects.get(id=size_id)
                         quantity_str = request.POST.get(f'quantity_{size_id}', '').strip()
 
@@ -564,8 +563,7 @@ def edit_product(request, product_id):
                             error_message = f"Please enter a valid quantity for size {size.name}."
                             raise ValueError("Invalid quantity input")
 
-                # Redirect on success
-                return redirect('product_list')  # Update this to your actual product list view name
+                return redirect('product_list')  # Adjust this to match your actual product list URL name
 
             except (Category.DoesNotExist, Brand.DoesNotExist):
                 error_message = "Selected category or brand does not exist."
@@ -573,35 +571,46 @@ def edit_product(request, product_id):
                 if not error_message:
                     error_message = f"An error occurred: {str(e)}"
 
-        # Set selected sizes even if form failed
-        selected_sizes = {}
-        for size in size_options:
+        # Preserve selected sizes if the form fails
+        for size in all_sizes:
             quantity_str = request.POST.get(f'quantity_{size.id}', '').strip()
             if quantity_str.isdigit():
                 selected_sizes[size.id] = int(quantity_str)
 
     else:
-        # Populate form with existing data
-        form_data['product_name'] = product.product_name
-        form_data['product_description'] = product.product_description
-        form_data['original_price'] = product.original_price
-        form_data['offer_price'] = product.offer_price
-        form_data['product_category'] = product.category.id
-        form_data['product_brand'] = product.brand.id
+        # Populate form with existing product data
+        form_data = {
+            'product_name': product.product_name,
+            'product_description': product.product_description,
+            'original_price': product.original_price,
+            'offer_price': product.offer_price,
+            'product_category': product.category.id,
+            'product_brand': product.brand.id,
+        }
 
-        # Preload selected sizes
+        # Load sizes and quantities for this product
         product_sizes = ProductSize.objects.filter(product=product).values_list('size_id', 'quantity')
         selected_sizes = {size_id: quantity for size_id, quantity in product_sizes}
+
+    # Enrich size options with selection and quantity info
+    enriched_size_options = []
+    for size in all_sizes:
+        enriched_size_options.append({
+            'id': size.id,
+            'name': size.name,
+            'checked': size.id in selected_sizes,
+            'quantity': selected_sizes.get(size.id, 0),
+        })
 
     return render(request, 'admin/edit_product.html', {
         'product': product,
         'categories': categories,
         'brands': brands,
-        'size_options': size_options,
+        'size_options': enriched_size_options,
         'form_data': form_data,
-        'selected_sizes': selected_sizes,
         'error_message': error_message,
     })
+
 
 @never_cache
 def admin_userlist(request):
@@ -835,23 +844,32 @@ def edit_banner(request, banner_id):
     banner = Banner.objects.get(id=banner_id)
     
     if request.method == "POST":
+        # Get the uploaded image, title, and subtitle from the form
         banner_img = request.FILES.get('image')
         title = request.POST.get('title')
         subtitle = request.POST.get('sub_title')
 
-        if not all([banner_img, title, subtitle]):
+        # Check if all required fields (title and subtitle) are provided
+        if not all([title, subtitle]):
             messages.error(request, "Please provide all the required fields.")
         else:
-            banner.banner_img = banner_img
+            # Update the title and subtitle
             banner.title = title
             banner.subtitle = subtitle
+
+            # Only update the image if a new one is uploaded
+            if banner_img:
+                banner.banner_img = banner_img
+
+            # Save the updated banner
             banner.save()
 
-            messages.success(request, "Banner updated successfully")
+            messages.success(request, "Banner updated successfully.")
             return redirect("admin_banner")
 
     context = {"banner": banner}
     return render(request, 'admin/edit_banner.html', context)
+
 
 
 def banner_active(request, banner_id):
@@ -1056,4 +1074,68 @@ def admin_logout(request):
     return redirect('admin_login')
 
 
-        
+
+
+def edit_brand(request, brand_id):
+    brand = Brand.objects.get(id=brand_id)
+
+    if request.method == 'POST':
+        brand_name = request.POST.get('brand_name')
+        brand_description = request.POST.get('brand_description')
+        brand_image = request.FILES.get('brand_image')
+
+        # Validate required fields
+        if not brand_name:
+            messages.error(request, "Please provide a brand name.")
+            return redirect('edit_brand', brand_id=brand.id)
+
+        # Check for brand name uniqueness (excluding current)
+        if Brand.objects.filter(brand_name=brand_name).exclude(id=brand_id).exists():
+            messages.error(request, "A brand with this name already exists.")
+            return redirect('edit_brand', brand_id=brand.id)
+
+        # Update fields
+        brand.brand_name = brand_name
+        brand.brand_description = brand_description
+
+        # Only update image if a new one is uploaded
+        if brand_image:
+            brand.brand_image = brand_image
+
+        brand.save()
+        messages.success(request, "Brand updated successfully.")
+        return redirect('admin_brand')  # Or your brand list page
+
+    return render(request, 'admin/edit_brand.html', {'brand': brand})
+
+
+import os
+
+def edit_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        description = request.POST.get('description')
+        new_image = request.FILES.get('category_image')
+
+        if not category_name:
+            messages.error(request, "Category Name is required.")
+            return redirect('edit_category', category_id=category.id)
+
+        # Update fields
+        category.category_name = category_name
+        category.description = description
+
+        # If new image uploaded, delete old image first
+        if new_image:
+            if category.category_image:
+                if os.path.isfile(category.category_image.path):
+                    os.remove(category.category_image.path)
+            category.category_image = new_image
+
+        category.save()
+        messages.success(request, "Category updated successfully.")
+        return redirect('admin_category')
+
+    return render(request, 'admin/edit_category.html', {'category': category})

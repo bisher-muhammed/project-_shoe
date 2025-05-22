@@ -114,6 +114,12 @@
                 </div>
             </div>
 
+             {% for message in messages %}   
+                            <div class="alert alert-{{ message.tags }} mb-3" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+
             <!-- Buttons Section -->
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <button id="printButton" class="btn btn-outline-secondary">Download Summary</button>
@@ -149,7 +155,7 @@
     });
 
     var options = {
-        "key": "rzp_test_zzvnNnxalKyZJn",
+        "key": "rzp_test_HJ4Pt1x015HzyE",
         "amount": Math.round({{ order.order_total|floatformat:2 }} * 100),
         "currency": "INR",
         "name": "Sofa",

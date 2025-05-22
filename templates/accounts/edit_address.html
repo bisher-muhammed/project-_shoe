@@ -1,0 +1,61 @@
+{% extends "user_base.html" %}
+{% block content %}
+<main>
+    <section class="pt-150 pb-150">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <h2>Edit Address</h2>
+
+                    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label>First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ address.first_name }}" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ address.last_name }}" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Address</label>
+                            <input type="text" name="address" class="form-control" value="{{ address.address_1 }}" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>City</label>
+                            <input type="text" name="city" class="form-control" value="{{ address.city }}" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>State</label>
+                            <input type="text" name="state" class="form-control" value="{{ address.state }}" required>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label>Zip Code</label>
+                            <input type="text" name="zip_code" class="form-control" value="{{ address.zipcode }}" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Update Address</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock content %}

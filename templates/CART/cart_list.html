@@ -57,6 +57,8 @@
             </tr>
           {% endfor %}
         </tbody>
+        <div id="cart-warning" class="alert alert-warning text-center d-none" role="alert"></div>
+
       </table>
     </div>
 
@@ -73,6 +75,18 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    const warningBox = document.getElementById("cart-warning");
+
+    function showWarning(message) {
+      warningBox.textContent = message;
+      warningBox.classList.remove("d-none");
+
+      setTimeout(() => {
+        warningBox.classList.add("d-none");
+        warningBox.textContent = '';
+      }, 3000);  // Hide after 3 seconds
+    }
+
     document.querySelectorAll(".qty-btn").forEach(button => {
       button.addEventListener("click", async (e) => {
         const action = button.dataset.action;
@@ -83,25 +97,32 @@
         const maxQty = parseInt(document.getElementById(`max-${cartItemId}`).textContent);
         const currentQty = parseInt(qtyElem.textContent);
 
-        if (action === "decrease" || (action === "increase" && currentQty < maxQty)) {
-          try {
-            const response = await fetch(`/core/cart_update/${cartItemId}/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-              },
-              body: JSON.stringify({ action }),
-            });
+        if (action === "decrease") {
+          if (currentQty <= 1) return;
+        }
 
-            if (!response.ok) throw new Error("Network error");
+        if (action === "increase" && currentQty >= maxQty) {
+          showWarning("You've reached the maximum stock available for this item.");
+          return;
+        }
 
-            const data = await response.json();
-            qtyElem.textContent = data.quantity;
-            subtotalElem.textContent = `₹${data.subtotal}`;
-          } catch (err) {
-            console.error("Error updating cart:", err);
-          }
+        try {
+          const response = await fetch(`/core/cart_update/${cartItemId}/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({ action }),
+          });
+
+          if (!response.ok) throw new Error("Network error");
+
+          const data = await response.json();
+          qtyElem.textContent = data.quantity;
+          subtotalElem.textContent = `₹${data.subtotal}`;
+        } catch (err) {
+          console.error("Error updating cart:", err);
         }
       });
     });
@@ -113,6 +134,7 @@
     }
   });
 </script>
+
 {% endblock content %}
  
                                 

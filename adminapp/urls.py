@@ -13,7 +13,8 @@ urlpatterns = [
     path('activate_brand/<int:brand_id>/', views.activate_brand, name='activate_brand'),
     path('deactivate_brand/<int:brand_id>/', views.deactivate_brand, name='deactivate_brand'),
     path('variance-management/', views.variance_management, name='variance_management'),
-    
+    path('edit_brand/<int:brand_id>/',views.edit_brand,name='edit-brand'),
+    path ('edit_category/<int:category_id>/',views.edit_category,name='edit_category'),
     path('add-size/', views.add_size, name='add_size'),
     
     path('activate-size/<int:size_id>/', views.activate_size, name='activate_size'),

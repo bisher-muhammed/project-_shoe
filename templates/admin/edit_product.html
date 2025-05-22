@@ -61,75 +61,84 @@
                 </div>
                 
                 <!-- Size selection -->
-                <div class="mb-4">
-                    <label class="form-label">Select Sizes and Enter Quantities</label>
-                    {% for size in size_options %}
-                        <div class="form-check">
-                            <input type="checkbox" name="sizes" value="{{ size.id }}" {% if size.id in form_data.selected_sizes %}checked{% endif %} class="form-check-input">
-                            <label class="form-check-label">{{ size.name }} - Quantity:</label>
-                            <input type="number" name="quantity_{{ size.id }}" value="{% for selected_size in form_data.selected_sizes %}{% if selected_size.size.id == size.id %}{{ selected_size.quantity }}{% endif %}{% endfor %}">
-                        </div>
-                    {% endfor %}
-                </div>
-                <!-- Color selection -->
-                
-                
-                <!-- Product Image 1 -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Product Image 1</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            {% if product.product_img1 %}
-                                <img src="{{ product.product_img1.url }}" alt="Current Image" style="width:300px; height:300px;">
-                            {% else %}
-                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="Upload Image" style="width:300px; height:300px;">
-                            {% endif %}
-                        </div>
-                        <div class="input-upload">
-                            <label for="product_img1" class="form-label">Upload New Image</label>
-                            <input type="file" name="product_img1" class="form-control" id="product_img1">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Product Image 2 -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Product Image 2</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <img src="{{ product.product_img2.url }}" alt="Current Image" style="width:300px; height:300px;">
-                        </div>
-                        <div class="input-upload">
-                            <label for="product_img2" class="form-label">Upload New Image</label>
-                            <input class="form-control" type="file" name="product_img2" id="product_img2" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Product Image 3 -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Product Image 3</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <img src="{{ product.product_img3.url }}" alt="Current Image" style="width:300px; height:300px;">
-                        </div>
-                        <div class="input-upload">
-                            <label for="product_img3" class="form-label">Upload New Image</label>
-                            <input class="form-control" name="product_img3" type="file">
-                        </div>
-                    </div>
-                </div> 
+                <!-- Size selection -->
+<div class="mb-4">
+    <label class="form-label">Select Sizes and Enter Quantities</label>
+    {% for size in size_options %}
+        <div class="form-check mb-2">
+            <input type="checkbox" name="sizes" value="{{ size.id }}" {% if size.checked %}checked{% endif %} class="form-check-input" id="size_{{ size.id }}">
+            <label class="form-check-label" for="size_{{ size.id }}">
+                {{ size.name }} - Quantity:
+            </label>
+            <input type="number" name="quantity_{{ size.id }}" value="{{ size.quantity }}" class="form-control d-inline-block ms-2" style="width: 100px;">
+        </div>
+    {% endfor %}
+</div>
 
-                <!-- Add more form fields for other product details -->
                 
-                <input type="submit" class="btn btn-primary" value="Save">
-            </form>
+               <!-- Product Image 1 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Product Image 1</h4>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            {% if product.product_img1 %}
+                <img src="{{ product.product_img1.url }}" alt="Current Image" style="width:300px; height:300px;">
+            {% else %}
+                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="Upload Image" style="width:300px; height:300px;">
+            {% endif %}
+        </div>
+        <div class="input-upload">
+            <label for="product_img1" class="form-label">Upload New Image</label>
+            <input type="file" class="form-control" name="product_img1" id="product_img1">
+        </div>
+    </div>
+</div>
+
+<!-- Product Image 2 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Product Image 2</h4>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            {% if product.product_img2 %}
+                <img src="{{ product.product_img2.url }}" alt="Current Image" style="width:300px; height:300px;">
+            {% else %}
+                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="Upload Image" style="width:300px; height:300px;">
+            {% endif %}
+        </div>
+        <div class="input-upload">
+            <label for="product_img2" class="form-label">Upload New Image</label>
+            <input class="form-control" type="file" name="product_img2" id="product_img2">
+        </div>
+    </div>
+</div>
+
+<!-- Product Image 3 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Product Image 3</h4>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            {% if product.product_img3 %}
+                <img src="{{ product.product_img3.url }}" alt="Current Image" style="width:300px; height:300px;">
+            {% else %}
+                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="Upload Image" style="width:300px; height:300px;">
+            {% endif %}
+        </div>
+        <div class="input-upload">
+            <label for="product_img3" class="form-label">Upload New Image</label>
+            <input class="form-control" name="product_img3" type="file" id="product_img3">
+        </div>
+    </div>
+</div>
+
+<!-- Submit Button -->
+<input type="submit" class="btn btn-primary" value="Save">
+</form>
         </div>
         <p>Image 1 URL: {{ product.product_img1.url }}</p>
         <p>Image 2 URL: {{ product.product_img2.url }}</p>

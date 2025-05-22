@@ -185,12 +185,11 @@ class Payment(models.Model):
 
     @staticmethod
     def check_sufficient_balance(request, user_wallet, order_total_decimal, order_id):
-        if user_wallet.balance < order_total_decimal and user_wallet.balance == 0.00:
+        if user_wallet.balance < order_total_decimal:
             messages.error(request, 'Insufficient balance')
             return True  # Indicate insufficient balance
 
-        return False
-
+        return False  # Sufficient balance
     
 
 

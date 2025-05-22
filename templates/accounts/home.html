@@ -169,6 +169,7 @@
                                     <img class="hover-img img-fluid position-absolute top-0 start-0 w-100 h-100 transition" src="{{ product.product_img1.url }}" alt="not found" style="object-fit: cover; opacity: 0; transition: opacity 0.3s;">
                                 </a>
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-2 text-white">Hot</span>
+
                             </div>
                         </div>
                         <div class="product-content-wrap">
@@ -193,12 +194,15 @@
                                     {% endif %}
                                 {% endwith %}
                                 <div class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</div>
+
+                                
                             </div>
-                            <div class="product-action-1">
-                                <a href="{% url 'add_wishlist' product_id=product.id %}" class="btn btn-outline-danger btn-sm w-100">
-                                    <i class="fi-rs-heart me-1"></i> Add to Wishlist
-                                </a>
-                            </div>
+
+                                                      <a href="{% url 'add_wishlist' product_id=product.id %}" class="btn btn-outline-danger btn-sm w-100">
+  <i class="far fa-heart me-1"></i> Add to Wishlist
+</a>
+                            
+                            
                         </div>
                     </div>
                 </div>

@@ -12,6 +12,14 @@ urlpatterns = [
     path('verify_otp/',views.verify_otp,name='verify_otp'),
     path('logout_view/',views.logout_view, name='logout_view'),
     path('product_list/', views.product_list, name='product_list'),
+
+
+
+
+
+
+
+
     path('product_detials/<int:product_id>/',views.product_detials, name='product_detials'),
     path('product_list/',views.size_color_options,name='size_color_options'),
     path('resend_otp/',views.resend_otp, name='resend_otp'),
@@ -19,7 +27,9 @@ urlpatterns = [
     path('dashboard/',views.view_profile, name='view_profile'),
     path('dashboard/change-image/',views.change_image_view, name='change_image_view'),
     path('address/',views.addresses, name='addresses'),
+    path('address/delete/<int:address_id>/', views.delete_address, name='delete_address'),
     path('address/<int:address_id>/set_default/',views.set_default_address, name='set_default_address'),
+    path('address/edit/<int:address_id>/', views.edit_address, name='edit_address'),
     path('order_list/',views.order_list, name='order_list'),
     path('view_order/<int:order_id>/',views.view_order, name='view_order'),
     path('cancel_order/<int:order_id>/', views.cancel_order, name='cancel_order'),

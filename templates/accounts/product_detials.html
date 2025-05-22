@@ -44,9 +44,6 @@
                                     <div class="product-rate-cover text-end">
                                         <div class="product-rate d-inline-block">
                                             <div class="product-rating" style="width:90%"></div>
-                                        </div>
-                                        <span class="font-small ml-5 text-muted"> (25 reviews)</span>
-                                    </div>
                                 </div>
                                 <div class="clearfix product-price-cover">
                                     <div class="product-price primary-color float-left">
@@ -78,6 +75,8 @@
                                     </ul>
                                 </div>
                                 <form method="post" action="{% url 'add_to_cart' product.id %}">
+                                <input type="hidden" name="quantity" id="quantity-input" value="1">
+
 
                                     <div class="mb-3">
                                         <strong>Size: </strong>
@@ -116,25 +115,33 @@
                                 
                                 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                                 <script>
-                                    $(document).ready(function () {
-                                        // Initialize the quantity based on the initially selected sizes
-                                        updateQuantity();
-                                
-                                        // Attach an event handler to the size checkboxes
-                                        $('.size-checkbox').on('change', function () {
-                                            updateQuantity();
-                                        });
-                                
-                                        // Function to update the quantity based on selected sizes
-                                        function updateQuantity() {
-                                            // Count the number of selected sizes
-                                            var selectedSizes = $('.size-checkbox:checked').length;
-                                
-                                            // Update the quantity value
-                                            $('.qty-val').text(selectedSizes);
-                                        }
-                                    });
-                                </script>
+                                            $(document).ready(function () {
+                                                // When size is selected
+                                                $('.size-checkbox').on('change', function () {
+                                                    updateQuantity();
+                                                });
+
+                                                // When form is submitted
+                                                $('form').on('submit', function () {
+                                                    updateQuantity(); // Ensure the quantity is up to date
+                                                });
+
+                                                // Update both visible and hidden quantity
+                                                function updateQuantity() {
+                                                    var selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
+
+                                                    // Update visible span
+                                                    $('.qty-val').text(selectedSize);
+
+                                                    // Update hidden input
+                                                    $('#quantity-input').val(selectedSize);
+                                                }
+
+                                                // Run once at the beginning
+                                                updateQuantity();
+                                            });
+                                        </script>
+
                                         <ul class="product-meta font-xs color-grey mt-50">
                                             <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
                                             <li class="mb-5">Tags: <a href="#" rel="tag">Cloth</a>, <a href="#" rel="tag">MEN</a>, <a href="#" rel="tag">SHOES</a></li>
@@ -310,10 +317,6 @@
                     </div>
                     <div class="card-body product-content-wrap">
                         <h2 class="card-title"><a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a></h2>
-                        <div class="rating-result" title="{{ related_product.rating }}">
-                            <!-- Add your rating representation here -->
-                            <span>Rating: {{ related_product.rating }}</span>
-                        </div>
                         <p class="card-text product-price">
                             <span>₹{{ related_product.offer_price }}</span>
                             {% if related_product.original_price %}
