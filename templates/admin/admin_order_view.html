@@ -1,0 +1,110 @@
+{% extends "admin_base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="py-5" style="background: #f8f9fa;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-header bg-dark text-white py-4 px-4 rounded-top-4">
+            <h5 class="mb-0 text-danger">Thanks for your Order, <span class="text-warning">{{ order.address.first_name }}</span>!</h5>
+          </div>
+
+          <div class="card-body p-4">
+            <h4 class="mb-4">Order Summary</h4>
+            
+            <div class="mb-3">
+              <p class="mb-1"><strong>Order Number:</strong> {{ order.order_number }}</p>
+              <p class="mb-1">
+                <strong>Status:</strong> 
+                <span class="badge 
+                  {% if order.status == 'pending' %} bg-warning 
+                  {% elif order.status == 'Delivered' %} bg-success 
+                  {% elif order.status == 'Cancelled' %} bg-danger 
+                  {% elif order.status == 'Returned' %} bg-secondary 
+                  {% elif order.status == 'New' %} bg-primary 
+                  {% else %} bg-dark 
+                  {% endif %}
+                  text-white px-3 py-1 rounded-pill">
+                  {{ order.status }}
+                </span>
+              </p>
+              <p class="mb-1"><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Shipping Address</h5>
+            <div class="mb-4">
+              <p class="mb-1"><strong>Name:</strong> {{ order.address.first_name }} {{ order.address.last_name }}</p>
+              <p class="mb-1"><strong>Address:</strong> {{ order.address.address_1 }}</p>
+              <p class="mb-1"><strong>City:</strong> {{ order.address.city }}</p>
+              <p class="mb-1"><strong>State:</strong> {{ order.address.state }}</p>
+              <p class="mb-1"><strong>Zip Code:</strong> {{ order.address.zipcode }}</p>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Ordered Products</h5>
+            {% for product_order in order_products %}
+            <div class="card mb-3 border-0 shadow-sm">
+              <div class="row g-0 align-items-center">
+                <div class="col-md-2 text-center">
+                  <img src="{{ product_order.product.product_img1.url }}" class="img-fluid rounded" alt="{{ product_order.product.product_name }}">
+                </div>
+                <div class="col-md-10">
+                  <div class="card-body py-2 px-3">
+                    <h6 class="card-title mb-1">{{ product_order.product.product_name }}</h6>
+                    <p class="card-text mb-1"><small class="text-muted">Color: {{ product_order.product.color }}</small></p>
+                    <p class="card-text mb-1"><small class="text-muted">Capacity: {{ product_order.product.capacity }}</small></p>
+                    <p class="card-text mb-1"><small class="text-muted">Qty: {{ product_order.quantity }}</small></p>
+                    <p class="card-text fw-bold text-primary mb-0">₹{{ product_order.product_price }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between">
+              <p class="fw-bold">Subtotal</p>
+              <p>₹{{ order.order_total }}</p>
+            </div>
+            {% if order.coupon %}
+            <div class="d-flex justify-content-between">
+              <p class="fw-bold text-success">Coupon Discount</p>
+              <p class="text-success">- ₹{{ order.coupon.discount_amount }}</p>
+            </div>
+            <div class="d-flex justify-content-between">
+              <p class="fw-bold">Total After Discount</p>
+              <p class="fw-bold">₹{{ order.order_value }}</p>
+            </div>
+            {% else %}
+            <div class="d-flex justify-content-between">
+              <p class="fw-bold">Total</p>
+              <p class="fw-bold">₹{{ order.order_total }}</p>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="card-footer text-end bg-dark text-white py-4 rounded-bottom-4">
+            <h5 class="mb-0">Total Paid: 
+              <span class="text-warning">
+              {% if order.coupon %}
+                ₹{{ order.order_value }}
+              {% else %}
+                ₹{{ order.order_total }}
+              {% endif %}
+              </span>
+            </h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock content %}
+

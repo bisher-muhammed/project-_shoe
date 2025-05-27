@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'core',
     'matplotlib',
     'image_cropping',
+    'dj_database_url'
      
    
 

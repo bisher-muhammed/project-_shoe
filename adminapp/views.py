@@ -268,104 +268,6 @@ def add_product(request):
             error_message = f"Error creating product: {e}"
 
     return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes})
-# def add_product(request):
-#     categories = Category.objects.all()
-#     brands = Brand.objects.all()
-#     size_options = Size.objects.filter(is_active=True)
-#     color_options = Color.objects.filter(is_active=True)
-#     error_message = None
-#     form_data = {}
-#     selected_sizes = []  # Initialize with an empty list
-#     selected_colors = []  
-   
-
-#     if request.method == 'POST':
-#         # Use request.FILES for file uploads
-#         product_img1 = request.FILES.get('product_img1')
-#         product_img2 = request.FILES.get('product_img2')
-#         product_img3 = request.FILES.get('product_img3')
-
-#         fields_to_validate = [
-#             'product_name',
-#             'product_category',
-#             'product_brand',
-#             'product_description',
-#             'original_price',
-#             'offer_price',
-            
-           
-#         ]
-
-#         for field in fields_to_validate:
-#             value = request.POST.get(field)
-#             form_data[field] = value
-#             if not value:
-#                 print(form_data)  # Debugging line
-#                 error_message = f"Please enter a value for {field.replace('_', ' ')}"
-#                 break
-
-#         try:
-#             if not error_message:
-#                 # Extract other fields as before
-#                 product_name = form_data['product_name']
-#                 product_category_id = form_data['product_category']
-#                 product_brand_id = form_data['product_brand']
-#                 product_description = form_data['product_description']
-#                 original_price = form_data['original_price']
-#                 offer_price = form_data['offer_price']
-               
-#                 if (offer_price) >= (original_price):
-#                     return HttpResponse("Offer price must be less than original price.")
-                
-#                 category = Category.objects.get(id=product_category_id)
-#                 brand = Brand.objects.get(id=product_brand_id)
-                
-
-#                 with transaction.atomic():
-#                     product = Product.objects.create(
-#                         product_name=product_name,
-#                         product_description=product_description,
-#                         original_price=original_price,
-#                         offer_price=offer_price,
-#                         category=category,
-#                         brand=brand,
-                        
-#                         product_img1=product_img1,
-#                         product_img2=product_img2,
-#                         product_img3=product_img3,
-          
-#                     )
-
-#                     product_size_ids = request.POST.getlist('sizes')
-#                     for size_id in product_size_ids:
-#                         size = Size.objects.get(id=size_id)
-#                         product.sizes.add(size)
-
-#                     # Handle multiple colors
-#                     product_color_ids = request.POST.getlist('colors')
-#                     for color_id in product_color_ids:
-#                         color = Color.objects.get(id=color_id)
-#                         product.colors.add(color)
-
-#                     # Set selected sizes again
-#                     selected_sizes = request.POST.getlist('sizes')
-#                     product.sizes.set(selected_sizes)
-
-#                     # Set selected colors again
-#                     selected_colors = request.POST.getlist('colors')
-#                     product.colors.set(selected_colors)
-
-#                     product.save()
-#                 return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'color_options': color_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes, 'selected_colors': selected_colors})
-
-                    
-
-#             return redirect('add_product')
-
-#         except (Category.DoesNotExist, Brand.DoesNotExist, Size.DoesNotExist) as e:
-#             error_message = f"Error creating product: {e}"
-
-#     return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'color_options': color_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes, 'selected_colors': selected_colors})
 
 def admin_brand(request):
     if request.method == 'POST':
@@ -614,14 +516,6 @@ def edit_product(request, product_id):
 
 @never_cache
 def admin_userlist(request):
-    # search_query = request.GET.get('search')
-
-    # if search_query:
-    #     data = User.objects.filter(Q(username__icontains=search_query) | Q(email__icontains=search_query)).order_by('id')
-    # else:
-    #     data = User.objects.all().order_by('id')
-
-    # context = {"data": data, "search": search_query}
 
     data=User.objects.filter(is_superuser=False).order_by('id')
 
@@ -1139,3 +1033,18 @@ def edit_category(request, category_id):
         return redirect('admin_category')
 
     return render(request, 'admin/edit_category.html', {'category': category})
+
+
+def view_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order_products = ProductOrder.objects.filter(order=order)
+
+    context = {
+        'order': order,
+        'order_products': order_products,
+        
+    }
+
+    return render(request, 'admin/admin_order_view.html',context)
+
+

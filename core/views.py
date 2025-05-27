@@ -185,28 +185,6 @@ def cart_update(request, cart_item_id):
     logger.info(f"Cart update data: {json.dumps(data)}")
     return JsonResponse(data)
 
-# def cart_update(request, cart_item_id):
-#     cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
-    
-#     data = json.loads(request.body.decode('utf-8'))
-#     action = data.get('action')
-    
-#     if action == 'increase':
-#         # Calculate the remaining quantity that can be added
-#         remaining_quantity = cart_item.product_size.quantity - cart_item.quantity
-#         # Increase the quantity up to the available quantity
-#         cart_item.quantity += min(remaining_quantity, 1)
-#     elif action == 'decrease' and cart_item.quantity > 1:
-#         cart_item.quantity -= 1
-
-#     cart_item.save()
-
-#     data = {
-#         'quantity': cart_item.quantity,
-#         'subtotal': calculate_subtotal(cart_item),
-#     }
-#     logger.info(f"Cart update data: {json.dumps(data)}")
-#     return JsonResponse(data)
 
 def calculate_cart_total(cart_items):
     total = 0
@@ -550,27 +528,7 @@ def coupon_list(request):
 
     return render(request, 'admin/coupon_management.html', {'coupon_list': coupon_list,})
 
-# views.py
-# from django.http import JsonResponse
-# from adminapp.models import Coupon
 
-# def get_discount_amount(request):
-#     if request.method == 'POST':
-#         coupon_code = request.POST.get('coupon_code')
-#         print(f"Received Coupon Code: {coupon_code}")
-
-#         try:
-#             coupon = Coupon.objects.get(coupon_code=coupon_code, is_blocked=False)
-#             print(f"Found Coupon: {coupon}")
-#             discount_amount = coupon.discount_amount
-#         except Coupon.DoesNotExist:
-#             print("Coupon Not Found")
-#             discount_amount = 0
-
-#         # Process the discount_amount as needed and render the checkout page
-#         return render(request, 'CART/checkout.html', {'discount_amount': discount_amount})
-
-#     return JsonResponse({'discount_amount': 0})
 
 from django.shortcuts import redirect, get_object_or_404
 

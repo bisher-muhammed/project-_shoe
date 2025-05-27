@@ -106,211 +106,6 @@ def home(request):
 
     
 
-# @never_cache
-# def login_view(request):
-#     if 'username' in request.session:
-#         return redirect('home')
-#     if request.method=='POST':
-#         username=request.POST.get('username')
-#         password=request.POST.get('password')
-#         if not username or not password:
-#             error = "Both username and password are required."
-#             return render(request, 'accounts/login_view.html', {'error': error})
-
-#         user=authenticate(username=username,password=password)
-#         if user is not None:
-#             request.session['username']=username
-#             login(request,user)
-#             return redirect("home")
-#         else:
-#             error = "Invalid credentials"
-#             return render(request, 'accounts/login_view.html', {'error': error})
-
-#     return render(request,'accounts/login_view.html')# Assuming you have a URL named 'login'
-
-# @cache_control(must_revalidate=True, no_transform=True, no_cache=True, no_store=True)
-# def signup_view(request):
-#     if request.method=='POST':
-#         username=request.POST.get('username')
-#         email=request.POST.get('email')
-#         password=request.POST.get('pass1')
-#         confrim_password=request.POST.get('pass2')
-
-#         request.session['uname'] = username
-#         request.session['email'] = email
-#         request.session['password'] = password
-
-
-
-#         try:
-#             if not username or  not email or not password:
-#                 messages.error(request, 'Enter details to field')
-#                 return redirect('signup_view')
-#         except:
-#             pass
-
-#         try:
-#             if User.objects.filter(username=username).exists():
-#                 messages.error(request, "Username already exists. Please choose a different one.")
-#                 return redirect("signup_view")
-#             elif not username.isalnum():
-#                 messages.warning(request, "Username contains invalid characters. Please use only letters and numbers.")
-#                 return redirect("signup_view")
-#         except:
-#             pass
-
-#         try:
-#             if User.objects.filter(email=email):
-#                 messages.error(request, "Email already exists")
-#                 return redirect("signup_view")
-#         except:
-#             pass
-
-#         try:
-#             validate_email(email)
-#         except ValidationError:
-#             messages.error(request, "Invalid email address")
-#             return redirect('signup_view')
-
-#         try:
-#             if password !=confrim_password:
-#                 messages.error(request, "passwords not matching")
-#                 return redirect("signup_view")
-#         except:
-#             pass
-
-#         try:
-#             if len(username)>20:
-#                 messages.error(request, "username is too long")
-#                 return redirect("signup_view")
-#         except:
-#             pass
-
-#         try:
-#             if len(password)<8:
-#                 messages.error(request, "Password must be at least 8 characters")
-#                 return redirect("signup_view")
-#         except:
-#             pass
-
-#         request.session['verification_type'] = 'signup_view'
-#         send_otp(request)
-#         return render(request, 'accounts/otp_verification.html')
-
-#     return render(request, 'accounts/signup_view.html')
-# import time
-# from datetime import datetime
-
-# def send_otp(request):
-#     s=""
-#     for x in range(0,4):
-#         s+=str(random.randint(0,9))
-#     print(s)
-#     request.session["otp"] = s
-#     request.session["otp_creation_time"] = time.time()
-    
-    
-#     email = request.session.get('email')
-#     send_mail("otp for sign up", s, 'bisherp2@gmail.com', [request.session['email']], fail_silently=False)
-#     return render(request, 'accounts/otp_verification.html')
-   
-
-# from django.shortcuts import render, redirect
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from django.contrib.auth.models import User
-
-# # ... (other imports)
-
-# from django.shortcuts import render, redirect
-# from django.contrib.auth import authenticate, login
-# from django.contrib import messages
-# from django.contrib.auth.models import User
-# import random
-# import time
-# from django.core.mail import send_mail
-# from django.urls import reverse
-
-# def otp_verification(request):
-#     print("Inside otp_verification view")
-#     print(f"Session data before redirection: {request.session}")
-
-#     email = request.session.get('email', '')  # Define email here with a default value
-
-#     if request.method == 'POST':
-#         otp_entered = request.POST.get('otp')
-#         otp_sent = request.session.get('otp')
-
-#         # Get OTP creation time from session
-#         otp_creation_time = request.session.get('otp_creation_time', 0)
-
-#         # Check if OTP is expired (more than 60 seconds old)
-#         if time.time() - otp_creation_time > 60:
-#             messages.error(request, "OTP has expired. Please request a new one.")
-#             return render(request, 'accounts/otp_verification.html', {"email": email})
-
-#         user_id = request.session.get('user_id')
-#         verification_type = request.session.get('verification_type')
-
-#         print(f"Verification type: {verification_type}")
-
-#         if otp_entered == otp_sent:
-#             username = request.session.get('uname')
-#             email = request.session.get('email')
-#             password = request.session.get('password')
-
-#             if verification_type == 'signup_view':
-#                 user = User.objects.create_user(username=username, email=email, password=password)
-#                 user.save()
-#                 return redirect('login_view')  # Redirect to login page for signup_view
-
-#             elif verification_type == 'login_view':
-#                 user = authenticate(request, username=email, password=password)
-#                 if user is not None:
-#                     username = user.username
-#                     request.session['username'] = username
-#                     login(request, user)
-#                     return redirect('home')
-#                 else:
-#                     messages.error(request, 'Invalid credentials')
-#                     return redirect('login_view')
-
-#         elif verification_type == 'forgot_password':
-#                 new_password = request.POST.get('new_password')  # Retrieve the new password from the form
-
-#                 try:
-#                     user = User.objects.get(id=user_id, email=email)
-#                     user.set_password(new_password)
-#                     user.save()
-#                     messages.success(request, 'Password updated successfully!')
-                    
-#                     return redirect('forgot_password')  # Redirect to login page for forgot_password
-
-#                 except User.DoesNotExist:
-#                     messages.error(request, 'User does not exist.')
-#                     return redirect('login_view')  # Redirect to login page for forgot_password
-
-#                 except Exception as e:
-#                     messages.error(request, f'Error updating password: {e}')
-
-#         else:
-#             messages.error(request, "Invalid OTP. Please try again.")
-#             return render(request, 'accounts/otp_verification.html', {"email": email})
-
-#     # Handle GET requests by rendering the OTP verification form
-#     return render(request, 'accounts/otp_verification.html', {"email": request.session.get('email')})
-
-
-
-# def resend_otp(request):
-#     new_otp = "".join([str(random.randint(0, 9)) for _ in range(4)])
-#     print("New OTP:", new_otp)
-#     email = request.session.get('email')
-#     send_mail("New OTP for Sign Up", new_otp, 'bisherp2@gmail.com', [email], fail_silently=False)
-#     request.session['otp'] = new_otp
-#     print("Resending OTP...")
-
-# # ... (other views)
 
 
 @never_cache
@@ -685,9 +480,7 @@ def view_profile(request):
         # Assuming the user profile is related to the logged-in user
         user_profile = request.user.profile
     except UserProfile.DoesNotExist:
-        # If the profile does not exist, you can handle it here.
-        # For example, you can redirect to a profile creation page or show an error message.
-        # For simplicity, setting user_profile to None in this case.
+
         user_profile = None
 
     context = {
@@ -758,20 +551,7 @@ def add_address(request):
 
 
 
-# @login_required
-# def addresses(request):
-#     user_profile = get_object_or_404(UserProfile, user=request.user)
-#     addresses = AddressUS.objects.filter(user_profile=user_profile)
 
-#     # Check if there is no default address set, and set the first address as default
-#     if not any(address.is_default for address in addresses):
-#         first_address = addresses.first()
-#         if first_address:
-#             with transaction.atomic():
-#                 first_address.is_default = True
-#                 first_address.save()
-
-#     return render(request, 'accounts/address.html', {'addresses': addresses})
 @login_required
 def addresses(request):
     # Try to get the UserProfile, or create a new one if it doesn't exist
@@ -1032,112 +812,7 @@ def wallet(request):
 
     return render(request, 'accounts/wallet.html', context)
  
-# def reason_view(request, order_id):
-#     # Implement logic for the reason_view here
-#     # This could include rendering a template for the user to provide the return reason
-#     # or any other logic you need
 
-#     context = {'order_id': order_id}
-    
-#     # Render the reason template with the context
-#     return render(request,'accounts/reason_view.html', context)
-
-
-
-
-# def email_valid(request):
-#     if request.method == 'POST':
-#         provided_email = request.POST.get('email')
-#         print(f"Provided Email: {provided_email}")
-
-#         try:
-#             validate_email(provided_email)
-#             users = User.objects.filter(email=provided_email)
-
-#             if users.exists():
-#                 if users.count() == 1:
-#                     user = users.first()
-
-#                     # Store user and email in session for verification in otp_verification view
-#                     request.session['user_id'] = user.id
-#                     request.session['email'] = provided_email
-#                     request.session['verification_type'] = 'forgot_password'  # Set the correct verification_type for forgot password
-
-#                     # Call send_otp function from your utils module
-#                     send_otp(request)
-
-#                     print("Redirecting to otp_verification")
-#                     return redirect('otp_verification')
-
-#                 else:
-#                     messages.error(request, 'Multiple users with the same email. Contact support.')
-#                     print("Redirect failed: Multiple users")
-#                     return render(request, 'accounts/email_valid.html')
-
-#             else:
-#                 messages.error(request, 'User with this email does not exist.')
-#                 print("Redirect failed: User does not exist")
-#                 return render(request, 'accounts/email_valid.html')
-
-#         except ValidationError as e:
-#             print(f"Email validation error: {e}")
-#             messages.error(request, 'Invalid email address.')
-#             print("Redirect failed: Invalid email address")
-#             return render(request, 'accounts/email_valid.html')
-
-#         except Exception as e:
-#             print(f"Error sending OTP: {e}")
-#             messages.error(request, 'Error sending OTP. Please try again.')
-#             print("Redirect failed: Error sending OTP")
-#             return render(request, 'accounts/email_valid.html')
-
-#     # If the request method is GET, handle it here
-#     return render(request, 'accounts/email_valid.html')
-
-
-# def forgot_password(request):
-#     if request.method == 'POST':
-#         # Get user details from session
-#         user_id = request.session.get('user_id')
-#         email = request.session.get('email')
-
-#         try:
-#             # Update the user's password
-#             user = User.objects.get(id=user_id, email=email)
-
-#             # Retrieve the new password and confirmation password from the form
-#             new_password = request.POST.get('new_password')
-#             confirm_password = request.POST.get('confirm_password')
-
-#             # Validate that the new password matches the confirmation password
-#             if new_password != confirm_password:
-#                 messages.error(request, 'New password and confirmation password do not match.')
-#                 return redirect('forgot_password')
-
-#             # Validate the new password
-#             if len(new_password) < 8:
-#                 messages.error(request, 'Password must be at least 8 characters long.')
-#                 return redirect('forgot_password')
-
-#             # Update the user's password
-#             user.set_password(new_password)
-#             user.save()
-
-#             # Clear only the specific session data related to password reset
-            
-
-#             # Redirect to the login page
-#             messages.success(request, 'Password updated successfully!')
-#             return redirect('login_view')
-
-#         except User.DoesNotExist:
-#             messages.error(request, 'User does not exist.')
-#             return redirect('login_view')
-
-#         except Exception as e:
-#             messages.error(request, f'Error updating password: {e}')
-
-#     return render(request, 'accounts/forgot_password.html')
 
 @login_required
 def edit_address(request, address_id):
@@ -1197,18 +872,12 @@ def shop_lists(request):
     if max_price_param is not None:
         max_price = float(max_price_param)
     else:
-        # Use a large number instead of infinity
         max_price = 1e20
 
     # Filter products based on the offer price range
     filtered_products = Product.objects.filter(offer_price__gte=min_price, offer_price__lte=max_price)
-    # selected_brand =request.GET.get('brand')
-    # selected_category= request.GET.get('caategory')
 
-    # if selected_category:
-    #     products = products.filter(category__category_name=selected_category)
-    # if selected_brand:
-    #     products = products.filter(brand__brand_name=selected_brand)
+    
 
      # Pagination logic
     page = request.GET.get('page', 1)
