@@ -363,12 +363,6 @@
     font-weight: 700;
 }
 
-/* Loading animation */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .content-main {
@@ -381,247 +375,298 @@
 }
 </style>
 
+<!-- jQuery 3.6+ (Fallback compatible) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('productForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const originalPrice = document.getElementById('original_price');
-    const offerPrice = document.getElementById('offer_price');
-    const savingsDisplay = document.getElementById('savings-display');
-    const messageContainer = document.getElementById('message-container');
+// Production-compatible JavaScript (ES5 syntax)
+(function() {
+    'use strict';
+    
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('productForm');
+        var submitBtn = document.getElementById('submitBtn');
+        var originalPrice = document.getElementById('original_price');
+        var offerPrice = document.getElementById('offer_price');
+        var savingsDisplay = document.getElementById('savings-display');
+        var messageContainer = document.getElementById('message-container');
 
-    // Real-time price validation and savings calculation
-    function updatePriceValidation() {
-        const original = parseFloat(originalPrice.value) || 0;
-        const offer = parseFloat(offerPrice.value) || 0;
-        
-        if (original > 0 && offer > 0) {
-            if (offer >= original) {
-                offerPrice.setCustomValidity('Sale price must be less than regular price');
-                offerPrice.classList.add('is-invalid');
-                savingsDisplay.textContent = '';
-            } else {
-                offerPrice.setCustomValidity('');
-                offerPrice.classList.remove('is-invalid');
-                const savings = original - offer;
-                const percentage = ((savings / original) * 100).toFixed(1);
-                savingsDisplay.innerHTML = `<i class="fas fa-tag me-1"></i>You save ₹${savings.toFixed(2)} (${percentage}% off)`;
-            }
-        }
-    }
-
-    originalPrice.addEventListener('input', updatePriceValidation);
-    offerPrice.addEventListener('input', updatePriceValidation);
-
-    // Size and quantity management
-    const sizeCheckboxes = document.querySelectorAll('.size-checkbox');
-    sizeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const sizeItem = this.closest('.size-item');
-            const quantitySection = sizeItem.querySelector('.quantity-section');
-            const quantityInput = sizeItem.querySelector('.quantity-input');
+        // Price validation and savings calculation
+        function updatePriceValidation() {
+            var original = parseFloat(originalPrice.value) || 0;
+            var offer = parseFloat(offerPrice.value) || 0;
             
-            if (this.checked) {
-                sizeItem.classList.add('active');
-                quantitySection.style.display = 'block';
-                quantityInput.value = '1';
-                quantityInput.required = true;
-            } else {
-                sizeItem.classList.remove('active');
-                quantitySection.style.display = 'none';
-                quantityInput.value = '0';
-                quantityInput.required = false;
+            if (original > 0 && offer > 0) {
+                if (offer >= original) {
+                    offerPrice.setCustomValidity('Sale price must be less than regular price');
+                    addClass(offerPrice, 'is-invalid');
+                    savingsDisplay.textContent = '';
+                } else {
+                    offerPrice.setCustomValidity('');
+                    removeClass(offerPrice, 'is-invalid');
+                    var savings = original - offer;
+                    var percentage = ((savings / original) * 100).toFixed(1);
+                    savingsDisplay.innerHTML = '<i class="fas fa-tag me-1"></i>You save ₹' + savings.toFixed(2) + ' (' + percentage + '% off)';
+                }
             }
-        });
-    });
-
-    // Image handling
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    function handleImageChange(event, index) {
-        const input = event.target;
-        const preview = document.getElementById(`preview${index}`);
-        preview.innerHTML = '';
-
-        const file = input.files[0];
-        if (!file) return;
-
-        // Validate file type
-        if (!allowedTypes.includes(file.type)) {
-            showFieldError(input, 'Only JPG, PNG, or WebP images are allowed');
-            input.value = '';
-            return;
         }
 
-        // Validate file size
-        if (file.size > maxSize) {
-            showFieldError(input, 'Image must be smaller than 5MB');
-            input.value = '';
-            return;
-        }
+        // Add event listeners for price inputs
+        if (originalPrice) originalPrice.addEventListener('input', updatePriceValidation);
+        if (offerPrice) offerPrice.addEventListener('input', updatePriceValidation);
 
-        // Clear any previous errors
-        clearFieldError(input);
-
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <div class="position-relative">
-                    <img src="${e.target.result}" class="image-preview img-fluid">
-                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
-                            onclick="removeImage(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mt-2">
-                    <small class="text-muted">
-                        <i class="fas fa-file-image me-1"></i>
-                        ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </small>
-                </div>
-            `;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Attach image handlers
-    document.getElementById('image1').addEventListener('change', (e) => handleImageChange(e, 1));
-    document.getElementById('image2').addEventListener('change', (e) => handleImageChange(e, 2));
-    document.getElementById('image3').addEventListener('change', (e) => handleImageChange(e, 3));
-
-    // Form validation
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-
-        // Clear previous errors
-        clearAllErrors();
-
-        // Validate required fields
-        const requiredFields = [
-            { field: document.getElementById('product_name'), message: 'Product name is required' },
-            { field: document.querySelector('[name="product_description"]'), message: 'Product description is required' },
-            { field: originalPrice, message: 'Regular price is required' },
-            { field: offerPrice, message: 'Sale price is required' },
-            { field: document.querySelector('[name="product_category"]'), message: 'Please select a category' },
-            { field: document.querySelector('[name="product_brand"]'), message: 'Please select a brand' },
-            { field: document.getElementById('image1'), message: 'Main image is required' },
-            { field: document.getElementById('image2'), message: ' image is required' },
-            { field: document.getElementById('image3'), message: ' image is required' },
-        ];
-
-        requiredFields.forEach(item => {
-            if (!item.field.value.trim()) {
-                showFieldError(item.field, item.message);
-                isValid = false;
-            }
-        });
-
-        // Validate prices
-        const original = parseFloat(originalPrice.value) || 0;
-        const offer = parseFloat(offerPrice.value) || 0;
-
-        if (original <= 0) {
-            showFieldError(originalPrice, 'Regular price must be greater than 0');
-            isValid = false;
-        }
-
-        if (offer <= 0) {
-            showFieldError(offerPrice, 'Sale price must be greater than 0');
-            isValid = false;
-        }
-
-        if (original > 0 && offer > 0 && offer >= original) {
-            showFieldError(offerPrice, 'Sale price must be less than regular price');
-            isValid = false;
-        }
-
-        // Validate sizes and quantities
-        const selectedSizes = document.querySelectorAll('input[name="sizes"]:checked');
-        if (selectedSizes.length === 0) {
-            document.getElementById('sizes-error').classList.remove('d-none');
-            isValid = false;
-        } else {
-            document.getElementById('sizes-error').classList.add('d-none');
-            
-            selectedSizes.forEach(sizeCheckbox => {
-                const sizeId = sizeCheckbox.value;
-                const quantityInput = document.getElementById(`quantity_${sizeId}`);
-                const quantity = parseInt(quantityInput.value) || 0;
+        // Size and quantity management
+        var sizeCheckboxes = document.querySelectorAll('.size-checkbox');
+        for (var i = 0; i < sizeCheckboxes.length; i++) {
+            sizeCheckboxes[i].addEventListener('change', function() {
+                var sizeItem = findAncestor(this, 'size-item');
+                var quantitySection = sizeItem.querySelector('.quantity-section');
+                var quantityInput = sizeItem.querySelector('.quantity-input');
                 
-                if (quantity <= 0) {
-                    showFieldError(quantityInput, 'Quantity must be greater than 0');
-                    isValid = false;
+                if (this.checked) {
+                    addClass(sizeItem, 'active');
+                    quantitySection.style.display = 'block';
+                    quantityInput.value = '1';
+                    quantityInput.required = true;
+                } else {
+                    removeClass(sizeItem, 'active');
+                    quantitySection.style.display = 'none';
+                    quantityInput.value = '0';
+                    quantityInput.required = false;
                 }
             });
         }
 
-        if (!isValid) {
-            e.preventDefault();
-            showMessage('Please fix the errors below before submitting.', 'danger');
-            return;
+        // Image handling
+        var allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        var maxSize = 5 * 1024 * 1024; // 5MB
+
+        function handleImageChange(event, index) {
+            var input = event.target;
+            var preview = document.getElementById('preview' + index);
+            preview.innerHTML = '';
+
+            var file = input.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (allowedTypes.indexOf(file.type) === -1) {
+                showFieldError(input, 'Only JPG, PNG, or WebP images are allowed');
+                input.value = '';
+                return;
+            }
+
+            // Validate file size
+            if (file.size > maxSize) {
+                showFieldError(input, 'Image must be smaller than 5MB');
+                input.value = '';
+                return;
+            }
+
+            // Clear any previous errors
+            clearFieldError(input);
+
+            // Show preview
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = 
+                    '<div class="position-relative">' +
+                        '<img src="' + e.target.result + '" class="image-preview img-fluid">' +
+                        '<button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage(' + index + ')">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="mt-2">' +
+                        '<small class="text-muted">' +
+                            '<i class="fas fa-file-image me-1"></i>' +
+                            file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)' +
+                        '</small>' +
+                    '</div>';
+            };
+            reader.readAsDataURL(file);
         }
 
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.querySelector('.btn-text').textContent = 'Creating Product...';
-        submitBtn.querySelector('.spinner-border').classList.remove('d-none');
+        // Attach image handlers
+        var image1 = document.getElementById('image1');
+        var image2 = document.getElementById('image2');  
+        var image3 = document.getElementById('image3');
+        
+        if (image1) {
+            image1.addEventListener('change', function(e) {
+                handleImageChange(e, 1);
+            });
+        }
+        if (image2) {
+            image2.addEventListener('change', function(e) {
+                handleImageChange(e, 2);
+            });
+        }
+        if (image3) {
+            image3.addEventListener('change', function(e) {
+                handleImageChange(e, 3);
+            });
+        }
+
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            var isValid = true;
+
+            // Clear previous errors
+            clearAllErrors();
+
+            // Validate required fields
+            var requiredFields = [
+                { field: document.getElementById('product_name'), message: 'Product name is required' },
+                { field: document.querySelector('[name="product_description"]'), message: 'Product description is required' },
+                { field: originalPrice, message: 'Regular price is required' },
+                { field: offerPrice, message: 'Sale price is required' },
+                { field: document.querySelector('[name="product_category"]'), message: 'Please select a category' },
+                { field: document.querySelector('[name="product_brand"]'), message: 'Please select a brand' },
+                { field: document.getElementById('image1'), message: 'Main image is required' }
+            ];
+
+            for (var i = 0; i < requiredFields.length; i++) {
+                var item = requiredFields[i];
+                if (item.field && (!item.field.value || !item.field.value.trim())) {
+                    showFieldError(item.field, item.message);
+                    isValid = false;
+                }
+            }
+
+            // Validate prices
+            var original = parseFloat(originalPrice.value) || 0;
+            var offer = parseFloat(offerPrice.value) || 0;
+
+            if (original <= 0) {
+                showFieldError(originalPrice, 'Regular price must be greater than 0');
+                isValid = false;
+            }
+
+            if (offer <= 0) {
+                showFieldError(offerPrice, 'Sale price must be greater than 0');
+                isValid = false;
+            }
+
+            if (original > 0 && offer > 0 && offer >= original) {
+                showFieldError(offerPrice, 'Sale price must be less than regular price');
+                isValid = false;
+            }
+
+            // Validate sizes and quantities
+            var selectedSizes = document.querySelectorAll('input[name="sizes"]:checked');
+            var sizesError = document.getElementById('sizes-error');
+            
+            if (selectedSizes.length === 0) {
+                removeClass(sizesError, 'd-none');
+                isValid = false;
+            } else {
+                addClass(sizesError, 'd-none');
+                
+                for (var j = 0; j < selectedSizes.length; j++) {
+                    var sizeCheckbox = selectedSizes[j];
+                    var sizeId = sizeCheckbox.value;
+                    var quantityInput = document.getElementById('quantity_' + sizeId);
+                    var quantity = parseInt(quantityInput.value) || 0;
+                    
+                    if (quantity <= 0) {
+                        showFieldError(quantityInput, 'Quantity must be greater than 0');
+                        isValid = false;
+                    }
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                showMessage('Please fix the errors below before submitting.', 'danger');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').textContent = 'Creating Product...';
+            removeClass(submitBtn.querySelector('.spinner-border'), 'd-none');
+        });
+
+        // Helper functions
+        function showFieldError(field, message) {
+            addClass(field, 'is-invalid');
+            var feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.textContent = message;
+            }
+        }
+
+        function clearFieldError(field) {
+            removeClass(field, 'is-invalid');
+            var feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.textContent = '';
+            }
+        }
+
+        function clearAllErrors() {
+            var invalidFields = document.querySelectorAll('.is-invalid');
+            for (var k = 0; k < invalidFields.length; k++) {
+                removeClass(invalidFields[k], 'is-invalid');
+            }
+            
+            var feedbacks = document.querySelectorAll('.invalid-feedback');
+            for (var l = 0; l < feedbacks.length; l++) {
+                feedbacks[l].textContent = '';
+            }
+            
+            var sizesError = document.getElementById('sizes-error');
+            if (sizesError) {
+                addClass(sizesError, 'd-none');
+            }
+        }
+
+        function showMessage(message, type) {
+            var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            var icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+            
+            messageContainer.innerHTML = 
+                '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                    '<i class="' + icon + ' me-2"></i>' +
+                    message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+            
+            messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Utility functions
+        function addClass(element, className) {
+            if (element.classList) {
+                element.classList.add(className);
+            } else {
+                element.className += ' ' + className;
+            }
+        }
+
+        function removeClass(element, className) {
+            if (element.classList) {
+                element.classList.remove(className);
+            } else {
+                element.className = element.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+            }
+        }
+
+        function findAncestor(el, cls) {
+            while ((el = el.parentElement) && !el.classList.contains(cls));
+            return el;
+        }
     });
 
-    // Helper functions
-    function showFieldError(field, message) {
-        field.classList.add('is-invalid');
-        const feedback = field.parentNode.querySelector('.invalid-feedback');
-        if (feedback) {
-            feedback.textContent = message;
-        }
-    }
-
-    function clearFieldError(field) {
-        field.classList.remove('is-invalid');
-        const feedback = field.parentNode.querySelector('.invalid-feedback');
-        if (feedback) {
-            feedback.textContent = '';
-        }
-    }
-
-    function clearAllErrors() {
-        document.querySelectorAll('.is-invalid').forEach(field => {
-            field.classList.remove('is-invalid');
-        });
-        document.querySelectorAll('.invalid-feedback').forEach(feedback => {
-            feedback.textContent = '';
-        });
-        document.getElementById('sizes-error').classList.add('d-none');
-    }
-
-    function showMessage(message, type) {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
-        
-        messageContainer.innerHTML = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                <i class="${icon} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    // Remove image function (global scope)
+    // Global function for removing images
     window.removeImage = function(index) {
-        const input = document.getElementById(`image${index}`);
-        const preview = document.getElementById(`preview${index}`);
-        input.value = '';
-        preview.innerHTML = '';
-        clearFieldError(input);
+        var input = document.getElementById('image' + index);
+        var preview = document.getElementById('preview' + index);
+        if (input) input.value = '';
+        if (preview) preview.innerHTML = '';
     };
-});
+})();
 </script>
 
 {% endblock content %}
-
