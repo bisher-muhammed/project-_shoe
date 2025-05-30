@@ -381,6 +381,7 @@
 }
 </style>
 
+{% block script %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('productForm');
@@ -621,6 +622,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 </script>
-
+{% endblock %}
 {% endblock content %}
 

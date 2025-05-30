@@ -218,6 +218,8 @@
 <script src="{% static 'assets/js/main.js' %}"></script>
 <script src="{% static 'assets/js/custom-chart.js' %}"></script>
 
+ {% block script %}{% endblock %}
+
 <!-- Optionally include CDN fallback if static files fail -->
 <!-- (Recommended only if local files are not reliable) -->
 {# 
