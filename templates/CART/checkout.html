@@ -1,14 +1,29 @@
 {% extends 'user_base.html' %}
 {% load static %}
+
 {% block content %}
+
+
+<style>
+    .coupon-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .coupon-card:hover {
+        border-color: #000;
+        background-color: #f8f9fa;
+    }
+    input[type="radio"]:checked + .coupon-card {
+        background-color: #e2e6ea;
+        border-color: #000;
+    }
+</style>
+
+
+
 <main class="main bg-light">
     <div class="page-header py-4 bg-white shadow-sm">
         <div class="container">
-            <nav class="breadcrumb">
-                <a href="{% url 'home' %}" class="text-decoration-none text-muted">Home</a>
-                <span class="mx-2">›</span>
-                <span class="text-muted">Checkout</span>
-            </nav>
         </div>
     </div>
 
@@ -18,27 +33,60 @@
 
                 <!-- Left Column -->
                 <div class="col-lg-6">
-                    <!-- Coupon Form -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <h5 class="mb-3">Have a Coupon?</h5>
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="coupon_code" class="form-label">Coupon Code</label>
-                                    <select name="selected_coupon_code" id="coupon_code" class="form-select">
-                                        <option value="" disabled selected>Select a coupon</option>
-                                        {% for coupon in coupon_list %}
-                                            {% if not coupon.is_blocked %}
-                                                <option value="{{ coupon.coupon_code }}">{{ coupon.coupon_code }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100">Apply Coupon</button>
-                            </form>
+
+                   <!-- Coupon Form -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <h5 class="mb-3">Available Coupons</h5>
+                                <form method="post" action="{% url 'checkout' %}">
+                                    {% csrf_token %}
+                                    {% if coupon_list %}
+                                        <div class="row">
+                                            {% for coupon in coupon_list %}
+                                                {% if not coupon.is_blocked %}
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="coupon_{{ coupon.id }}" class="w-100">
+                                                            <input type="radio" name="selected_coupon_code" value="{{ coupon.coupon_code }}"
+                                                                id="coupon_{{ coupon.id }}"
+                                                                class="d-none"
+                                                                {% if selected_coupon_code == coupon.coupon_code %}checked{% endif %}>
+                                                            <div class="border p-3 rounded coupon-card {% if selected_coupon_code == coupon.coupon_code %}bg-light border-dark{% else %}border-secondary{% endif %}">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <strong>{{ coupon.coupon_code }}</strong><br>
+                                                                        <small class="text-muted">
+                                                                            Save ₹{{coupon.discount_amount}}
+                                                                        </small>
+                                                                    </div>
+                                                                    <span class="badge bg-success">Apply</span>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <button type="submit" class="btn btn-dark w-100 mt-3">Apply Selected Coupon</button>
+                                    {% else %}
+                                        <p class="text-muted">No coupons available at this time.</p>
+                                    {% endif %}
+                                </form>
+                            </div>
                         </div>
+
+
+
+                         {% if messages %}
+                    <div class="mb-3">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
                     </div>
+                    {% endif %}
+
 
                     <!-- Address Selection -->
                     <div class="card shadow-sm">
@@ -62,7 +110,7 @@
                                     {% else %}
                                         <p class="text-muted">No addresses found. Please add an address.</p>
                                     {% endif %}
-                                    <a href="{% url 'add_address' %}" class="btn btn-outline-primary mt-3">+ Add New Address</a>
+                                    <a href="{% url 'add_address' %}?next={% url 'checkout' %}" class="btn btn-outline-primary mt-3">+ Add New Address</a>
                                 </div>
                         </div>
                     </div>
@@ -103,7 +151,13 @@
                                         </tr>
                                         <tr>
                                             <td colspan="2" class="text-end">Discount:</td>
-                                            <td>₹{{ discount_amount }}</td>
+                                            <td>
+                                                {% if selected_coupon and not selected_coupon.is_blocked %}
+                                                    ₹{{ discount_amount }}
+                                                {% else %}
+                                                    ₹0
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td colspan="2" class="text-end">Shipping:</td>
@@ -138,4 +192,3 @@
     </section>
 </main>
 {% endblock content %}
-

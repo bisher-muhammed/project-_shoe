@@ -8,46 +8,46 @@
                     <h2>Edit Address</h2>
 
                     {% if messages %}
-    <div class="mb-3">
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
+                    <div class="mb-3">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
 
-                    <form method="post">
+                    <form method="post" novalidate>
                         {% csrf_token %}
                         <div class="form-group mb-3">
-                            <label>First Name</label>
-                            <input type="text" name="first_name" class="form-control" value="{{ address.first_name }}" required>
+                            <label for="first_name">First Name</label>
+                            <input id="first_name" type="text" name="first_name" class="form-control" value="{{ address.first_name }}" required>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label>Last Name</label>
-                            <input type="text" name="last_name" class="form-control" value="{{ address.last_name }}" required>
+                            <label for="last_name">Last Name</label>
+                            <input id="last_name" type="text" name="last_name" class="form-control" value="{{ address.last_name }}" required>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label>Address</label>
-                            <input type="text" name="address" class="form-control" value="{{ address.address_1 }}" required>
+                            <label for="address">Address</label>
+                            <input id="address" type="text" name="address" class="form-control" value="{{ address.address_1 }}" required>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label>City</label>
-                            <input type="text" name="city" class="form-control" value="{{ address.city }}" required>
+                            <label for="city">City</label>
+                            <input id="city" type="text" name="city" class="form-control" value="{{ address.city }}" required>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label>State</label>
-                            <input type="text" name="state" class="form-control" value="{{ address.state }}" required>
+                            <label for="state">State</label>
+                            <input id="state" type="text" name="state" class="form-control" value="{{ address.state }}" required>
                         </div>
 
                         <div class="form-group mb-4">
-                            <label>Zip Code</label>
-                            <input type="text" name="zip_code" class="form-control" value="{{ address.zipcode }}" required>
+                            <label for="zip_code">Zip Code</label>
+                            <input id="zip_code" type="text" name="zip_code" class="form-control" value="{{ address.zipcode }}" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">Update Address</button>

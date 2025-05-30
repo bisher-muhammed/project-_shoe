@@ -1,7 +1,6 @@
 {% extends "user_base.html" %}
 {% load static %}
 
-
 {% block content %}
 
 <section class="mt-50 mb-50">
@@ -16,334 +15,467 @@
                                 <!-- MAIN SLIDES -->
                                 <div class="product-image-slider">
                                     <figure class="border-radius-10">
-                                        <img src="{{ product.product_img1.url }}" alt="product image">
+                                        <img src="{{ product.product_img1.url }}" alt="{{ product.product_name }} - Main Image">
                                     </figure>
+                                    {% if product.product_img2 %}
                                     <figure class="border-radius-10">
-                                        <img src="{{ product.product_img2.url }}" alt="product image">
+                                        <img src="{{ product.product_img2.url }}" alt="{{ product.product_name }} - Image 2">
                                     </figure>
+                                    {% endif %}
+                                    {% if product.product_img3 %}
                                     <figure class="border-radius-10">
-                                        <img src="{{ product.product_img3.url }}" alt="product image">
+                                        <img src="{{ product.product_img3.url }}" alt="{{ product.product_name }} - Image 3">
                                     </figure>
+                                    {% endif %}
                                 </div>
                                 <!-- THUMBNAILS -->
                                 <div class="slider-nav-thumbnails pl-15 pr-15">
-                                    <div><img src="{{ product.product_img1.url }}" alt="product image"></div>
-                                    <div><img src="{{ product.product_img2.url }}" alt="product image"></div>
-                                    <div><img src="{{ product.product_img3.url }}" alt="product image"></div>
+                                    <div><img src="{{ product.product_img1.url }}" alt="{{ product.product_name }} thumbnail"></div>
+                                    {% if product.product_img2 %}
+                                    <div><img src="{{ product.product_img2.url }}" alt="{{ product.product_name }} thumbnail"></div>
+                                    {% endif %}
+                                    {% if product.product_img3 %}
+                                    <div><img src="{{ product.product_img3.url }}" alt="{{ product.product_name }} thumbnail"></div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <!-- End Gallery -->
                         </div>
                         <div class="col-md-6 col-sm-12 col-xs-12">
                             <div class="detail-info">
-                                <h2 class="title-detail">{{ product.product_name }}</h2>
-                                <div class="product-detail-rating">
+                                <h1 class="title-detail">{{ product.product_name }}</h1>
+                                
+                                <!-- Brand and Category Info -->
+                                <div class="product-detail-info mb-3">
                                     <div class="pro-details-brand">
-                                        <span> CATEGORY: <a href="shop-grid-right.html">{{ product.category }}</a></span>
+                                        <span><strong>Brand:</strong> {{ product.brand }}</span>
+                                        <span class="ml-3"><strong>Category:</strong> <a href="#">{{ product.category }}</a></span>
                                     </div>
-                                    <div class="product-rate-cover text-end">
-                                        <div class="product-rate d-inline-block">
-                                            <div class="product-rating" style="width:90%"></div>
                                 </div>
-                                <div class="clearfix product-price-cover">
+
+                                <!-- Price Section -->
+                                <div class="clearfix product-price-cover mb-3">
                                     <div class="product-price primary-color float-left">
-                                        <span class="price-label">Price:</span>
+                                        <span class="price-label"><strong>Price:</strong></span>
                                         <ins class="discounted-price bold-text unique-color">₹{{ product.offer_price }}</ins>
-                                        {% if product.original_price %}
+                                        {% if product.original_price and product.original_price != product.offer_price %}
                                             <del class="old-price font-md ml-15">₹{{ product.original_price }}</del>
+                                            <span class="save-price font-md offer-color ml-15">
+                                                {% with best_offer=product.get_best_offer %}
+                                                    {% if best_offer %}
+                                                        <span class="badge badge-success">{{ best_offer.percentage }}% Off</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </span>
                                         {% endif %}
-                                        <span class="save-price font-md offer-color ml-15">
-                                            {% with best_offer=product.get_best_offer %}
-                                                {% if best_offer %}
-                                                    <span>{{ best_offer.percentage }}% Off</span>
-                                                {% else %}
-                                                    <span>No Offer</span>
-                                                {% endif %}
-                                            {% endwith %}
-                                        </span>
                                     </div>
                                 </div>
+
                                 <div class="bt-1 border-color-1 mt-15 mb-15"></div>
-                                <div class="short-desc mb-30">
-                                    <p>{{ product.brand }}</p>
-                                </div>
+
+                                <!-- Product Benefits -->
                                 <div class="product_sort_info font-xs mb-30">
                                     <ul>
-                                        <li class="mb-10"><i class="fi-rs-crown mr-5"></i> 1 Year AL Jazeera Brand Warranty</li>
-                                        <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> 30 Day Return Policy</li>
-                                        <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
+                                        <li class="mb-10"><i class="fi-rs-crown mr-5 text-success"></i> <strong>1 Year AL Jazeera Brand Warranty</strong></li>
+                                        <li class="mb-10"><i class="fi-rs-refresh mr-5 text-info"></i> <strong>30 Day Return Policy</strong></li>
+                                        <li><i class="fi-rs-credit-card mr-5 text-warning"></i> <strong>Cash on Delivery Available</strong></li>
                                     </ul>
                                 </div>
+
+                                <!-- Size Selection and Stock Information -->
                                 <form method="post" action="{% url 'add_to_cart' product.id %}">
-                                <input type="hidden" name="quantity" id="quantity-input" value="1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" id="quantity-input" value="0">
 
-
-                                    <div class="mb-3">
-                                        <strong>Size: </strong>
-                                        <div class="btn-group" role="group">
-                                            {% for size in product.sizes.all %}
-                                                <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size.name }}" value="{{ size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
-                                                <label class="btn btn-outline-secondary" for="size-{{ size.name }}">
-                                                    {{ size.name }}
-                                                </label>
+                                    <div class="mb-4">
+                                        <h5><strong>Available Sizes & Stock:</strong></h5>
+                                        <div class="size-stock-info mb-3">
+                                            {% for size_info in sizes_with_quantities %}
+                                                <div class="size-option mb-2 p-2 border rounded" style="{% if size_info.quantity == 0 %}background-color: #f8f9fa; opacity: 0.7;{% endif %}">
+                                                    <div class="form-check">
+                                                        <input type="radio" 
+                                                               class="form-check-input size-checkbox" 
+                                                               name="size" 
+                                                               id="size-{{ size_info.size.id }}" 
+                                                               value="{{ size_info.size.id }}" 
+                                                               {% if size_info.quantity == 0 %}disabled{% endif %}
+                                                               autocomplete="off">
+                                                        <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="size-{{ size_info.size.id }}">
+                                                            <span><strong>Size {{ size_info.size.name }}</strong></span>
+                                                            <span class="{% if size_info.quantity == 0 %}text-danger{% else %}text-success{% endif %}">
+                                                                {% if size_info.quantity == 0 %}
+                                                                    <i class="fi-rs-cross-small"></i> Out of Stock
+                                                                {% elif size_info.quantity <= 5 %}
+                                                                    <i class="fi-rs-exclamation"></i> Only {{ size_info.quantity }} left
+                                                                {% else %}
+                                                                    <i class="fi-rs-check"></i> {{ size_info.quantity }} in stock
+                                                                {% endif %}
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             {% endfor %}
                                         </div>
+                                        
+                                        <!-- Size Selection Helper Text -->
+                                        <small class="text-muted">
+                                            <i class="fi-rs-info mr-1"></i>
+                                            Please select a size to add to cart. Stock levels are updated in real-time.
+                                        </small>
                                     </div>
-                                       
-                                
+
+                                    <!-- Messages Display -->
                                     {% for message in messages %}
-                                        <p>{{ message }}</p>
+                                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                            {{ message }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
                                     {% endfor %}
-                                
+
                                     <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-                                
+
+                                    <!-- Quantity and Add to Cart -->
                                     <div class="detail-extralink">
                                         <div class="detail-qty border radius">
                                             <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
-                                            <span class="qty-val">1</span>
+                                            <span class="qty-val">0</span>
                                             <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
                                         </div>
-                                
-                                        {% csrf_token %}
+
                                         <div class="product-extra-link2">
-                                            <button type="submit" class="button button-add-to-cart">Add to cart</button>
+                                            <button type="submit" class="button button-add-to-cart" id="add-to-cart-btn" disabled>
+                                                <i class="fi-rs-shopping-cart mr-5"></i>
+                                                Select Size to Add to Cart
+                                            </button>
                                         </div>
                                     </div>
                                 </form>
-                                
-                                
-                                
+
+                                <!-- Enhanced JavaScript with Stock Validation -->
                                 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                                 <script>
-                                            $(document).ready(function () {
-                                                // When size is selected
-                                                $('.size-checkbox').on('change', function () {
-                                                    updateQuantity();
-                                                });
-
-                                                // When form is submitted
-                                                $('form').on('submit', function () {
-                                                    updateQuantity(); // Ensure the quantity is up to date
-                                                });
-
-                                                // Update both visible and hidden quantity
-                                                function updateQuantity() {
-                                                    var selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
-
-                                                    // Update visible span
-                                                    $('.qty-val').text(selectedSize);
-
-                                                    // Update hidden input
-                                                    $('#quantity-input').val(selectedSize);
-                                                }
-
-                                                // Run once at the beginning
-                                                updateQuantity();
-                                            });
-                                        </script>
-
-                                        <ul class="product-meta font-xs color-grey mt-50">
-                                            <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
-                                            <li class="mb-5">Tags: <a href="#" rel="tag">Cloth</a>, <a href="#" rel="tag">MEN</a>, <a href="#" rel="tag">SHOES</a></li>
-                                            {% for size_info in sizes_with_quantities %}
-                                                <div class="form-check form-check-inline">
-                                                    <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size_info.size.id }}" value="{{ size_info.size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
-                                                    <label for="size-{{ size_info.size.name }}">
-                                                        <p style="color: {% if size_info.quantity == 0 %}red{% else %}inherit{% endif %}">
-                                                            {{ size_info.size.name }} Quantity: {% if size_info.quantity == 0 %}Out of Stock{% else %}{{ size_info.quantity }}{% endif %}
-                                                        </p>
-                                                    </label>
-                                                </div>
-                                            {% endfor %}
-                                        </ul>
-                                                                                    
+                                    $(document).ready(function () {
+                                        const addToCartBtn = $('#add-to-cart-btn');
+                                        const qtyVal = $('.qty-val');
+                                        const quantityInput = $('#quantity-input');
                                         
-                                        </div>
+                                        // Store stock quantities for each size
+                                        const sizeStock = {};
+                                        {% for size_info in sizes_with_quantities %}
+                                        sizeStock['{{ size_info.size.id }}'] = {{ size_info.quantity }};
+                                        {% endfor %}
+
+                                        // Get available stock for selected size
+                                        function getSelectedSizeStock() {
+                                            const selectedSize = $('.size-checkbox:checked').val();
+                                            return selectedSize ? sizeStock[selectedSize] : 0;
+                                        }
+
+                                        // When size is selected
+                                        $('.size-checkbox').on('change', function () {
+                                            if ($(this).is(':checked')) {
+                                                const availableStock = getSelectedSizeStock();
+                                                if (availableStock > 0) {
+                                                    updateQuantityAndButton(1);
+                                                    addToCartBtn.prop('disabled', false)
+                                                               .html('<i class="fi-rs-shopping-cart mr-5"></i>Add to Cart');
+                                                    updateQuantityControls();
+                                                }
+                                            }
+                                        });
+
+                                        // Quantity controls with validation
+                                        $('.qty-up').on('click', function(e) {
+                                            e.preventDefault();
+                                            if ($('.size-checkbox:checked').length > 0) {
+                                                const currentQty = parseInt(qtyVal.text());
+                                                const availableStock = getSelectedSizeStock();
+                                                
+                                                if (currentQty < availableStock) {
+                                                    updateQuantityAndButton(currentQty + 1);
+                                                    updateQuantityControls();
+                                                } else {
+                                                    // Show stock limit message
+                                                    showStockAlert(`Only ${availableStock} items available in stock!`);
+                                                }
+                                            }
+                                        });
+
+                                        $('.qty-down').on('click', function(e) {
+                                            e.preventDefault();
+                                            if ($('.size-checkbox:checked').length > 0) {
+                                                const currentQty = parseInt(qtyVal.text());
+                                                if (currentQty > 1) {
+                                                    updateQuantityAndButton(currentQty - 1);
+                                                    updateQuantityControls();
+                                                }
+                                            }
+                                        });
+
+                                        // Update quantity controls appearance based on limits
+                                        function updateQuantityControls() {
+                                            const currentQty = parseInt(qtyVal.text());
+                                            const availableStock = getSelectedSizeStock();
                                             
-                                        </ul>
+                                            // Update down button
+                                            if (currentQty <= 1) {
+                                                $('.qty-down').addClass('disabled').css('opacity', '0.5');
+                                            } else {
+                                                $('.qty-down').removeClass('disabled').css('opacity', '1');
+                                            }
+                                            
+                                            // Update up button
+                                            if (currentQty >= availableStock) {
+                                                $('.qty-up').addClass('disabled').css('opacity', '0.5');
+                                            } else {
+                                                $('.qty-up').removeClass('disabled').css('opacity', '1');
+                                            }
+                                            
+                                            // Update add to cart button with stock info
+                                            if (currentQty > 0 && currentQty <= availableStock) {
+                                                addToCartBtn.html(`<i class="fi-rs-shopping-cart mr-5"></i>Add ${currentQty} to Cart`);
+                                            }
+                                        }
+
+                                        function updateQuantityAndButton(quantity) {
+                                            qtyVal.text(quantity);
+                                            quantityInput.val(quantity);
+                                        }
+
+                                        // Show stock alert message
+                                        function showStockAlert(message) {
+                                            // Remove existing alerts
+                                            $('.stock-alert').remove();
+                                            
+                                            // Create and show new alert
+                                            const alertHtml = `
+                                                <div class="alert alert-warning alert-dismissible fade show stock-alert" role="alert">
+                                                    <i class="fi-rs-exclamation mr-2"></i>${message}
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                </div>
+                                            `;
+                                            $('.detail-extralink').before(alertHtml);
+                                            
+                                            // Auto remove after 3 seconds
+                                            setTimeout(() => {
+                                                $('.stock-alert').fadeOut();
+                                            }, 3000);
+                                        }
+
+                                        // Form submission with enhanced validation
+                                        $('form').on('submit', function(e) {
+                                            if (!$('.size-checkbox:checked').length) {
+                                                e.preventDefault();
+                                                showStockAlert('Please select a size before adding to cart.');
+                                                return false;
+                                            }
+                                            
+                                            const currentQty = parseInt(quantityInput.val());
+                                            const availableStock = getSelectedSizeStock();
+                                            
+                                            if (currentQty > availableStock) {
+                                                e.preventDefault();
+                                                showStockAlert(`Cannot add ${currentQty} items. Only ${availableStock} items available in stock!`);
+                                                return false;
+                                            }
+                                            
+                                            if (currentQty < 1) {
+                                                e.preventDefault();
+                                                showStockAlert('Quantity must be at least 1.');
+                                                return false;
+                                            }
+                                        });
+
+                                        // Initialize
+                                        updateQuantityAndButton(0);
+                                        updateQuantityControls();
+                                    });
+                                </script>
+
+                                <!-- Product Meta Information -->
+                                <ul class="product-meta font-xs color-grey mt-50">
+                                    <li class="mb-5"><strong>SKU:</strong> <span class="text-muted">{{ product.sku|default:"FWM15VKT" }}</span></li>
+                                    <li class="mb-5"><strong>Tags:</strong> 
+                                        <a href="#" rel="tag" class="badge badge-light mr-1">{{ product.category }}</a>
+                                        <a href="#" rel="tag" class="badge badge-light mr-1">{{ product.brand }}</a>
+                                    </li>
+                                    <li class="mb-5"><strong>Availability:</strong> 
+                                        <span class="text-success">
+                                            <i class="fi-rs-check-circle mr-1"></i>
+                                            {% if sizes_with_quantities|length > 0 %}In Stock{% else %}Contact for Availability{% endif %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!-- Detail Info -->
+                        </div>
+                    </div>
+
+                    <!-- Product Description Section -->
+                    <div class="row">
+                        <div class="col-lg-10 m-auto entry-main-content">
+                            <h2 class="section-title style-1 mb-30">Product Description</h2>
+                            <div class="description mb-50">
+                                <div class="product-description-content">
+                                    {% if product.product_description %}
+                                        <p class="lead">{{ product.product_description }}</p>
+                                    {% else %}
+                                        <p class="lead">Experience premium quality with {{ product.product_name }} from {{ product.brand }}. This carefully crafted product combines style, comfort, and durability to meet your everyday needs.</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Key Features -->
+                                <div class="key-features mt-4 mb-4">
+                                    <h4>Key Features:</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="feature-list">
+                                                <li><i class="fi-rs-check text-success mr-2"></i>Premium {{ product.brand }} Quality</li>
+                                                <li><i class="fi-rs-check text-success mr-2"></i>Multiple Size Options Available</li>
+                                                <li><i class="fi-rs-check text-success mr-2"></i>1 Year Warranty Included</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="feature-list">
+                                                <li><i class="fi-rs-check text-success mr-2"></i>30-Day Return Policy</li>
+                                                <li><i class="fi-rs-check text-success mr-2"></i>Cash on Delivery Available</li>
+                                                <li><i class="fi-rs-check text-success mr-2"></i>Fast & Secure Shipping</li>
+                                            </ul>
+                                        </div>
                                     </div>
-                                    <!-- Detail Info -->
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Product Information -->
+                    <div class="row">
+                        <div class="col-lg-10 m-auto">
+                            <h3 class="section-title style-1 mb-30">Product Specifications</h3>
                             <div class="row">
-                                <div class="col-lg-10 m-auto entry-main-content">
-                                    <h2 class="section-title style-1 mb-30">Description</h2>
-                                    <div class="description mb-50">
-                                        <!-- Display dynamic description from the product -->
-                                        <p>{{ product.product_description }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                                        <ul class="product-more-infor mt-30">
-                                            <li><span>Type Of Packing</span> Bottle</li>
-                                            <li><span>Color</span> Green, Pink, Powder Blue, Purple</li>
-                                            <li><span>Quantity Per Case</span> 100ml</li>
-                                            <li><span>Ethyl Alcohol</span> 70%</li>
-                                            <li><span>Piece In One</span> Carton</li>
-                                        </ul>
-                                        <hr class="wp-block-separator is-style-dots">
-                                        <p>Laconic overheard dear woodchuck wow this outrageously taut beaver hey hello far meadowlark imitatively egregiously hugged that yikes minimally unanimous pouted flirtatiously as beaver beheld above forward
-                                            energetic across this jeepers beneficently cockily less a the raucously that magic upheld far so the this where crud then below after jeez enchanting drunkenly more much wow callously irrespective limpet.</p>
-                                        <h4 class="mt-30">Packaging & Delivery</h4>
-                                        <hr class="wp-block-separator is-style-wide">
-                                        <p>Less lion goodness that euphemistically robin expeditiously bluebird smugly scratched far while thus cackled sheepishly rigid after due one assenting regarding censorious while occasional or this more crane
-                                            went more as this less much amid overhung anathematic because much held one exuberantly sheep goodness so where rat wry well concomitantly.
-                                        </p>
-                                        <p>Scallop or far crud plain remarkably far by thus far iguana lewd precociously and and less rattlesnake contrary caustic wow this near alas and next and pled the yikes articulate about as less cackled dalmatian
-                                            in much less well jeering for the thanks blindly sentimental whimpered less across objectively fanciful grimaced wildly some wow and rose jeepers outgrew lugubrious luridly irrationally attractively
-                                            dachshund.
-                                        </p>
-                                    </div>
-                                    <h3 class="section-title style-1 mb-30">Additional info</h3>
-                                    <table class="font-md mb-30">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered font-md mb-30">
                                         <tbody>
-                                            <tr class="stand-up">
-                                                <th>Stand Up</th>
+                                            <tr>
+                                                <th width="40%">Brand</th>
+                                                <td>{{ product.brand }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Category</th>
+                                                <td>{{ product.category }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Available Sizes</th>
                                                 <td>
-                                                    <p>35″L x 24″W x 37-45″H(front to back wheel)</p>
+                                                    {% for size_info in sizes_with_quantities %}
+                                                        <span class="badge {% if size_info.quantity > 0 %}badge-success{% else %}badge-secondary{% endif %} mr-1">
+                                                            {{ size_info.size.name }}
+                                                        </span>
+                                                    {% endfor %}
                                                 </td>
                                             </tr>
-                                            <tr class="folded-wo-wheels">
-                                                <th>Folded (w/o wheels)</th>
-                                                <td>
-                                                    <p>32.5″L x 18.5″W x 16.5″H</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="folded-w-wheels">
-                                                <th>Folded (w/ wheels)</th>
-                                                <td>
-                                                    <p>32.5″L x 24″W x 18.5″H</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="door-pass-through">
-                                                <th>Door Pass Through</th>
-                                                <td>
-                                                    <p>24</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="frame">
-                                                <th>Frame</th>
-                                                <td>
-                                                    <p>Aluminum</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="weight-wo-wheels">
-                                                <th>Weight (w/o wheels)</th>
-                                                <td>
-                                                    <p>20 LBS</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="weight-capacity">
-                                                <th>Weight Capacity</th>
-                                                <td>
-                                                    <p>60 LBS</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="width">
-                                                <th>Width</th>
-                                                <td>
-                                                    <p>24″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="handle-height-ground-to-handle">
-                                                <th>Handle height (ground to handle)</th>
-                                                <td>
-                                                    <p>37-45″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="wheels">
-                                                <th>Wheels</th>
-                                                <td>
-                                                    <p>12″ air / wide track slick tread</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="seat-back-height">
-                                                <th>Seat back height</th>
-                                                <td>
-                                                    <p>21.5″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="head-room-inside-canopy">
-                                                <th>Head room (inside canopy)</th>
-                                                <td>
-                                                    <p>25″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="pa_color">
-                                                <th>Color</th>
-                                                <td>
-                                                    <p>Black, Blue, Red, White</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="pa_size">
-                                                <th>Size</th>
-                                                <td>
-                                                    <p>M, S</p>
-                                                </td>
+                                            <tr>
+                                                <th>Warranty</th>
+                                                <td>1 Year Brand Warranty</td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <div class="social-icons single-share">
-                                        <ul class="text-grey-5 d-inline-block">
-                                            <li><strong class="mr-10">Share this:</strong></li>
-                                            <li class="social-facebook"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt=""></a></li>
-                                            <li class="social-twitter"> <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt=""></a></li>
-                                            <li class="social-instagram"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt=""></a></li>
-                                            <li class="social-linkedin"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a></li>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="shipping-info p-4 bg-light rounded">
+                                        <h5><i class="fi-rs-truck mr-2 text-primary"></i>Shipping & Delivery</h5>
+                                        <ul class="list-unstyled mt-3">
+                                            <li class="mb-2"><i class="fi-rs-check text-success mr-2"></i>Free shipping on orders above ₹500</li>
+                                            <li class="mb-2"><i class="fi-rs-check text-success mr-2"></i>Standard delivery: 3-5 business days</li>
+                                            <li class="mb-2"><i class="fi-rs-check text-success mr-2"></i>Express delivery available</li>
+                                            <li class="mb-2"><i class="fi-rs-check text-success mr-2"></i>Cash on delivery accepted</li>
                                         </ul>
                                     </div>
-                                   
-<div class="row mt-60">
-    <div class="col-12">
-        <h3 class="section-title style-1 mb-30">Related products</h3>
-    </div>
-    <div class="col-12">
-        <div class="row related-products">
-            {% for related_product in related_products %}
-            <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
-                <div class="card h-100 product-cart-wrap small hover-up">
-                    <div class="product-img-action-wrap">
-                        <div class="product-img product-img-zoom">
-                            <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
-                                <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
-                            </a>
-                           
-                        </div>
-                        <div class="product-badges product-badges-position product-badges-mrg">
-                            {% if best_offer %}
-                                <span>{{ best_offer.percentage }}
-                            {%endif%}        
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body product-content-wrap">
-                        <h2 class="card-title"><a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a></h2>
-                        <p class="card-text product-price">
-                            <span>₹{{ related_product.offer_price }}</span>
-                            {% if related_product.original_price %}
-                            <span class="old-price">₹{{ product.original_price }}</span>
-                            {% endif %}
-                        </p>
-                        <a href="{% url 'add_wishlist' related_product.id %}" class="btn btn-outline-danger btn-sm">
-                            <i class="fi-rs-heart"></i> Add to Wishlist
-                        </a>
+
+                    <!-- Social Share -->
+                    <div class="row mt-4">
+                        <div class="col-lg-10 m-auto">
+                            <div class="social-icons single-share">
+                                <ul class="text-grey-5 d-inline-block">
+                                    <li><strong class="mr-10">Share this product:</strong></li>
+                                    <li class="social-facebook"><a href="#" title="Share on Facebook"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt="Facebook"></a></li>
+                                    <li class="social-twitter"><a href="#" title="Share on Twitter"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt="Twitter"></a></li>
+                                    <li class="social-instagram"><a href="#" title="Share on Instagram"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt="Instagram"></a></li>
+                                    <li class="social-linkedin"><a href="#" title="Share on Pinterest"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt="Pinterest"></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Related Products Section -->
+                    <div class="row mt-60">
+                        <div class="col-12">
+                            <h3 class="section-title style-1 mb-30">You Might Also Like</h3>
+                        </div>
+                        <div class="col-12">
+                            <div class="row related-products">
+                                {% for related_product in related_products %}
+                                <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
+                                    <div class="card h-100 product-cart-wrap small hover-up">
+                                        <div class="product-img-action-wrap">
+                                            <div class="product-img product-img-zoom">
+                                                <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
+                                                    <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
+                                                </a>
+                                            </div>
+                                            <div class="product-badges product-badges-position product-badges-mrg">
+                                                {% with related_best_offer=related_product.get_best_offer %}
+                                                    {% if related_best_offer %}
+                                                        <span class="badge badge-success">{{ related_best_offer.percentage }}% Off</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+                                        <div class="card-body product-content-wrap">
+                                            <h2 class="card-title">
+                                                <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
+                                                    {{ related_product.product_name|truncatechars:50 }}
+                                                </a>
+                                            </h2>
+                                            <p class="card-text product-price">
+                                                <span class="text-primary font-weight-bold">₹{{ related_product.offer_price }}</span>
+                                                {% if related_product.original_price and related_product.original_price != related_product.offer_price %}
+                                                <span class="old-price text-muted ml-2">₹{{ related_product.original_price }}</span>
+                                                {% endif %}
+                                            </p>
+                                            <div class="product-action mt-2">
+                                                <a href="{% url 'add_wishlist' product.id %}?next={{ request.path }}" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fi-rs-heart"></i> Wishlist
+                                                </a>
+                                                <a href="{% url 'product_detials' related_product.id %}" class="btn btn-primary btn-sm ml-2">
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Banner -->
+                <div class="banner-img banner-big wow fadeIn f-none animated mt-50">
+                    <img class="border-radius-10" src="{% static 'user/assets/imgs/banner/banner-4.png' %}" alt="Repair Services Banner">
+                    <div class="banner-text">
+                        <h4 class="mb-15 mt-40">Professional Services</h4>
+                        <h2 class="fw-600 mb-20">We're an Authorized <br>Service Provider</h2>
+                        <p class="mb-3">Expert repair and maintenance services for all your products</p>
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
-</div>
-</div>
-<div class="banner-img banner-big wow fadeIn f-none animated mt-50">
-    <img class="border-radius-10" src="{% static 'user/assets/imgs/banner/banner-4.png' %}" alt="">
-    <div class="banner-text">
-        <h4 class="mb-15 mt-40">Repair Services</h4>
-        <h2 class="fw-600 mb-20">We're an Apple <br>Authorised Service Provider</h2>
-    </div>
-</div>
-</div>
-</div>
-</div>
 </section>
-</main>
+
 {% endblock content %}

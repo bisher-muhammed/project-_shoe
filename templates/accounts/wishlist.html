@@ -33,11 +33,13 @@
                                 {% for product in wishlist_items %}
                                     <tr>
                                         <td class="image product-thumbnail">
+                                        <a href="{% url 'product_detials' product.id %}">
                                             <img src="{{ product.product_img1.url }}" alt="#">
+                                        </a>
                                         </td>
                                         <td class="product-des product-name">
                                             <h5 class="product-name">
-                                                <a href="shop-product-right.html">{{ product.product_name }}</a>
+                                                <a href="{% url 'product_detials' product.id %}">{{ product.product_name }}</a>
                                             </h5>
                                             <p class="font-xs"></p>
                                         </td>

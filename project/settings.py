@@ -107,7 +107,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=False  # True if your DB requires SSL (usually true on cloud)
+        ssl_require=False  
     )
 }
 
@@ -152,7 +152,8 @@ STATICFILES_DIRS = [
 ]
 import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-
+TIME_ZONE = 'Asia/Kolkata'
+USE_TZ = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -177,7 +178,7 @@ RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS=True
 EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_FROM=config('EMAIL_FROM')
+# EMAIL_FROM=config('EMAIL_FROM')
 EMAIL_HOST_USER=config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT=587

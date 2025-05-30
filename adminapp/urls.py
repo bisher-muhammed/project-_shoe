@@ -1,5 +1,6 @@
 from django.urls import path
-from .import views 
+from . import views
+
 
 urlpatterns = [
     path('', views.admin_login, name='admin_login'),
@@ -19,7 +20,7 @@ urlpatterns = [
     
     path('activate-size/<int:size_id>/', views.activate_size, name='activate_size'),
     path('deactivate-size/<int:size_id>/', views.deactivate_size, name='deactivate_size'),
-    path('product_list/',views.product_list, name= 'product_list'),
+    path('admin_product_list/',views.admin_product_list, name= 'admin_product_list'),
     path('activate_product/<int:product_id>/', views.activate_product, name='activate_product'),
     path('deactivate_product/<int:product_id>/', views.deactivate_product, name='deactivate_product'),
     path('admin_userlist/', views.admin_userlist, name='admin_userlist'),

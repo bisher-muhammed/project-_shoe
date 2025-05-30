@@ -1,162 +1,94 @@
-
 {% load static %}
 
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <title>Evara Dashboard</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="">
+    <meta charset="UTF-8">
+    <title>Create an Account</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="">
-    <meta property="og:type" content="">
-    <meta property="og:url" content="">
-    <meta property="og:image" content="">
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg' %}">
-    <!-- Template CSS -->
-    <link href="{% static 'user/assets/css/main.css' %}" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
- <!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>  
-
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous">
-
-<!-- Optional: Popper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyJc8jAR2WlxIiak3/LSjQ8aRDLZW2KkN" crossorigin="anonymous"></script>
-
-
-<!-- jQuery CDN -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"></script>
-
-<!-- Font Awesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha384-VvRlOX5rVVtr3LCriZJbDYzmYM5R1fPEcQI/luRU0FZP2cVMkJbLo6jl19sbcXWp" crossorigin="anonymous">
+    <!-- Bootstrap + Evara theme CSS -->
+    <link href="{% static 'user/assets/css/main.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body>
-    <main>
-        <header class="main-header style-2 navbar">
-            <div class="col-brand">
-                <a href="{% url 'admin_login' %}" class="brand-wrap">
-                    <img src="{% static 'user/assets/imgs/theme/logo.svg' %}" class="logo" alt="Evara Dashboard">
-                </a>
-            </div>
-            <div class="col-nav">
-                <ul class="nav">
-                    <!-- ... (header content remains unchanged) ... -->
-                </ul>
-            </div>
-        </header>
+<main>
+    <header class="main-header style-2 navbar">
+        <div class="col-brand">
+            <a href="{% url 'admin_login' %}" class="brand-wrap">
+                <img src="{% static 'user/assets/imgs/theme/logo.svg' %}" class="logo" alt="Evara Dashboard">
+            </a>
+        </div>
+    </header>
 
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Create an Account</title>
-            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-            <style>
-                body, html {
-                    height: 100%;
-                    margin: 0;
-                    font-family: 'Lato', sans-serif;
-                }
-                
-        
-                .gradient-custom-3 {
-                    
-                }
-        
-                .card {
-                    border-radius: 15px;
-                }
-        
-                .form-check-label a {
-                    
-                }
-                .btn-custom {
-                    background-color: #007bfc; /* Change background color */
-                    border-color: #007bf5; /* Change border color */
-                    color: #fff5 !important; /* Change text color */
-                }
-            </style>
-        </head>
-        <body>
-        
-        <section class="vh-100 bg-image gradient-custom-3">
-            <div class="mask d-flex align-items-center h-100">
-                <div class="container">
-                    <div class="row d-flex justify-content-center align-items-center h-100">
-                        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
-                            <div class="card">
-                                <div class="card-body p-5">
-                                    <h2 class="text-uppercase text-center mb-5">Create an account</h2>
-        
-                                    <form method="post" action="{% url 'signup_view' %}">
-        
-                                        {% csrf_token %}
-                                        {% for message in messages %}
-                                        <p class="alert alert-info">{{ message }}</p>
+    <section class="vh-100 bg-image gradient-custom-3">
+        <div class="mask d-flex align-items-center h-100">
+            <div class="container">
+                <div class="row d-flex justify-content-center align-items-center h-100">
+                    <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+                        <div class="card">
+                            <div class="card-body p-5">
+                                <h2 class="text-uppercase text-center mb-5">Create an account</h2>
+
+                                <form method="post" action="{% url 'signup_view' %}">
+                                    {% csrf_token %}
+
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                            {{ message }}
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                              <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
                                     {% endfor %}
-                                        <div class="form-outline mb-4">
-                                            <input type="text" id="form3Example1cg" class="form-control form-control-lg" name="username" />
-                                            <label class="form-label" for="form3Example1cg">Your Name</label>
-                                        </div>
-                                    
-                                        <div class="form-outline mb-4">
-                                            <input type="email" id="form3Example3cg" class="form-control form-control-lg" name="email" />
-                                            <label class="form-label" for="form3Example3cg">Your Email</label>
-                                        </div>
-                                    
-                                        <div class="form-outline mb-4">
-                                            <input type="password" id="form3Example4cg" class="form-control form-control-lg" name="password" />
-                                            <label class="form-label" for="form3Example4cg">Password</label>
-                                        </div>
-                                    
-                                        <div class="form-outline mb-4">
-                                            <input type="password" id="form3Example4cdg" class="form-control form-control-lg" name="confirm_password" />
-                                            <label class="form-label" for="form3Example4cdg">Repeat your password</label>
-                                        </div>
-                                    
-                                    
-                                        <div class="d-flex justify-content-center">
-                                            <button type="submit" class="btn btn-custom btn-block btn-lg">Register</button>
 
-                                        </div>
-                                    
-                                        <p class="text-center text-muted mt-5 mb-0">Have already an account? <a href="{% url 'login_view' %}" class="fw-bold text-body"><u>Login here</u></a></p>
-                                    </form>
-                                </div>
+                                    <div class="form-outline mb-4">
+                                        <input type="text" id="username" name="username" class="form-control form-control-lg"
+                                            value="{{ username_value }}" required maxlength="20" pattern="[A-Za-z0-9]+"
+                                            title="Username must be alphanumeric and under 20 characters." />
+                                        <label class="form-label" for="username">Your Name</label>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <input type="email" id="email" name="email" class="form-control form-control-lg"
+                                            value="{{ email_value }}" required />
+                                        <label class="form-label" for="email">Your Email</label>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <input type="password" id="password" name="password" class="form-control form-control-lg"
+                                            required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}"
+                                            title="Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character." />
+                                        <label class="form-label" for="password">Password</label>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-lg"
+                                            required />
+                                        <label class="form-label" for="confirm_password">Repeat your password</label>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center">
+                                        <button type="submit" class="btn btn-primary btn-block btn-lg">Register</button>
+                                    </div>
+
+                                    <p class="text-center text-muted mt-5 mb-0">
+                                        Already have an account? <a href="{% url 'login_view' %}" class="fw-bold text-body"><u>Login here</u></a>
+                                    </p>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-        
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-        
-        </body>
-        </html>
-        
+        </div>
+    </section>
 </main>
+
+<!-- Scripts -->
 <script src="{% static 'user/assets/js/vendors/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'user/assets/js/vendors/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'user/assets/js/vendors/jquery.fullscreen.min.js' %}"></script>
-<!-- Main Script -->
 <script src="{% static 'user/assets/js/main.js'%}" type="text/javascript"></script>
-</body>
 
+</body>
 </html>

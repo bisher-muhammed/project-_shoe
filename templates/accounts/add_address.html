@@ -32,41 +32,56 @@
                         <h5 class="mb-0">Add Address</h5>
                     </div>
                     <div class="card-body">
-                        <!-- Display success or error messages if any -->
-                        {% for message in messages %}   
-                            <div class="alert alert-{{ message.tags }} mb-3" role="alert">
-                                {{ message }}
-                            </div>
+
+                    <form method="post" action="{% url 'add_address' %}">
+                        {% csrf_token %}
+
+                        {# Add hidden input for 'next' URL #}
+                        <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                         {% endfor %}
 
-                        <form method="post" action="{% url 'add_address' %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="address" class="form-label">Address</label>
-                                <input type="text" class="form-control" id="address" name="address" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="city" class="form-label">City</label>
-                                <input type="text" class="form-control" id="city" name="city" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="state" class="form-label">State</label>
-                                <input type="text" class="form-control" id="state" name="state" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="zip_code" class="form-label">Zip Code</label>
-                                <input type="text" class="form-control" id="zip_code" name="zip_code" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">Add Address</button>
-                        </form>
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name"
+                                value="{{ first_name|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name"
+                                value="{{ last_name|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address"
+                                value="{{ address|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city"
+                                value="{{ city|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-control" id="state" name="state"
+                                value="{{ state|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="zip_code" class="form-label">Zip Code</label>
+                            <input type="text" class="form-control" id="zip_code" name="zip_code"
+                                value="{{ zip_code|default:'' }}" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Add Address</button>
+                    </form>
+
                     </div>
                 </div>
             </div>

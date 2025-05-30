@@ -11,7 +11,6 @@ urlpatterns = [
     path('send_otp/',views.send_otp, name='send_otp'),
     path('verify_otp/',views.verify_otp,name='verify_otp'),
     path('logout_view/',views.logout_view, name='logout_view'),
-    path('product_list/', views.product_list, name='product_list'),
 
 
 
@@ -21,7 +20,6 @@ urlpatterns = [
 
 
     path('product_detials/<int:product_id>/',views.product_detials, name='product_detials'),
-    path('product_list/',views.size_color_options,name='size_color_options'),
     path('resend_otp/',views.resend_otp, name='resend_otp'),
     path('add_address',views.add_address, name='add_address'),
     path('dashboard/',views.view_profile, name='view_profile'),

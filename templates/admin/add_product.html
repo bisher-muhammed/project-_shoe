@@ -3,311 +3,624 @@
 
 {% block content %}
 <section class="content-main">
-    <div class="row">
-        <div class="col-9">
-            <div class="content-header">
-                <h2 class="content-title">Add New Product</h2>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="content-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Product
+                    </h2>
+                    <a href="{% url 'admin_product_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Products
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <form method="post" action="{% url 'add_product' %}" enctype="multipart/form-data" id="productForm">
-                {% csrf_token %}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Basic</h4>
-                    </div>
-                    <div class="card-body">
-                        {% if error_message %}
-                            <div class="alert alert-danger" role="alert">
-                                {{ error_message }}
-                            </div>
-                        {% endif %}
-                        <div class="mb-4">
-                            <label for="product_name" class="form-label">Product Name</label>
-                            <input type="text" name="product_name" class="form-control" id="product_name" required>
+
+        <form method="post" action="{% url 'add_product' %}" enctype="multipart/form-data" id="productForm" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Left Column - Product Details -->
+                <div class="col-lg-8">
+                    <!-- Basic Information Card -->
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-light text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Basic Information
+                            </h5>
                         </div>
-                        <div>
-                            <label class="form-label">Full description</label>
-                            <textarea placeholder="Type here" name="product_description" class="form-control" rows="4" required>{{ form_data.product_description|default:'' }}</textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="mb-4">
-                                    <label class="form-label">Regular price</label>
-                                    <div class="row gx-2">
-                                        <input placeholder="" type="text" name="original_price" class="form-control" id="original_price" value="{{ form_data.original_price|default:'' }}" required>
+                        <div class="card-body">
+                            <!-- Success/Error Messages -->
+                            <div id="message-container">
+                                {% if error_message %}
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        {{ error_message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                     </div>
-                                </div>
+                                {% endif %}
                             </div>
-                            <div class="col-lg-4">
-                                <div class="mb-4">
-                                    <label class="form-label">Promotional price</label>
-                                    <input placeholder="$" type="text" name="offer_price" class="form-control" id="offer_price" value="{{ form_data.offer_price|default:'' }}" required>
-                                </div>
+
+                            <!-- Product Name -->
+                            <div class="mb-4">
+                                <label for="product_name" class="form-label fw-bold">
+                                    Product Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="product_name" class="form-control form-control-lg" 
+                                       id="product_name" value="{{ form_data.product_name|default:'' }}" required>
+                                <div class="invalid-feedback"></div>
                             </div>
-                            <div class="col-lg-4">
-                                <label class="form-label">Category</label>
-                                <select name="product_category" class="form-select" required>
-                                    <option value="" disabled selected>Select a category</option>
-                                    {% for category in categories %}
-                                        {% if category.is_blocked %}
-                                            <option value="{{ category.id }}">{{ category.category_name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    Product Description <span class="text-danger">*</span>
+                                </label>
+                                <textarea name="product_description" class="form-control" rows="5" 
+                                          placeholder="Describe your product in detail..." required>{{ form_data.product_description|default:'' }}</textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Provide a detailed description to help customers understand your product.</div>
                             </div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="product_brand" class="form-label">Brand</label>
-                            <select name="product_brand" class="form-select" required>
-                                <option value="" disabled selected>Select a Brand</option>
-                                {% for brand in brands %}
-                                    {% if brand.is_active %}
-                                        <option value="{{ brand.id }}">{{ brand.brand_name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <!-- For Size -->
-                        <label>Select Sizes:</label>
-                        {% for size in size_options %}
-                            <div>
-                                <input type="checkbox" name="sizes" id="size_{{ size.id }}" value="{{ size.id }}">
-                                <label for="size_{{ size.id }}">{{ size.name }}</label>
-                                
-                                <label for="quantity_{{ size.id }}">Quantity:</label>
-                                <input type="number" name="quantity_{{ size.id }}" min="0" value="0">
-                            </div>
-                        {% endfor %}
-    <div id="quantity-container">
-        <!-- Quantity input will be dynamically added here based on selected size -->
-    </div>
 
-    
-    
-    <script>
-        // JavaScript to dynamically show/hide quantity input based on selected size
-        document.getElementById('sizes').addEventListener('change', function() {
-            var selectedSizes = this.selectedOptions;
-            var quantityContainer = document.getElementById('quantity-container');
-            
-            // Clear previous quantity inputs
-            quantityContainer.innerHTML = '';
-
-            for (var i = 0; i < selectedSizes.length; i++) {
-                var sizeId = selectedSizes[i].value;
-                
-                // Create quantity input for the selected size
-                var quantityInput = document.createElement('input');
-                quantityInput.type = 'number';
-                quantityInput.name = 'quantity_' + sizeId;
-                quantityInput.min = 0;
-                quantityInput.value = 0;
-
-                // Label for the quantity input
-                var label = document.createElement('label');
-                label.textContent = 'Quantity for ' + selectedSizes[i].text + ': ';
-
-                // Append label and quantity input to the container
-                quantityContainer.appendChild(label);
-                quantityContainer.appendChild(quantityInput);
-            }
-        });
-    </script>
-                        
-
-                        <!-- For Color -->
-                        {% comment %} <div class="mb-4">
-                            <label for="colors" class="form-label">Color</label> {% endcomment %}
-                            {% comment %} {% for color_option in color_options %}
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="colors" value="{{ color_option.id }}" id="color_{{ color_option.id }}">
-                                    <label class="form-check-label" for="color_{{ color_option.id }}">
-                                        {{ color_option.name }}
+                            <!-- Price Section -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">
+                                        Regular Price (₹) <span class="text-danger">*</span>
                                     </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" step="0.01" min="0.01" name="original_price" 
+                                               class="form-control" id="original_price" 
+                                               value="{{ form_data.original_price|default:'' }}" required>
+                                    </div>
+                                    <div class="invalid-feedback"></div>
                                 </div>
-                            {% endfor %}
-                        </div> {% endcomment %}
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">
+                                        Sale Price (₹) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" step="0.01" min="0.01" name="offer_price" 
+                                               class="form-control" id="offer_price" 
+                                               value="{{ form_data.offer_price|default:'' }}" required>
+                                    </div>
+                                    <div class="invalid-feedback"></div>
+                                    <div class="form-text text-success" id="savings-display"></div>
+                                </div>
+                            </div>
 
-                        
-
-                <!-- Product Image 1 -->
-                {% comment %} <div class="card-body">
-                    <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
-                        {% if product.product_img1 %}
-                            <img src="{{ product.product_img1.url }}" alt="Product Image 1" class="img-fluid">
-                        {% else %}
-                            <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
-                        {% endif %}
-                        <input placeholder="" type="file" name="product_img1" class="form-control" id="product_img1" value="{{ form_data.product_img1|default:'' }}" required>
-
-                        <!-- Hidden inputs for Cropper.js data -->
-                        <input type="hidden" name="product_img1_x" id="product_img1_x">
-                        <input type="hidden" name="product_img1_y" id="product_img1_y">
-                        <input type="hidden" name="product_img1_width" id="product_img1_width">
-                        <input type="hidden" name="product_img1_height" id="product_img1_height">
-                    </div>
-                </div> {% endcomment %}
-
-                    <div id="imageContainer1">
-                        <label class="form-label">Image 1</label>
-                        <input class="form-control" type="file" id="image1" name="image1">
-                        <div id="imageWrapper1" style="display: none;">
-                            <img id="imagePreview1" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
-                            <button type="button" id="cropButton1" class="btn btn-primary small-btn">Crop</button>
+                            <!-- Category and Brand -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">
+                                        Category <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="product_category" class="form-select" required>
+                                        <option value="">Choose a category...</option>
+                                        {% for category in categories %}
+                                            {% if category.is_blocked %}
+                                                <option value="{{ category.id }}" 
+                                                        {% if form_data.product_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                                    {{ category.category_name }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">
+                                        Brand <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="product_brand" class="form-select" required>
+                                        <option value="">Choose a brand...</option>
+                                        {% for brand in brands %}
+                                            {% if brand.is_active %}
+                                                <option value="{{ brand.id }}" 
+                                                        {% if form_data.product_brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                                    {{ brand.brand_name }}
+                                                </option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
                         </div>
-                        <input type="hidden" name="crop_x1" id="cropX1">
-                        <input type="hidden" name="crop_y1" id="cropY1">
-                        <input type="hidden" name="crop_width1" id="cropWidth1">
-                        <input type="hidden" name="crop_height1" id="cropHeight1">
                     </div>
-                    <div id="imageContainer2">
-                        <label class="form-label">Image 2</label>
-                        <input class="form-control" type="file" id='image2' name='image2'>
-                        <div id="imageWrapper2" style="display: none;">
-                            <img id="imagePreview2" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
-                            <button type="button" id="cropButton2" class="btn btn-primary small-btn">Crop</button>
-                        </div>
-                        <input type="hidden" name="crop_x2" id="cropX2">
-                        <input type="hidden" name="crop_y2" id="cropY2">
-                        <input type="hidden" name="crop_width2" id="cropWidth2">
-                        <input type="hidden" name="crop_height2" id="cropHeight2">
-                    </div>
-                    <div id="imageContainer3">
-                        <label class="form-label">Image 3</label>
-                        <input class="form-control" type="file" id='image3' name='image3'>
-                        <div id="imageWrapper3" style="display: none;">
-                            <img id="imagePreview3" src="#" alt="Preview" style="max-width: 100%; margin-top: 10px;">
-                            <button type="button" id="cropButton3" class="btn btn-primary small-btn">Crop</button>
-                        </div>
-                        <input type="hidden" name="crop_x3" id="cropX3">
-                        <input type="hidden" name="crop_y3" id="cropY3">
-                        <input type="hidden" name="crop_width3" id="cropWidth3">
-                        <input type="hidden" name="crop_height3" id="cropHeight3">
-                    </div>
-            
 
-                <!-- Product Image 2 -->
-                {% comment %} <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
-                            {% if product.product_img2 %}
-                                <img src="{{ product.product_img2.url }}" alt="Product Image 2" class="img-fluid">
-                            {% else %}
-                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
-                            {% endif %}
-                            <input class="form-control" type="file" name="product_img2" id="product_img2" value="{{ form_data.product_img2|default:'' }}" required>
+                    <!-- Sizes & Inventory Card -->
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-light text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-box me-2"></i>Sizes & Inventory
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Select available sizes and specify quantities for each size.
+                            </div>
+                            
+                            <div id="sizes-error" class="alert alert-danger d-none">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Please select at least one size with valid quantity.
+                            </div>
 
-                            <!-- Hidden inputs for Cropper.js data -->
-                            <input type="hidden" name="product_img2_x" id="product_img2_x">
-                            <input type="hidden" name="product_img2_y" id="product_img2_y">
-                            <input type="hidden" name="product_img2_width" id="product_img2_width">
-                            <input type="hidden" name="product_img2_height" id="product_img2_height">
+                            <div class="row">
+                                {% for size in size_options %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="size-item border rounded p-3" data-size-id="{{ size.id }}">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="sizes" class="form-check-input size-checkbox" 
+                                                       id="size_{{ size.id }}" value="{{ size.id }}"
+                                                       {% if size.id|stringformat:"s" in selected_sizes %}checked{% endif %}>
+                                                <label for="size_{{ size.id }}" class="form-check-label fw-bold">
+                                                    {{ size.name }}
+                                                </label>
+                                            </div>
+                                            
+                                            <div class="quantity-section mt-2" style="display: {% if size.id|stringformat:'s' in selected_sizes %}block{% else %}none{% endif %};">
+                                                <label for="quantity_{{ size.id }}" class="form-label small">Quantity:</label>
+                                                <input type="number" name="quantity_{{ size.id }}" 
+                                                       class="form-control form-control-sm quantity-input" 
+                                                       min="1" value="0" id="quantity_{{ size.id }}">
+                                                <div class="invalid-feedback"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Product Image 3 -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="input-upload aspect-ratio-container" data-aspect-ratio="1/1">
-                            {% if product.product_img3 %}
-                                <img src="{{ product.product_img3.url }}" alt="Product Image 3" class="img-fluid">
-                            {% else %}
-                                <img src="{% static 'assets/imgs/theme/upload.svg' %}" alt="" class="img-fluid">
-                            {% endif %}
-                            <input class="form-control" name="product_img3" type="file" value="{{ form_data.product_img3|default:'' }}" required>
+                <!-- Right Column - Images -->
+                <div class="col-lg-4">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-light text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-images me-2"></i>Product Images
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <strong>Image Guidelines:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Main image is required</li>
+                                    <li>JPG, PNG, WebP formats only</li>
+                                    <li>Maximum 5MB per image</li>
+                                    <li>Recommended: 800x800px or higher</li>
+                                </ul>
+                            </div>
 
-                            <!-- Hidden inputs for Cropper.js data -->
-                            <input type="hidden" name="product_img3_x" id="product_img3_x">
-                            <input type="hidden" name="product_img3_y" id="product_img3_y">
-                            <input type="hidden" name="product_img3_width" id="product_img3_width">
-                            <input type="hidden" name="product_img3_height" id="product_img3_height">
+                            <!-- Image 1 (Main) -->
+                            <div class="mb-4">
+                                <label for="image1" class="form-label fw-bold">
+                                    Main Image <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" class="form-control" name="image1" id="image1" 
+                                       accept="image/jpeg,image/png,image/webp" required>
+                                <div class="invalid-feedback"></div>
+                                <div id="preview1" class="mt-3"></div>
+                            </div>
+
+                            <!-- Image 2 -->
+                            <div class="mb-4">
+                                <label for="image2" class="form-label fw-bold">Additional Image 1</label>
+                                <input type="file" class="form-control" name="image2" id="image2" 
+                                       accept="image/jpeg,image/png,image/webp">
+                                <div class="invalid-feedback"></div>
+                                <div id="preview2" class="mt-3"></div>
+                            </div>
+
+                            <!-- Image 3 -->
+                            <div class="mb-4">
+                                <label for="image3" class="form-label fw-bold">Additional Image 2</label>
+                                <input type="file" class="form-control" name="image3" id="image3" 
+                                       accept="image/jpeg,image/png,image/webp">
+                                <div class="invalid-feedback"></div>
+                                <div id="preview3" class="mt-3"></div>
+                            </div>
                         </div>
                     </div>
-                </div> {% endcomment %}
+                </div>
+            </div>
 
-                <input type="submit" class="btn btn-primary" value="Save">
-            </form>
-        </div>
+            <!-- Submit Button -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 me-3" id="submitBtn">
+                                <i class="fas fa-save me-2"></i>
+                                <span class="btn-text">Create Product</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                            </button>
+                            <a href="{% url 'admin_product_list' %}" class="btn btn-outline-secondary btn-lg px-5">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </section>
 
-{% comment %} <script src="path/to/cropper.js"></script> {% endcomment %}
+<style>
+/* Enhanced Styling */
+.content-main {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 2rem 0;
+}
 
-<!-- Add Cropper.js library -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-<!-- Add this script to your HTML file -->
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: none;
+    padding: 1.25rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1.5px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+}
+
+.form-control-lg {
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+}
+
+.size-item {
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.size-item:hover {
+    background-color: #e9ecef;
+    border-color: #007bff !important;
+    transform: translateY(-1px);
+}
+
+.size-item.active {
+    background-color: #e7f3ff;
+    border-color: #007bff !important;
+    border-width: 2px !important;
+}
+
+.quantity-section {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.fw-bold {
+    font-weight: 600 !important;
+}
+
+.content-title {
+    color: #2d3748;
+    font-weight: 700;
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-main {
+        padding: 1rem 0;
+    }
+    
+    .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var form = document.getElementById('productForm');
-        var croppers = [];
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('productForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const originalPrice = document.getElementById('original_price');
+    const offerPrice = document.getElementById('offer_price');
+    const savingsDisplay = document.getElementById('savings-display');
+    const messageContainer = document.getElementById('message-container');
 
-        function initializeCropper(imageIndex) {
-            var input = document.getElementById('image' + imageIndex);
-            var cropButton = document.getElementById('cropButton' + imageIndex);
-            var imageContainer = document.getElementById('imageContainer' + imageIndex);
-            var imageWrapper = document.getElementById('imageWrapper' + imageIndex);
-
-            var cropper;
-
-            input.addEventListener('change', function (e) {
-                var file = e.target.files[0];
-                var reader = new FileReader();
-
-                reader.onload = function (event) {
-                    // Show the image container
-                    imageContainer.style.display = 'block';
-
-                    // Show the image wrapper
-                    imageWrapper.style.display = 'block';
-
-                    var image = document.getElementById('imagePreview' + imageIndex);
-                    image.src = event.target.result;
-
-                    // Set up Cropper.js after the image has loaded
-                    image.onload = function () {
-                        croppers[imageIndex] = new Cropper(image, {
-                            aspectRatio: 16 / 9,  // Set your desired aspect ratio
-                            crop: function (event) {
-                                // Update hidden input fields with cropping data
-                                document.getElementById('cropX' + imageIndex).value = event.detail.x;
-                                document.getElementById('cropY' + imageIndex).value = event.detail.y;
-                                document.getElementById('cropWidth' + imageIndex).value = event.detail.width;
-                                document.getElementById('cropHeight' + imageIndex).value = event.detail.height;
-                            }
-                        });
-                    };
-                };
-
-                reader.readAsDataURL(file);
-            });
-
-            cropButton.addEventListener('click', function () {
-                // Trigger manual crop
-                croppers[imageIndex].crop();
-
-                // Hide the image wrapper
-                imageWrapper.style.display = 'none';
-            });
+    // Real-time price validation and savings calculation
+    function updatePriceValidation() {
+        const original = parseFloat(originalPrice.value) || 0;
+        const offer = parseFloat(offerPrice.value) || 0;
+        
+        if (original > 0 && offer > 0) {
+            if (offer >= original) {
+                offerPrice.setCustomValidity('Sale price must be less than regular price');
+                offerPrice.classList.add('is-invalid');
+                savingsDisplay.textContent = '';
+            } else {
+                offerPrice.setCustomValidity('');
+                offerPrice.classList.remove('is-invalid');
+                const savings = original - offer;
+                const percentage = ((savings / original) * 100).toFixed(1);
+                savingsDisplay.innerHTML = `<i class="fas fa-tag me-1"></i>You save ₹${savings.toFixed(2)} (${percentage}% off)`;
+            }
         }
+    }
 
-        // Initialize croppers for each image
-        for (var i = 1; i <= 3; i++) {
-            initializeCropper(i);
-        }
+    originalPrice.addEventListener('input', updatePriceValidation);
+    offerPrice.addEventListener('input', updatePriceValidation);
 
-        form.addEventListener('submit', function () {
-            // Do additional form validation if needed
-            // Submit the form
-            form.submit();
+    // Size and quantity management
+    const sizeCheckboxes = document.querySelectorAll('.size-checkbox');
+    sizeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const sizeItem = this.closest('.size-item');
+            const quantitySection = sizeItem.querySelector('.quantity-section');
+            const quantityInput = sizeItem.querySelector('.quantity-input');
+            
+            if (this.checked) {
+                sizeItem.classList.add('active');
+                quantitySection.style.display = 'block';
+                quantityInput.value = '1';
+                quantityInput.required = true;
+            } else {
+                sizeItem.classList.remove('active');
+                quantitySection.style.display = 'none';
+                quantityInput.value = '0';
+                quantityInput.required = false;
+            }
         });
     });
+
+    // Image handling
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    function handleImageChange(event, index) {
+        const input = event.target;
+        const preview = document.getElementById(`preview${index}`);
+        preview.innerHTML = '';
+
+        const file = input.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!allowedTypes.includes(file.type)) {
+            showFieldError(input, 'Only JPG, PNG, or WebP images are allowed');
+            input.value = '';
+            return;
+        }
+
+        // Validate file size
+        if (file.size > maxSize) {
+            showFieldError(input, 'Image must be smaller than 5MB');
+            input.value = '';
+            return;
+        }
+
+        // Clear any previous errors
+        clearFieldError(input);
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="image-preview img-fluid">
+                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                            onclick="removeImage(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-file-image me-1"></i>
+                        ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </small>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Attach image handlers
+    document.getElementById('image1').addEventListener('change', (e) => handleImageChange(e, 1));
+    document.getElementById('image2').addEventListener('change', (e) => handleImageChange(e, 2));
+    document.getElementById('image3').addEventListener('change', (e) => handleImageChange(e, 3));
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous errors
+        clearAllErrors();
+
+        // Validate required fields
+        const requiredFields = [
+            { field: document.getElementById('product_name'), message: 'Product name is required' },
+            { field: document.querySelector('[name="product_description"]'), message: 'Product description is required' },
+            { field: originalPrice, message: 'Regular price is required' },
+            { field: offerPrice, message: 'Sale price is required' },
+            { field: document.querySelector('[name="product_category"]'), message: 'Please select a category' },
+            { field: document.querySelector('[name="product_brand"]'), message: 'Please select a brand' },
+            { field: document.getElementById('image1'), message: 'Main image is required' },
+            { field: document.getElementById('image2'), message: ' image is required' },
+            { field: document.getElementById('image3'), message: ' image is required' },
+        ];
+
+        requiredFields.forEach(item => {
+            if (!item.field.value.trim()) {
+                showFieldError(item.field, item.message);
+                isValid = false;
+            }
+        });
+
+        // Validate prices
+        const original = parseFloat(originalPrice.value) || 0;
+        const offer = parseFloat(offerPrice.value) || 0;
+
+        if (original <= 0) {
+            showFieldError(originalPrice, 'Regular price must be greater than 0');
+            isValid = false;
+        }
+
+        if (offer <= 0) {
+            showFieldError(offerPrice, 'Sale price must be greater than 0');
+            isValid = false;
+        }
+
+        if (original > 0 && offer > 0 && offer >= original) {
+            showFieldError(offerPrice, 'Sale price must be less than regular price');
+            isValid = false;
+        }
+
+        // Validate sizes and quantities
+        const selectedSizes = document.querySelectorAll('input[name="sizes"]:checked');
+        if (selectedSizes.length === 0) {
+            document.getElementById('sizes-error').classList.remove('d-none');
+            isValid = false;
+        } else {
+            document.getElementById('sizes-error').classList.add('d-none');
+            
+            selectedSizes.forEach(sizeCheckbox => {
+                const sizeId = sizeCheckbox.value;
+                const quantityInput = document.getElementById(`quantity_${sizeId}`);
+                const quantity = parseInt(quantityInput.value) || 0;
+                
+                if (quantity <= 0) {
+                    showFieldError(quantityInput, 'Quantity must be greater than 0');
+                    isValid = false;
+                }
+            });
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            showMessage('Please fix the errors below before submitting.', 'danger');
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.btn-text').textContent = 'Creating Product...';
+        submitBtn.querySelector('.spinner-border').classList.remove('d-none');
+    });
+
+    // Helper functions
+    function showFieldError(field, message) {
+        field.classList.add('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = message;
+        }
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = '';
+        }
+    }
+
+    function clearAllErrors() {
+        document.querySelectorAll('.is-invalid').forEach(field => {
+            field.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(feedback => {
+            feedback.textContent = '';
+        });
+        document.getElementById('sizes-error').classList.add('d-none');
+    }
+
+    function showMessage(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+        
+        messageContainer.innerHTML = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="${icon} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Remove image function (global scope)
+    window.removeImage = function(index) {
+        const input = document.getElementById(`image${index}`);
+        const preview = document.getElementById(`preview${index}`);
+        input.value = '';
+        preview.innerHTML = '';
+        clearFieldError(input);
+    };
+});
 </script>
 
-
-
 {% endblock content %}
+

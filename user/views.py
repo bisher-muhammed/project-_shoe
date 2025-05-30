@@ -1,10 +1,16 @@
+from decimal import Decimal
+from django.shortcuts import render
+from django.db.models import Sum, DecimalField
+from django.http import HttpResponseServerError
+from django.db import IntegrityError
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from django.shortcuts import render, redirect,get_object_or_404
 from adminapp.models import Product
 from django.contrib.auth import login, logout, authenticate
 from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_control, never_cache
 import re
@@ -33,7 +39,8 @@ from django.db.models import Q
 
 
 
-from django.db.models import Count
+
+
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 @never_cache
 def home(request):
@@ -113,101 +120,112 @@ def login_view(request):
     if "username" in request.session:
         return redirect("home")
 
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+    context = {
+        "email_value": "",  # to retain entered email on form reload
+    }
 
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "").strip()
+
+        context["email_value"] = email  # Preserve input on failed attempt
+
+        # Server-side validations
         if not email or not password:
             messages.warning(request, "Please fill in both email and password.")
-            return redirect("login_view")
+            return render(request, "accounts/login_view.html", context)
+
+        if len(password) < 8:
+            messages.warning(request, "Password must be at least 8 characters.")
+            return render(request, "accounts/login_view.html", context)
 
         user = authenticate(request, username=email, password=password)
-        print(user, email, password)
 
         if user is not None and user.is_active:
             login(request, user)
-            request.session["username"] = user.username  # Optional: track in session
+            request.session["username"] = user.username
             messages.success(request, "Logged in successfully.")
             return redirect("home")
         else:
-            messages.error(request, "Invalid username or password.")
-            return redirect("login_view")
+            messages.error(request, "Invalid email or password.")
+            return render(request, "accounts/login_view.html", context)
 
-    return render(request, "accounts/login_view.html")
+    return render(request, "accounts/login_view.html", context)
 
 
 
 def signup_view(request):
+    context = {
+        "username_value": "",
+        "email_value": "",
+    }
+
     if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        confrim_password = request.POST.get("confirm_password")
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
 
-        request.session["uname"] = username
-        request.session["email"] = email
-        request.session["password"] = password
-        try:
-            if not username or not email or not password:
-                messages.error(request, "Enter details to field")
-                return redirect("signup_view")
-        except:
-            pass
+        # Pre-fill form fields with user input in case of error
+        context["username_value"] = username
+        context["email_value"] = email
 
-        try:
-            if User.objects.filter(username=username).exists():
-                messages.error(
-                    request, "Username already exists. Please choose a different one."
-                )
-                return redirect("signup_view")
-            elif not username.isalnum():
-                messages.warning(
-                    request,
-                    "Username contains invalid characters. Please use only letters and numbers.",
-                )
-                return redirect("signup_view")
-        except:
-            pass
+        # Required field check
+        if not username or not email or not password or not confirm_password:
+            messages.error(request, "All fields are required.")
+            return render(request, "accounts/signup_view.html", context)
 
-        try:
-            if User.objects.filter(email=email):
-                messages.error(request, "Email already exists")
-                return redirect("signup_view")
-        except:
-            pass
+        # Username checks
+        if len(username) > 20:
+            messages.error(request, "Username must be under 20 characters.")
+            return render(request, "accounts/signup_view.html", context)
 
+        if not username.isalnum():
+            messages.warning(request, "Username must be alphanumeric.")
+            return render(request, "accounts/signup_view.html", context)
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
+            return render(request, "accounts/signup_view.html", context)
+
+        # Email validation
         try:
             validate_email(email)
         except ValidationError:
-            messages.error(request, "Invalid email address")
-            return redirect("signup_view")
+            messages.error(request, "Invalid email format.")
+            return render(request, "accounts/signup_view.html", context)
 
-        try:
-            if password != confrim_password:
-                messages.error(request, "passwords not matching")
-                return redirect("signup_view")
-        except:
-            pass
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+            return render(request, "accounts/signup_view.html", context)
 
-        try:
-            if len(username) > 20:
-                messages.error(request, "username is too long")
-                return redirect("signup_view")
-        except:
-            pass
+        # Password checks
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "accounts/signup_view.html", context)
 
-        try:
-            if len(password) < 8:
-                messages.error(request, "Password must be at least 8 characters")
-                return redirect("signup_view")
-        except:
-            pass
+        if len(password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, "accounts/signup_view.html", context)
 
+        password_pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$'
+        if not re.match(password_pattern, password):
+            messages.error(
+                request,
+                "Password must contain uppercase, lowercase, number, and special character."
+            )
+            return render(request, "accounts/signup_view.html", context)
+
+        # Save safe values to session if needed for OTP or next steps
+        request.session["uname"] = username
+        request.session["email"] = email
+        request.session['password'] = password
         request.session["verification_type"] = "signup_view"
+
         send_otp(request)
         return render(request, "accounts/verify_otp.html", {"email": email})
 
-    return render(request, "accounts/signup_view.html")
+    return render(request, "accounts/signup_view.html", context)
 
 
 def otp_page(request):
@@ -235,7 +253,7 @@ def send_otp(request):
     send_mail(
         "otp for sign up",
         s,
-        "bisherp2@gmail.com",
+        "bisherp297@gmail.com",
         [email],
         fail_silently=False,
     )
@@ -302,7 +320,7 @@ def resend_otp(request):
     send_mail(
         "New OTP for Sign Up",
         new_otp,
-        "bisherp2@gmail.com",
+        "bisherp297@gmail.com",
         [email],
         fail_silently=False,
     )
@@ -374,7 +392,6 @@ def profile_forget_password(request, user_id):
     send_otp(request)
     return render(request, "accounts/verify_otp.html")
 
-
 def profile_confrim_password(request):
     if request.method == "POST":
         password = request.POST.get("password1")
@@ -412,20 +429,7 @@ def logout_view(request):
     return redirect('login_view')
 
 
-
-def product_list(request):
-    products = Product.objects.all()
-    print(products)
-
-    return render(request, 'admin/product_list.html', {'products': products})
-
-def category_list(request):
-    category_list = Category.objects.all()
-    print(category_list)
-    return render(request, 'admin/admin_category.html', {'category_list': category_list})
-
-from django.core.exceptions import ObjectDoesNotExist
-
+@login_required(login_url="login_view")
 def product_detials(request, product_id):
     try:
         product = Product.objects.get(pk=product_id)
@@ -460,21 +464,14 @@ def product_detials(request, product_id):
     }
     return render(request, 'accounts/product_detials.html', context)
 
-    # Get related products with the same brand, excluding the current product
-   
-
- # Import the Color and Size models from the admin app
-
-def size_color_options(request):
-    size_options = Size.objects.filter(is_active=True)
-    context = {'size_options': size_options,}
-    return render(request, 'product_list.html',context)
 
 
 
 
 
-@login_required
+
+
+@login_required(login_url="login_view")
 def view_profile(request):
     try:
         # Assuming the user profile is related to the logged-in user
@@ -490,7 +487,7 @@ def view_profile(request):
     return render(request, 'accounts/dashboard.html', context)
 
 
-@login_required
+@login_required(login_url="login_view")
 def change_image_view(request):
     try:
         # Assuming the user profile is related to the logged-in user
@@ -507,47 +504,77 @@ def change_image_view(request):
 
     return render(request, 'accounts/dashboard.html', {'user_profile': user_profile})
 
-@login_required
-def add_address(request):
-    if request.method == "POST":
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address_1 = request.POST.get('address')
-        city = request.POST.get('city')
-        state = request.POST.get('state')
-        zip_code = request.POST.get('zip_code')
 
-        # Validate all required fields
+
+@login_required(login_url="login_view")
+def add_address(request):
+    context = {}
+
+    if request.method == "POST":
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        address_1 = request.POST.get('address', '').strip()
+        city = request.POST.get('city', '').strip()
+        state = request.POST.get('state', '').strip()
+        zip_code = request.POST.get('zip_code', '').strip()
+        next_url = request.POST.get('next')
+
+        # Pass entered data back to template if error
+        context.update({
+            'first_name': first_name,
+            'last_name': last_name,
+            'address': address_1,
+            'city': city,
+            'state': state,
+            'zip_code': zip_code,
+            'next': next_url
+        })
+
+        # Validate fields...
         if not all([first_name, last_name, address_1, city, state, zip_code]):
             messages.error(request, 'Please fill in all required fields.')
-            return render(request, 'accounts/add_address.html')
+            return render(request, 'accounts/add_address.html', context)
+
+        if not re.match(r'^\d{6}$', zip_code):
+            messages.error(request, 'Please enter a valid zip code.')
+            return render(request, 'accounts/add_address.html', context)
 
         try:
-            new_address = AddressUS.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                address_1=address_1,
-                city=city,
-                state=state,
-                zipcode=zip_code,
-                user_profile=request.user.profile
-            )
+            with transaction.atomic():
+                new_address = AddressUS.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    address_1=address_1,
+                    city=city,
+                    state=state,
+                    zipcode=zip_code,
+                    user_profile=request.user.profile
+                )
 
-            # If no address is marked default, set this one as default
-            user_addresses = AddressUS.objects.filter(user_profile=request.user.profile)
-            if not any(address.is_default for address in user_addresses):
-                with transaction.atomic():
+                user_addresses = AddressUS.objects.filter(user_profile=request.user.profile)
+                if not user_addresses.exclude(id=new_address.id).filter(is_default=True).exists():
                     new_address.is_default = True
                     new_address.save()
 
-            messages.success(request, 'Address added successfully.')
-            return redirect('view_profile')
+                messages.success(request, 'Address added successfully.')
+
+                if next_url:
+                    return redirect(next_url)
+                else:
+                    return redirect('view_profile')
 
         except Exception as e:
             print(f"Error creating address: {e}")
-            messages.error(request, 'Error adding address. Please try again.')
+            messages.error(request, 'An error occurred while adding your address.')
 
-    return render(request, 'accounts/add_address.html')
+    else:
+        context['next'] = request.GET.get('next', '')
+
+    return render(request, 'accounts/add_address.html', context)
+
+
+
+
 
 
 
@@ -571,7 +598,7 @@ def addresses(request):
 
 
 
-
+@login_required(login_url="login_view")
 def set_default_address(request, address_id):
     address = get_object_or_404(AddressUS, id=address_id)
     address.is_default = True
@@ -597,7 +624,7 @@ def delete_address(request, address_id):
     return render(request, 'accounts/confirm_delete.html', {'address': address})
 
 
-
+@login_required(login_url="login_view")
 def order_list(request):
     # Assuming you want to fetch all orders for the logged-in user
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
@@ -623,6 +650,7 @@ def order_list(request):
     return render(request, 'accounts/order_list.html', context)
 
 
+@login_required(login_url="login_view")
 def view_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order_products = ProductOrder.objects.filter(order=order)
@@ -672,13 +700,13 @@ def return_order(request, order_id):
 def add_wishlist(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
 
-    # Get or create user profile
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-    # Add the product to the wishlist
     user_profile.wishlist.add(product)
 
-    return redirect('home')
+    next_url = request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('home')  # fallback if no `next` param
 
 
 
@@ -726,82 +754,63 @@ def delete_wishlist_item(request, product_id):
     else:
         messages.error(request, "Wishlist item does not belong to the current user.")
         return redirect('home')
-from decimal import Decimal
-
-# ...
-from decimal import Decimal
-import logging
-
-logger = logging.getLogger(__name__)
 
 
-# views.py
-from django.shortcuts import render
-from django.db.models import Sum, DecimalField
-from django.http import HttpResponseServerError
-from decimal import Decimal
-from django.db import IntegrityError
-
-@login_required
+@login_required(login_url="login_view")
 def wallet(request):
-    # Fetch the list of orders for the user
+    # Fetch orders for the user
     order_list = Order.objects.filter(user=request.user).order_by('-created_at')
 
-    # Get or create user profile
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    # Get or create the user profile
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-    # Try to get the user's wallet or create one if it doesn't exist
-    try:
-        user_wallet = Wallet.objects.get(user_profile=user_profile)
-    except Wallet.DoesNotExist:
+    # Get or create the wallet
+    user_wallet = Wallet.objects.filter(user_profile=user_profile).first()
+    if not user_wallet:
         try:
             user_wallet = Wallet.objects.create(user_profile=user_profile, user=request.user)
         except IntegrityError:
-            # Handle IntegrityError, in case another thread created the wallet at the same time
+            # Handle race condition if wallet already created by another thread
             user_wallet = Wallet.objects.get(user_profile=user_profile)
 
-    # Check if there are existing wallets with null user and update them
-    Wallet.objects.filter(user_profile=user_profile, user=None).update(user=request.user)
+    # Ensure user is correctly assigned if for any reason it's missing
+    if user_wallet.user_id is None:
+        user_wallet.user = request.user
+        user_wallet.save()
 
-    # Check if the updated wallet balance is present in the session
-    updated_wallet_balance = request.session.get('updated_wallet_balance', None)
-
-    # Initialize total_returned_amount and total_canceled_amount
+    # Initialize totals
     total_returned_amount = Decimal('0.00')
     total_canceled_amount = Decimal('0.00')
 
+    # Get updated balance from session if available
+    updated_wallet_balance = request.session.get('updated_wallet_balance')
+
     if updated_wallet_balance is not None:
-        # If present, use the value from the session
         user_wallet.balance = Decimal(updated_wallet_balance)
         user_wallet.save()
-
-        # Remove 'updated_wallet_balance' from the session
-        # del request.session['updated_wallet_balance']
-        # request.session.save()
     else:
-        # Otherwise, calculate the total amount of returned and canceled orders
-        total_returned_amount = Decimal(Order.objects.filter(user=request.user, status="Returned").aggregate(Sum('order_total'))['order_total__sum'] or '0.00')
-        total_canceled_amount = Decimal(Order.objects.filter(user=request.user, status="Cancelled").aggregate(Sum('order_total'))['order_total__sum'] or '0.00')
+        # Calculate balance from returned + canceled orders
+        total_returned_amount = Decimal(
+            Order.objects.filter(user=request.user, status="Returned").aggregate(
+                Sum('order_total')
+            )['order_total__sum'] or '0.00'
+        )
+        total_canceled_amount = Decimal(
+            Order.objects.filter(user=request.user, status="Cancelled").aggregate(
+                Sum('order_total')
+            )['order_total__sum'] or '0.00'
+        )
         user_wallet.balance = total_returned_amount + total_canceled_amount
         user_wallet.save()
 
-        # Update the wallet balance by setting it to the sum of returned and canceled amounts
-        request.session['user_wallet.balance'] = str(user_wallet.balance)
+        # Store balance in session
+        request.session['updated_wallet_balance'] = str(user_wallet.balance)
         request.session.save()
-        updated_wallet_balance = request.session['user_wallet.balance']
-        print(updated_wallet_balance)
 
-    # Fetch the latest wallet balance from the database
+    # Refresh wallet from DB to ensure consistency
     user_wallet.refresh_from_db()
 
-    # Print statements for debugging
-    print(f'User ID: {request.user.id}')
-    print(f'Wallet Balance (from database): {user_wallet.balance}')
-    print(f'Updated Wallet Balance (from session): {updated_wallet_balance}')
-    print(f'Total Returned Amount: {total_returned_amount}')
-    print(f'Total Canceled Amount: {total_canceled_amount}')
-
-    # Prepare the context for rendering
+    # Context for template
     context = {
         'user_wallet': user_wallet,
         'order_list': order_list,
@@ -814,7 +823,7 @@ def wallet(request):
  
 
 
-@login_required
+@login_required(login_url="login_view")
 def edit_address(request, address_id):
     address = get_object_or_404(AddressUS, id=address_id, user_profile=request.user.profile)
 
@@ -826,9 +835,14 @@ def edit_address(request, address_id):
         state = request.POST.get('state')
         zip_code = request.POST.get('zip_code')
 
-        # Validation
+        # Check required fields
         if not all([first_name, last_name, address_1, city, state, zip_code]):
             messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'accounts/edit_address.html', {'address': address})
+
+        # Validate 6-digit zip code
+        if not re.match(r'^\d{6}$', zip_code):
+            messages.error(request, 'Please enter a valid 6-digit zip code.')
             return render(request, 'accounts/edit_address.html', {'address': address})
 
         try:
@@ -837,7 +851,7 @@ def edit_address(request, address_id):
             address.address_1 = address_1
             address.city = city
             address.state = state
-            address.zipcode = zip_code
+            address.zipcode = zip_code  # make sure your model field is 'zipcode' or change accordingly
             address.save()
 
             messages.success(request, 'Address updated successfully.')
@@ -851,7 +865,7 @@ def edit_address(request, address_id):
 
 
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+@login_required(login_url="login_view")
 def shop_lists(request):
     products = Product.objects.filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)
@@ -903,6 +917,7 @@ def shop_lists(request):
     return render(request, 'accounts/shop.html', context)
 
 
+@login_required(login_url="login_view")
 def filter_products_by_category(request, category_name):
     # Filter products based on the selected category
     category_products = Product.objects.filter(category__category_name=category_name, is_active=True)
@@ -923,6 +938,7 @@ def filter_products_by_category(request, category_name):
     return render(request, 'accounts/shop.html', {'products': filtered_products})
 
 
+@login_required(login_url="login_view")
 def filter_products_by_brand(request, brand_name):
     # Filter products based on the selected brand
     brand_products = Product.objects.filter(brand__brand_name=brand_name, is_active=True)

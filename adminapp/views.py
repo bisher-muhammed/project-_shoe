@@ -1,43 +1,54 @@
-from urllib import response
-from django.shortcuts import render, redirect,get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+import os
+import imghdr
+import calendar
+from io import BytesIO
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+
+from PIL import Image
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib import messages
-from django.db import transaction
-from django.db.models import Sum,F, DecimalField
-from .models import Category, Brand, ProductOffer, ProductSize, Size, Color, Product,Coupon,Offer
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from core.models import Order,ProductOrder
-from django.utils import timezone
-import calendar
-from django.db.models.functions import TruncMonth
-from collections import defaultdict
-from django.http import JsonResponse
-from django.db.models import Count
-from django.db.models.functions import ExtractMonth, ExtractYear,Coalesce
-from PIL import Image 
-from.models import Banner
-from datetime import datetime, timedelta
-from core.models import *
-from django.db.models import Max
-
-from django.http import HttpResponse
-from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from PIL import Image
-from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.images import get_image_dimensions
+from django.db import transaction, IntegrityError
+from django.db.models import (
+    Sum, F, Count, Q, Max, ExpressionWrapper, DecimalField
+)
+from django.db.models.functions import (
+    TruncMonth, ExtractMonth, ExtractYear, Coalesce
+)
+from django.utils import timezone
+from django.utils.timezone import make_aware, now
+from django.utils.html import escape
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
+from .models import (
+    Category, Brand, ProductOffer, ProductSize, Size, Color,
+    Product, Coupon, Offer, Banner,
+)
+from core.models import Order, ProductOrder,Payment
+
+from .utils.admin_access import superuser_required
 
 
 
 @never_cache
 def admin_login(request):
     if request.user.is_authenticated:
-        return redirect('admin_home')
-    
+        if request.user.is_superuser:
+            return redirect('admin_home')
+        else:
+            # Redirect normal users to their homepage or logout them
+            return redirect('home')  # or logout(request) and then redirect('login')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -48,138 +59,247 @@ def admin_login(request):
             return redirect('admin_home')
         else:
             messages.error(request, "Invalid credentials. Please try again.")
-            return redirect("admin_login")
-    
-    return render(request, 'admin/admin_login.html')
-from django.db.models import Q
-def admin_home(request):
-    if request.user.is_authenticated and request.user.is_superuser:
 
-        category_order_counts = (
+    return render(request, 'admin/admin_login.html')
+
+
+
+from django.utils.timezone import make_aware
+from datetime import datetime
+
+@superuser_required
+def admin_home(request):
+    if not (request.user.is_authenticated and request.user.is_superuser):
+        return JsonResponse({}, status=403)
+
+    query = request.GET.get('q', '').strip()
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    order_filter = Q()
+    start_date = end_date = None
+
+    try:
+        # Parse and make timezone-aware start and end dates
+        if start_date_str:
+            start_date = timezone.make_aware(datetime.strptime(start_date_str, "%Y-%m-%d"))
+            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if end_date_str:
+            end_date = timezone.make_aware(datetime.strptime(end_date_str, "%Y-%m-%d"))
+            end_date = end_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        now = timezone.now()
+
+        # Validate future dates
+        if start_date and start_date > now:
+            print("Start date is in the future, ignoring.")
+            start_date = None
+        if end_date and end_date > now:
+            print("End date is in the future, adjusting to now.")
+            end_date = now
+
+        # Handle invalid range
+        if start_date and end_date and start_date > end_date:
+            print("Start date is after end date, ignoring both.")
+            start_date = end_date = None
+
+        # Apply valid filters
+        if start_date and end_date:
+            order_filter &= Q(created_at__range=(start_date, end_date))
+            print("Filtering orders between", start_date, "and", end_date)
+        elif start_date:
+            order_filter &= Q(created_at__gte=start_date)
+            print("Filtering orders from", start_date)
+        elif end_date:
+            order_filter &= Q(created_at__lte=end_date)
+            print("Filtering orders up to", end_date)
+
+    except ValueError as e:
+        print("Invalid date format:", e)
+
+    # Print range for debug
+    first_order = Order.objects.order_by('created_at').first()
+    last_order = Order.objects.order_by('-created_at').first()
+    print("Earliest order in DB:", first_order.created_at if first_order else "N/A")
+    print("Latest order in DB:", last_order.created_at if last_order else "N/A")
+
+    # Chart data
+    category_order_counts = (
         ProductOrder.objects
-        .filter(ordered=True)
+        .filter(order_filter)
         .values('product__category__category_name')
         .annotate(order_count=Count('id'))
     )
+    category_labels = [item['product__category__category_name'] for item in category_order_counts]
+    order_counts = [item['order_count'] for item in category_order_counts]
 
-    # Prepare data for JavaScript
-        category_labels = [item['product__category__category_name'] for item in category_order_counts]
-        order_counts = [item['order_count'] for item in category_order_counts]
+    # Totals
+    total_users = User.objects.count()
+    total_products = Product.objects.count()
+    total_categories = Category.objects.count()
+    total_orders = Order.objects.filter(order_filter).count()
 
-        # Create a dictionary to store category-wise order counts
+    total_revenue = ProductOrder.objects.filter(order_filter).aggregate(
+        total_revenue=Sum(
+            ExpressionWrapper(
+                F('order__order_total') + F('order__order_value'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        )
+    )['total_revenue'] or 0
+
+    # Monthly earning
+    now = timezone.now()
+    first_day_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_day_of_month = now.replace(
+        day=calendar.monthrange(now.year, now.month)[1],
+        hour=23, minute=59, second=59, microsecond=999999
+    )
+    monthly_earning = ProductOrder.objects.filter(
+        ordered=True,
+        created_at__range=(first_day_of_month, last_day_of_month)
+    ).aggregate(monthly_earning=Sum('product_price'))['monthly_earning'] or 0
+
+    sales_stats = sales_statistics(request)
+
+    # Monthly & Yearly Orders
+    monthly_orders = ProductOrder.objects.filter(order_filter).annotate(
+        month=ExtractMonth('created_at')
+    ).values('month').annotate(
+        monthly_orders=Sum('quantity')
+    ).order_by('month')
+
+    yearly_orders = ProductOrder.objects.filter(order_filter).annotate(
+        year=ExtractYear('created_at')
+    ).values('year').annotate(
+        yearly_orders=Sum('quantity')
+    ).order_by('year')
+
+    # Latest Orders
+    latest_orders = Order.objects.select_related(
+        'user', 'address', 'coupon', 'cart__user'
+    ).prefetch_related(
+        'productorder_set__product', 'productorder_set__cart_item__product'
+    ).filter(order_filter).exclude(
+        Q(status='Returned') | Q(status='Cancelled')
+    ).order_by('-created_at')
+
+    if query:
+        latest_orders = latest_orders.filter(
+            Q(user__username__icontains=query) | Q(id__icontains=query)
+        )
+        print("Search query applied:", query)
+
+    print("Total latest orders after filters:", latest_orders.count())
+
+    # Add payment method info
+    for order in latest_orders[:50]:
+        payment_data = Payment.objects.filter(user=order.user, created_at__gte=order.created_at).first()
+        order.payment_method = payment_data.payment_method if payment_data else 'N/A'
         
-        total_users = User.objects.count()
-        total_products = Product.objects.count()
-        total_orders = Order.objects.count()
-        total_categories = Category.objects.count()
-        users = User.objects.all()
-        products = Product.objects.all()
 
-        total_revenue = ProductOrder.objects.filter(ordered=True).aggregate(
-            total_revenue=Sum(F('order__order_total') + F('order__order_value'), output_field=DecimalField())
-        )['total_revenue']
+    # Total amount
+    total_order_amount = latest_orders.aggregate(total_order_amount=Sum('order_total'))['total_order_amount'] or 0
 
-        now = timezone.now()
-        first_day_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        last_day_of_month = now.replace(day=calendar.monthrange(now.year, now.month)[1], hour=23, minute=59, second=59, microsecond=999999)
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(latest_orders, 10)
+    try:
+        latest_orders = paginator.page(page)
+    except PageNotAnInteger:
+        latest_orders = paginator.page(1)
+    except EmptyPage:
+        latest_orders = paginator.page(paginator.num_pages)
 
-        monthly_earning = ProductOrder.objects.filter(ordered=True, created_at__range=(first_day_of_month, last_day_of_month)).aggregate(monthly_earning=Sum('product_price'))['monthly_earning']
+    context = {
+        'total_users': total_users,
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'total_categories': total_categories,
+        'total_revenue': total_revenue,
+        'monthly_earning': monthly_earning,
+        'sales_stats': sales_stats,
+        'monthly_orders': monthly_orders,
+        'yearly_orders': yearly_orders,
+        'category_labels': category_labels,
+        'order_counts': order_counts,
+        'latest_orders': latest_orders,
+        'query': query,
+        'start_date': start_date.date() if start_date else '',
+        'end_date': end_date.date() if end_date else '',
+        'total_order_amount': total_order_amount,
+    }
 
-        sales_stats = sales_statistics(request)
+    return render(request, 'admin/admin_home.html', context)
 
-        # Monthly Orders
-        monthly_orders = (
-            ProductOrder.objects
-            .filter(ordered=True, created_at__range=(first_day_of_month, last_day_of_month))
-            .annotate(month=ExtractMonth('created_at'))
-            .values('month')
-            .annotate(monthly_orders=Sum('quantity'))
-            .order_by('month')
-        )
 
-        # Yearly Orders
-        yearly_orders = (
-            ProductOrder.objects
-            .filter(ordered=True)
-            .annotate(year=ExtractYear('created_at'))
-            .values('year')
-            .annotate(yearly_orders=Sum('quantity'))
-            .order_by('year')
-        )
-
-        latest_orders = (
-            Order.objects.select_related('user', 'address', 'coupon', 'cart__user')
-            .prefetch_related('productorder_set__product', 'productorder_set__cart_item__product')
-            .exclude(Q(status='Returned') | Q(status='Cancelled'))
-            .order_by('-created_at')
-
-            [:10]  # Adjust the number as needed
-        )
-
-        for order in latest_orders:
-            # ...
-            payment_data = Payment.objects.filter(user=order.user, created_at__gte=order.created_at).first()
-            order.payment_method = payment_data.payment_method if payment_data else 'N/A'
-
-        total_order_amount = latest_orders.aggregate(total_order_amount=Sum('order_total'))['total_order_amount']
-
-        # Pagination
-        page = request.GET.get('page', 1)
-        paginator = Paginator(latest_orders, 10)
-
-        try:
-            latest_orders = paginator.page(page)
-        except PageNotAnInteger:
-            latest_orders = paginator.page(1)
-        except EmptyPage:
-            latest_orders = paginator.page(paginator.num_pages)
-
-        context = {
-            'total_users': total_users,
-            'total_products': total_products,
-            'total_orders': total_orders,
-            'total_categories': total_categories,
-            'users': users,
-            'products': products,
-            'total_revenue': total_revenue,
-            'monthly_earning': monthly_earning,
-            'sales_stats': sales_stats,
-            'monthly_orders': monthly_orders,
-            'yearly_orders': yearly_orders,
-            'category_labels': category_labels,
-            'order_counts': order_counts,
-            'latest_orders': latest_orders,
-        }
-
-        return render(request, 'admin/admin_home.html', context)
-    else:
-        return JsonResponse({}, status=403)
+@superuser_required
 def admin_category(request):
-    if request.method == 'POST':
-        category_name = request.POST.get('category_name')
-        description = request.POST.get('description')
-        category_image = request.FILES.get('category_image') 
+    category_name = ''
+    description = ''
+    category_image = None
 
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name', '').strip()
+        description = request.POST.get('description', '').strip()
+        category_image = request.FILES.get('category_image')
+
+        errors = False
+
+        # Validate category name
         if not category_name:
             messages.error(request, "Please fill out the 'Category Name' field.")
+            errors = True
+        elif Category.objects.filter(category_name__iexact=category_name).exists():
+            messages.error(request, f"The category '{category_name}' already exists.")
+            errors = True
+
+        # Validate image
+        if not category_image:
+            messages.error(request, "Please upload a category image.")
+            errors = True
         else:
+            valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+            file_type = imghdr.what(category_image)
+
+            if file_type not in valid_image_types:
+                messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
+                errors = True
+            elif category_image.size > 2 * 1024 * 1024:  # 2MB
+                messages.error(request, "Image size should not exceed 2MB.")
+                errors = True
+
+        if not errors:
             Category.objects.create(
                 category_name=category_name,
                 description=description,
                 category_image=category_image
             )
-    total_categories = Category.objects.count()
-    print(f"Total_categories: {total_categories}")
-  
-    category_list = Category.objects.all()
-    return render(request, 'admin/admin_category.html', {'category_list': category_list,'total_categories':total_categories})
+            messages.success(request, f"Category '{category_name}' created successfully.")
+            return redirect('admin_category')  # Prevent duplicate form submission
 
+    # Render form with existing values if errors exist
+    total_categories = Category.objects.count()
+    category_list = Category.objects.all()
+
+    return render(request, 'admin/admin_category.html', {
+        'category_list': category_list,
+        'total_categories': total_categories,
+        'form_data': {
+            'category_name': category_name,
+            'description': description
+        }
+    })
+
+@superuser_required
 def block_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     category.is_blocked = True
     category.save()
     return redirect('admin_category')
 
+@superuser_required
 def unblock_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     category.is_blocked = False
@@ -188,6 +308,8 @@ def unblock_category(request, category_id):
 
 
 
+
+@superuser_required
 def add_product(request):
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -196,13 +318,24 @@ def add_product(request):
     error_message = None
     form_data = {}
     selected_sizes = []
+    images = {
+        'image1': None,
+        'image2': None,
+        'image3': None,
+    }
 
     if request.method == 'POST':
+        # Get images
         product_img1 = request.FILES.get('image1')
         product_img2 = request.FILES.get('image2')
         product_img3 = request.FILES.get('image3')
 
-        fields_to_validate = [
+        images['image1'] = product_img1
+        images['image2'] = product_img2
+        images['image3'] = product_img3
+
+        # Validate required fields
+        required_fields = [
             'product_name',
             'product_category',
             'product_brand',
@@ -211,29 +344,81 @@ def add_product(request):
             'offer_price',
         ]
 
-        for field in fields_to_validate:
-            value = request.POST.get(field)
+        # Basic field validation
+        for field in required_fields:
+            value = request.POST.get(field, '').strip()
             form_data[field] = value
             if not value:
-                error_message = f"Please enter a value for {field.replace('_', ' ')}"
+                error_message = f"Please enter a value for {field.replace('_', ' ').title()}"
                 break
 
-        try:
-            if not error_message:
+        # Validate price fields specifically
+        if not error_message:
+            try:
+                original_price = float(form_data['original_price'])
+                offer_price = float(form_data['offer_price'])
+                
+                if original_price <= 0:
+                    error_message = "Original price must be greater than 0"
+                elif offer_price <= 0:
+                    error_message = "Offer price must be greater than 0"
+                elif offer_price >= original_price:
+                    error_message = "Offer price must be less than the original price"
+                    
+            except (ValueError, TypeError):
+                error_message = "Please enter valid numeric values for prices"
+
+        # Validate images
+        if not error_message:
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+            max_size = 5 * 1024 * 1024  # 5MB
+
+            for img_name, img in [('image1', product_img1), ('image2', product_img2), ('image3', product_img3)]:
+                if img:
+                    if img.content_type not in allowed_types:
+                        error_message = "Only JPG, PNG, or WEBP images are allowed"
+                        break
+                    if img.size > max_size:
+                        error_message = "Each image must be smaller than 5MB"
+                        break
+
+        # Validate size selection and quantities
+        if not error_message:
+            product_size_ids = request.POST.getlist('sizes')
+            selected_sizes = product_size_ids
+
+            if not product_size_ids:
+                error_message = "Please select at least one size"
+            else:
+                # Validate quantities for selected sizes
+                for size_id in product_size_ids:
+                    quantity = request.POST.get(f'quantity_{size_id}', '').strip()
+                    if not quantity:
+                        error_message = f"Please provide quantity for selected size"
+                        break
+                    try:
+                        quantity_int = int(quantity)
+                        if quantity_int <= 0:
+                            error_message = f"Quantity must be greater than 0"
+                            break
+                    except ValueError:
+                        error_message = f"Please provide valid numeric quantity"
+                        break
+
+        # Create product if no errors
+        if not error_message:
+            try:
                 product_name = form_data['product_name']
                 product_category_id = form_data['product_category']
                 product_brand_id = form_data['product_brand']
                 product_description = form_data['product_description']
-                original_price = form_data['original_price']
-                offer_price = form_data['offer_price']
 
-                if offer_price >= original_price:
-                    return HttpResponse("Offer price must be less than original price.")
-
+                # Get category and brand objects
                 category = Category.objects.get(id=product_category_id)
                 brand = Brand.objects.get(id=product_brand_id)
 
                 with transaction.atomic():
+                    # Create the product
                     product = Product.objects.create(
                         product_name=product_name,
                         product_description=product_description,
@@ -246,51 +431,75 @@ def add_product(request):
                         product_img3=product_img3,
                     )
 
-                    product_size_ids = request.POST.getlist('sizes')
+                    # Create ProductSize objects for each selected size
                     for size_id in product_size_ids:
                         size = Size.objects.get(id=size_id)
-                        quantity = request.POST.get(f'quantity_{size_id}')
-                        
-                        # Add size with quantity to the product using ProductSize model
-                        ProductSize.objects.create(product=product, size=size, quantity=quantity)
+                        quantity = int(request.POST.get(f'quantity_{size_id}'))
+                        ProductSize.objects.create(
+                            product=product, 
+                            size=size, 
+                            quantity=quantity
+                        )
 
-                    selected_sizes = request.POST.getlist('sizes')
-                    product.sizes.set(selected_sizes)
+                    # Success - redirect to product list
+                    messages.success(request, f'Product "{product_name}" created successfully!')
+                    return redirect('admin_product_list')
 
-                    product.save()
-                    return redirect('product_list')
+            except Category.DoesNotExist:
+                error_message = "Selected category does not exist"
+            except Brand.DoesNotExist:
+                error_message = "Selected brand does not exist"
+            except Size.DoesNotExist:
+                error_message = "One or more selected sizes do not exist"
+            except Exception as e:
+                error_message = f"Error creating product: {str(e)}"
 
-                return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes})
+    return render(request, 'admin/add_product.html', {
+        'categories': categories,
+        'brands': brands,
+        'size_options': size_options,
+        'error_message': error_message,
+        'form_data': form_data,
+        'selected_sizes': selected_sizes,
+        'images': images,
+    })
 
-            return redirect('add_product')
-
-        except (Category.DoesNotExist, Brand.DoesNotExist, Size.DoesNotExist) as e:
-            error_message = f"Error creating product: {e}"
-
-    return render(request, 'admin/add_product.html', {'categories': categories, 'brands': brands, 'size_options': size_options, 'error_message': error_message, 'form_data': form_data, 'selected_sizes': selected_sizes})
-
+@superuser_required
 def admin_brand(request):
     if request.method == 'POST':
-        brand_name = request.POST.get('brand_name')
-        brand_description = request.POST.get('brand_description')
+        brand_name = request.POST.get('brand_name', '').strip()
+        brand_description = request.POST.get('brand_description', '').strip()
         brand_image = request.FILES.get('brand_image')
-        if Brand.objects.filter(brand_name=brand_name).exists():
-            return HttpResponse("Brand with this name already exists.")
+
+        # Validation
         if not brand_name:
-            return HttpResponse("Please fill out the 'Brand Name' field.")
+            messages.error(request, "Please fill out the 'Brand Name' field.")
+        elif Brand.objects.filter(brand_name__iexact=brand_name).exists():
+            messages.error(request, f"The brand '{brand_name}' already exists.")
+        elif not brand_image:
+            messages.error(request, "Please upload a brand image.")
+        else:
+            valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+            file_type = imghdr.what(brand_image)
 
-        brand = Brand.objects.create(
-            brand_name=brand_name,
-            brand_description=brand_description if brand_description else "",
-            brand_image=brand_image,
-        )
-
-        brand.save()
+            if file_type not in valid_image_types:
+                messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
+            elif brand_image.size > 2 * 1024 * 1024:  # 2MB
+                messages.error(request, "Image size should not exceed 2MB.")
+            else:
+                # Passed all checks; create brand
+                Brand.objects.create(
+                    brand_name=brand_name,
+                    brand_description=brand_description,
+                    brand_image=brand_image
+                )
+                messages.success(request, f"Brand '{brand_name}' added successfully.")
+                return redirect('admin_brand')
 
     brand_list = Brand.objects.all()
-
     return render(request, 'admin/admin_brand.html', {'brand_list': brand_list})
 
+@superuser_required
 @require_GET
 def activate_brand(request, brand_id):
     brand = get_object_or_404(Brand, id=brand_id)
@@ -298,6 +507,7 @@ def activate_brand(request, brand_id):
     brand.save()
     return redirect('admin_brand')
 
+@superuser_required
 @require_GET
 def deactivate_brand(request, brand_id):
     brand = get_object_or_404(Brand, id=brand_id)
@@ -308,7 +518,7 @@ def deactivate_brand(request, brand_id):
 
 
 
-
+@superuser_required
 def variance_management(request):
     try:
         size_list = Size.objects.all()
@@ -321,6 +531,8 @@ def variance_management(request):
 
     return render(request, 'admin/variance_management.html', context)
 
+
+@superuser_required
 def add_size(request):
     if request.method == 'POST':
         size_name = request.POST.get('size_name')
@@ -340,13 +552,15 @@ def add_size(request):
 
 
 
-
+@superuser_required
 def activate_size(request, size_id):
     size = get_object_or_404(Size, id=size_id)
     size.is_active = True
     size.save()
     return redirect('variance_management')
 
+
+@superuser_required
 def deactivate_size(request, size_id):
     size = get_object_or_404(Size, id=size_id)
     size.is_active = False
@@ -354,33 +568,96 @@ def deactivate_size(request, size_id):
     return redirect('variance_management')
 
 
+@superuser_required
+def admin_product_list(request):
+    products = Product.objects.select_related('brand', 'category').filter(is_active=True)
+    brands = Brand.objects.filter(is_active=True)
+    categories = Category.objects.filter(is_blocked=False)
 
-def product_list(request):
-    products = Product.objects.all()
-    print(products)
-    total_products = Product.objects.count()
-    return render(request, 'admin/product_list.html', {'products': products,'total_products':total_products})
+    search_query = request.GET.get('search', '').strip()
+    category_id = request.GET.get('category')
+    brand_id = request.GET.get('brand')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    error = None
+    today = now().date()
+
+    # Parse and validate dates same as before...
+    start_date_obj = None
+    end_date_obj = None
+    # ... (date parsing code unchanged)
+
+    # Apply filters only if no error
+    if not error:
+        # Build a dictionary of filters
+        filter_kwargs = {}
+
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id, is_blocked=False)
+                filter_kwargs['category'] = category
+            except Category.DoesNotExist:
+                error = "Selected category is invalid."
+
+        if brand_id:
+            try:
+                brand = Brand.objects.get(id=brand_id, is_active=True)
+                filter_kwargs['brand'] = brand
+            except Brand.DoesNotExist:
+                error = "Selected brand is invalid."
+
+        if start_date_obj:
+            filter_kwargs['created_at__date__gte'] = start_date_obj
+        if end_date_obj:
+            filter_kwargs['created_at__date__lte'] = end_date_obj
+
+        # Apply the filters at once
+        products = products.filter(**filter_kwargs)
+
+        # Search filter with OR on multiple fields
+        if search_query:
+            products = products.filter(
+                Q(product_name__icontains=search_query) |
+                Q(brand__brand_name__icontains=search_query) |
+                Q(category__category_name__icontains=search_query)
+            )
+
+    context = {
+        'products': products,
+        'brands': brands,
+        'categories': categories,
+        'search_query': search_query,
+        'category_id': category_id,
+        'brand_id': brand_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'today': today,
+        'error': error,
+    }
+
+    return render(request, 'admin/product_list.html', context)
 
 
+@superuser_required
 @require_GET
 def activate_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.is_active = True
     product.save()
-    return redirect('product_list')
+    return redirect('admin_product_list')
 
+
+@superuser_required
 @require_GET
 def deactivate_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.is_active = False
     product.save()
-    return redirect('product_list')
+    return redirect('admin_product_list')
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db import transaction
-from .models import Product, Category, Brand, Size, ProductSize
 
+@superuser_required
 def edit_product(request, product_id):
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -465,7 +742,7 @@ def edit_product(request, product_id):
                             error_message = f"Please enter a valid quantity for size {size.name}."
                             raise ValueError("Invalid quantity input")
 
-                return redirect('product_list')  # Adjust this to match your actual product list URL name
+                return redirect('admin_product_list')  # Adjust this to match your actual product list URL name
 
             except (Category.DoesNotExist, Brand.DoesNotExist):
                 error_message = "Selected category or brand does not exist."
@@ -513,7 +790,7 @@ def edit_product(request, product_id):
         'error_message': error_message,
     })
 
-
+@superuser_required
 @never_cache
 def admin_userlist(request):
 
@@ -522,7 +799,7 @@ def admin_userlist(request):
     context={'data':data}
     return render(request, 'admin/admin_userlist.html', context)
 
-    
+@superuser_required   
 def activate_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.is_active = True
@@ -530,6 +807,7 @@ def activate_user(request, user_id):
     messages.success(request, 'User activated successfully.')
     return redirect('admin_userlist')
 
+@superuser_required
 @require_POST
 def deactivate_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -538,7 +816,7 @@ def deactivate_user(request, user_id):
     messages.success(request, 'User deactivated successfully.')
     return redirect('admin_userlist')
 
-
+@superuser_required
 def admin_order(request):
     # Order the orders by the most recent ones
     orders = Order.objects.all().order_by('-created_at')
@@ -561,7 +839,7 @@ def admin_order(request):
 # views.py
 
 
-
+@superuser_required
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
 
@@ -574,6 +852,8 @@ def update_order_status(request, order_id):
     # Redirect to the order detail page or any other relevant page
     return redirect('admin_order')
 
+
+@superuser_required
 def coupon_management(request):
     if request.method == 'POST':
         coupon_code = request.POST.get('coupon_code')
@@ -624,6 +904,7 @@ def coupon_management(request):
     coupon_list = Coupon.objects.all()
     return render(request, 'admin/coupon_management.html', {'coupon_list': coupon_list,})
 
+@superuser_required
 def block_coupon(request,coupon_id):
     coupon =get_object_or_404(Coupon,pk=coupon_id)
     coupon.is_blocked = True
@@ -637,9 +918,8 @@ def unblock_coupon(request,coupon_id):
     return redirect('coupon_management')
 
 
-from django.db.models import Sum, F, DecimalField
-from django.utils import timezone
 
+@superuser_required
 def sales_statistics(request):
     orders = Order.objects.filter(is_ordered=True)
     users = User.objects.all()
@@ -681,6 +961,7 @@ def sales_statistics(request):
 
     return context
 
+@superuser_required
 def get_order_dates(request):
     if request.user.is_authenticated:
         now = timezone.now()
@@ -705,57 +986,77 @@ def get_order_dates(request):
 
 
 
-
+@superuser_required
 def admin_banner(request):
-    # Set a maximum limit for creating banners
     max_banner_limit = 10
-
     banners = Banner.objects.all()
 
-    # Check the banner limit outside the loop
     if banners.count() >= max_banner_limit:
         messages.error(request, f"Cannot create more than {max_banner_limit} banners.")
     else:
         if request.method == 'POST':
             banner_image = request.FILES.get('image')
-            title = request.POST.get('title')
-            subtitle = request.POST.get('sub_title')
+            title = request.POST.get('title', '').strip()
+            subtitle = request.POST.get('sub_title', '').strip()
 
+            # Validate required fields
             if not all([banner_image, title, subtitle]):
-                messages.error(request, "Please provide all the required fields")
+                messages.error(request, "Please provide all the required fields.")
             else:
-                banner = Banner(
-                    banner_img=banner_image,
-                    title=title,
-                    subtitle=subtitle,
-                )
-                banner.save()
+                # Validate image type and size
+                valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+                file_type = imghdr.what(banner_image)
+
+                if file_type not in valid_image_types:
+                    messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
+                elif banner_image.size > 2 * 1024 * 1024:  # 2MB
+                    messages.error(request, "Image size should not exceed 2MB.")
+                else:
+                    # All validations passed — save banner
+                    banner = Banner(
+                        banner_img=banner_image,
+                        title=title,
+                        subtitle=subtitle,
+                    )
+                    banner.save()
+                    messages.success(request, "Banner created successfully.")
 
     context = {"banners": banners}
     return render(request, "admin/admin_banner.html", context)
 
-def edit_banner(request, banner_id):
-    banner = Banner.objects.get(id=banner_id)
-    
-    if request.method == "POST":
-        # Get the uploaded image, title, and subtitle from the form
-        banner_img = request.FILES.get('image')
-        title = request.POST.get('title')
-        subtitle = request.POST.get('sub_title')
 
-        # Check if all required fields (title and subtitle) are provided
+@superuser_required
+def edit_banner(request, banner_id):
+    banner = get_object_or_404(Banner, id=banner_id)
+
+    if request.method == "POST":
+        banner_img = request.FILES.get('image')
+        title = request.POST.get('title', '').strip()
+        subtitle = request.POST.get('sub_title', '').strip()
+
+        # Validate title and subtitle
         if not all([title, subtitle]):
             messages.error(request, "Please provide all the required fields.")
         else:
-            # Update the title and subtitle
-            banner.title = title
-            banner.subtitle = subtitle
-
-            # Only update the image if a new one is uploaded
+            # Validate image if a new one is uploaded
             if banner_img:
+                valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+                file_type = imghdr.what(banner_img)
+
+                if file_type not in valid_image_types:
+                    messages.error(request, "Invalid image format. Accepted formats: JPEG, PNG, GIF, BMP, WebP.")
+                    return redirect('edit_banner', banner_id=banner.id)
+
+                if banner_img.size > 2 * 1024 * 1024:  # 2MB
+                    messages.error(request, "Image size must not exceed 2MB.")
+                    return redirect('edit_banner', banner_id=banner.id)
+
+                # Update image
                 banner.banner_img = banner_img
 
-            # Save the updated banner
+            # Update other fields
+            banner.title = title
+            banner.subtitle = subtitle
             banner.save()
 
             messages.success(request, "Banner updated successfully.")
@@ -765,7 +1066,7 @@ def edit_banner(request, banner_id):
     return render(request, 'admin/edit_banner.html', context)
 
 
-
+@superuser_required
 def banner_active(request, banner_id):
     try:
         banner = Banner.objects.get(id=banner_id)
@@ -779,6 +1080,7 @@ def banner_active(request, banner_id):
     return redirect('admin_banner')
 
 
+@superuser_required
 def banner_blocked(request, banner_id):
     try:
         banner = Banner.objects.get(id=banner_id)
@@ -792,50 +1094,79 @@ def banner_blocked(request, banner_id):
     return redirect('admin_banner')
 
 
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from datetime import datetime
 
+
+@superuser_required
 def salesreport(request):
-    # Fetch start and end date from the query parameters
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
+    search_query = request.GET.get('search', '').strip().lower()
 
-    # Parse the date strings into datetime objects
-    start_date = datetime.strptime(start_date_str, "%Y-%m-%d") if start_date_str else None
-    end_date = datetime.strptime(end_date_str, "%Y-%m-%d") if end_date_str else None
+    start_date = end_date = None
 
-    # Fetch orders with related data
-    orders = Order.objects.select_related('user', 'address', 'coupon', 'cart__user') \
-                     .prefetch_related('productorder_set__product', 'productorder_set__cart_item__product') \
-                     .exclude(Q(status="Returned") | Q(status="Cancelled"))
-    
+    # Validate and parse dates
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+            # Include full end day for equal dates
+            if start_date and start_date == end_date:
+                end_date += timedelta(days=1)
+    except ValueError:
+        messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
+        return redirect('salesreport')
 
-    # Apply date filtering if start and end dates are provided
+    # Validate logical order
+    if start_date and end_date and start_date > end_date:
+        messages.error(request, "Start date cannot be after end date.")
+        return redirect('salesreport')
+
+    # Base queryset
+    order_qs = Order.objects.select_related('user', 'address', 'coupon', 'cart__user') \
+        .prefetch_related('productorder_set__product', 'productorder_set__cart_item__product') \
+        .exclude(Q(status="Returned") | Q(status="Cancelled"))
+
     if start_date and end_date:
-        orders = orders.filter(created_at__range=[start_date, end_date])
+        order_qs = order_qs.filter(created_at__gte=start_date, created_at__lt=end_date)
 
-    # Fetch payment details for each order
-    for order in orders:
-        payment_data = Payment.objects.filter(user=order.user, created_at__gte=order.created_at).first()
-        order.payment_method = payment_data.payment_method if payment_data else 'N/A'
+    # Apply search
+    if search_query:
+        matched_users = User.objects.filter(username__icontains=search_query).values_list('id', flat=True)
+        matching_payments = Payment.objects.filter(payment_method__icontains=search_query).values_list('user_id', flat=True)
 
-        total_order_amount = orders.aggregate(total_order_amount=Sum('order_total'))['total_order_amount']
+        order_qs = order_qs.filter(
+            Q(user__id__in=matched_users) |
+            Q(user__id__in=matching_payments)
+        )
+
+    total_order_amount = order_qs.aggregate(total_order_amount=Sum('order_total'))['total_order_amount'] or 0
 
     # Pagination
     page = request.GET.get('page', 1)
-    paginator = Paginator(orders, 10)
+    paginator = Paginator(order_qs, 10)
     try:
         orders = paginator.page(page)
     except PageNotAnInteger:
         orders = paginator.page(1)
     except EmptyPage:
         orders = paginator.page(paginator.num_pages)
-    return render(request, 'admin/salesreport.html', {'orders': orders,'total_order_amount': total_order_amount})
 
-from django.db import IntegrityError
-from django.http import HttpResponseBadRequest
+    # Attach payment method
+    for order in orders:
+        payment_data = Payment.objects.filter(user=order.user, created_at__gte=order.created_at).first()
+        order.payment_method = payment_data.payment_method if payment_data else 'N/A'
+
+    return render(request, 'admin/salesreport.html', {
+        'orders': orders,
+        'total_order_amount': total_order_amount,
+        'search_query': search_query,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+    })
 
 
+@superuser_required
 def category_offer(request):
     print("Inside category_offer view")
     print(request.POST)
@@ -908,7 +1239,7 @@ def category_offer(request):
 
     return render(request, 'admin/category_offer.html', context)
 
-
+@superuser_required
 def offer_product(request):
     products = Product.objects.filter(is_active=True)
 
@@ -961,7 +1292,7 @@ def offer_product(request):
 
     return render(request, 'admin/offer_product.html', {'products': products, 'products_with_offers': products_with_offers})
     
-    
+@superuser_required    
 def admin_logout(request):
     logout(request)
 
@@ -969,72 +1300,100 @@ def admin_logout(request):
 
 
 
-
+@superuser_required
 def edit_brand(request, brand_id):
-    brand = Brand.objects.get(id=brand_id)
+    brand = get_object_or_404(Brand, id=brand_id)
 
     if request.method == 'POST':
-        brand_name = request.POST.get('brand_name')
-        brand_description = request.POST.get('brand_description')
-        brand_image = request.FILES.get('brand_image')
+        brand_name = request.POST.get('brand_name', '').strip()
+        brand_description = request.POST.get('brand_description', '').strip()
+        new_image = request.FILES.get('brand_image')
 
-        # Validate required fields
+        # Validate brand name
         if not brand_name:
             messages.error(request, "Please provide a brand name.")
             return redirect('edit_brand', brand_id=brand.id)
 
-        # Check for brand name uniqueness (excluding current)
-        if Brand.objects.filter(brand_name=brand_name).exclude(id=brand_id).exists():
-            messages.error(request, "A brand with this name already exists.")
+        # Check for unique brand name (excluding self)
+        if Brand.objects.filter(brand_name__iexact=brand_name).exclude(id=brand_id).exists():
+            messages.error(request, f"The brand '{brand_name}' already exists.")
             return redirect('edit_brand', brand_id=brand.id)
 
-        # Update fields
+        # Update name & description
         brand.brand_name = brand_name
         brand.brand_description = brand_description
 
-        # Only update image if a new one is uploaded
-        if brand_image:
-            brand.brand_image = brand_image
+        # Validate and update image
+        if new_image:
+            valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+            file_type = imghdr.what(new_image)
+
+            if file_type not in valid_image_types:
+                messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
+                return redirect('edit_brand', brand_id=brand.id)
+
+            if new_image.size > 2 * 1024 * 1024:  # 2MB
+                messages.error(request, "Image size should not exceed 2MB.")
+                return redirect('edit_brand', brand_id=brand.id)
+
+            # Delete old image if exists
+            if brand.brand_image and os.path.isfile(brand.brand_image.path):
+                os.remove(brand.brand_image.path)
+
+            brand.brand_image = new_image
 
         brand.save()
         messages.success(request, "Brand updated successfully.")
-        return redirect('admin_brand')  # Or your brand list page
+        return redirect('admin_brand')
 
     return render(request, 'admin/edit_brand.html', {'brand': brand})
 
 
-import os
 
+
+@superuser_required
 def edit_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
 
     if request.method == 'POST':
-        category_name = request.POST.get('category_name')
-        description = request.POST.get('description')
+        category_name = request.POST.get('category_name', '').strip()
+        description = request.POST.get('description', '').strip()
         new_image = request.FILES.get('category_image')
 
         if not category_name:
             messages.error(request, "Category Name is required.")
             return redirect('edit_category', category_id=category.id)
 
-        # Update fields
-        category.category_name = category_name
-        category.description = description
-
-        # If new image uploaded, delete old image first
+        # Image validation
         if new_image:
-            if category.category_image:
-                if os.path.isfile(category.category_image.path):
-                    os.remove(category.category_image.path)
+            valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
+            file_type = imghdr.what(new_image)
+
+            if file_type not in valid_image_types:
+                messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
+                return redirect('edit_category', category_id=category.id)
+
+            if new_image.size > 2 * 1024 * 1024:  # 2MB
+                messages.error(request, "Image size should not exceed 2MB.")
+                return redirect('edit_category', category_id=category.id)
+
+            # Delete old image
+            if category.category_image and os.path.isfile(category.category_image.path):
+                os.remove(category.category_image.path)
+
             category.category_image = new_image
 
+        # Update other fields
+        category.category_name = category_name
+        category.description = description
         category.save()
+
         messages.success(request, "Category updated successfully.")
         return redirect('admin_category')
 
     return render(request, 'admin/edit_category.html', {'category': category})
 
-
+@superuser_required
 def view_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order_products = ProductOrder.objects.filter(order=order)

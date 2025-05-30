@@ -17,6 +17,7 @@
           <tr>
             <th>Image</th>
             <th>Name</th>
+            <th>Size</th>
             <th>Price</th>
             <th>Quantity</th>
             <th>Subtotal</th>
@@ -26,13 +27,20 @@
         <tbody>
           {% for cart_item in cart_items %}
             <tr>
-              <td><img src="{{ cart_item.product.product_img1.url }}" alt="Product Image" class="img-thumbnail" style="width: 80px;"></td>
+              <td>
+                <a href="{% url 'product_detials' cart_item.product.id %}">
+                  <img src="{{ cart_item.product.product_img1.url }}" alt="Product Image" class="img-thumbnail" style="width: 80px;">
+                </a>
+              </td>
               <td>
                 <div>
-                  <strong>{{ cart_item.product.product_name }}</strong>
-                  <p class="text-muted small mb-0">Product details here...</p>
+                 <a href="{% url 'product_detials' cart_item.product.id %}">
+        <strong>{{ cart_item.product.product_name }}</strong>
+        <p class="text-muted small mb-0">Product details here...</p>
+      </a>
                 </div>
               </td>
+              <td>{{cart_item.size}}</td>
               <td>₹{{ cart_item.product.offer_price }}</td>
               <td>
                 <div class="d-flex justify-content-center align-items-center gap-2">

@@ -6,7 +6,7 @@
     <div class="content-header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="content-title card-title">Dashboard </h2>
+                <h2 class="content-title card-title">Dashboard</h2>
                 <p>Whole data about your business here</p>
             </div>
             <div>
@@ -17,6 +17,36 @@
         </div>
     </div>
 
+    <!-- Search and Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search-query" class="form-label">Search Orders</label>
+                    <input type="text" class="form-control" id="search-query" name="q" 
+                           value="{{ query }}" placeholder="Search by username or order ID">
+                </div>
+                <div class="col-md-3">
+                    <label for="start-date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start-date" name="start_date" 
+                           value="{{ start_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end-date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end-date" name="end_date" 
+                           value="{{ end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
     <div class="row">
         <div class="col-lg-3">
             <div class="card mb-4">
@@ -26,10 +56,14 @@
                             <i class="text-primary material-icons md-monetization_on"></i>
                         </span>
                         <div class="text">
-                            <h6 class="mb-1 card-title">Revenue</h6>
-                            <span>₹{{ total_revenue }}</span>
+                            <h6 class="mb-1 card-title">Total Revenue</h6>
+                            <span>₹{{ total_revenue|floatformat:2 }}</span>
                             <span class="text-sm">
-                                Shipping fees are not included
+                                {% if start_date and end_date %}
+                                    From {{ start_date }} to {{ end_date }}
+                                {% else %}
+                                    All time revenue
+                                {% endif %}
                             </span>
                         </div>
                     </div>
@@ -45,10 +79,10 @@
                             <i class="text-success material-icons md-local_shipping"></i>
                         </span>
                         <div class="text">
-                            <h6 class="mb-1 card-title">Orders</h6>
+                            <h6 class="mb-1 card-title">Total Orders</h6>
                             <span>{{ total_orders }}</span>
                             <span class="text-sm">
-                                Excluding orders in transit
+                                All orders in system
                             </span>
                         </div>
                     </div>
@@ -84,9 +118,9 @@
                         </span>
                         <div class="text">
                             <h6 class="mb-1 card-title">Monthly Earning</h6>
-                            <span>{{ monthly_earning }}</span>
+                            <span>₹{{ monthly_earning|floatformat:2 }}</span>
                             <span class="text-sm">
-                                Based on your local time.
+                                Current month only
                             </span>
                         </div>
                     </div>
@@ -94,178 +128,197 @@
             </div>
         </div>
     </div>
-{% comment %} </section> {% endcomment %}
 
 
-<div class="row">
-{% for stat in dashboard_stats %}
-    <div class="col-lg-3">
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="icontext">
-                    <span class="icon icon-sm rounded-circle {{ stat.icon_bg_class }}">
-                        <i class="{{ stat.icon_class }}"></i>
-                    </span>
-                    <div class="text">
-                        <h6 class="mb-1 card-title">{{ stat.title }}</h6>
-                        <span>{{ stat.value }}</span>
-                        <span class="text-sm">{{ stat.description }}</span>
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-xl-8 col-lg-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Sale Statistics</h5>
+                    <canvas id="monthly-orders-chart" width="400" height="200"></canvas>
+
+                    <div id="button-container" class="mt-3">
+                        <button class="btn btn-primary mx-auto rounded-pill opacity-1" id="changeLabelsButton">Yearly Orders</button>
+                        <button class="btn btn-secondary mx-auto rounded-pill opacity-1" id="changeLabelsButton1">Monthly Orders</button>
                     </div>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        // Monthly Orders Chart
+                        var monthlyOrdersChartCanvas = document.getElementById('monthly-orders-chart');
+                        var monthlyOrdersChart;
+
+                        if (monthlyOrdersChartCanvas) {
+                            monthlyOrdersChart = new Chart(monthlyOrdersChartCanvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                                    datasets: [{
+                                        label: 'Monthly Order',
+                                        tension: 0.3,
+                                        fill: true,
+                                        backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                                        borderColor: 'rgba(44, 120, 210)',
+                                        data: [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}]
+                                    }]
+                                }
+                            });
+                        } else {
+                            console.error('Monthly Orders Chart Canvas not found.');
+                        }
+
+                        var changeLabelsButton = document.getElementById('changeLabelsButton');
+                        var changeLabelsButton1 = document.getElementById('changeLabelsButton1');
+
+                        changeLabelsButton.addEventListener('click', function () {
+                            // Update chart labels for yearly orders with years
+                            monthlyOrdersChart.data.labels = [{% for item in yearly_orders %}'{{ item.year }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+                            monthlyOrdersChart.data.datasets[0].data = [{% for item in yearly_orders %}{{ item.yearly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
+                            monthlyOrdersChart.data.datasets[0].label = "Yearly Order";
+
+                            // Update the chart
+                            monthlyOrdersChart.update();
+                        });
+
+                        changeLabelsButton1.addEventListener('click', function () {
+                            // Update chart labels for monthly orders
+                            monthlyOrdersChart.data.labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            monthlyOrdersChart.data.datasets[0].data = [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
+                            monthlyOrdersChart.data.datasets[0].label = "Monthly Order";
+
+                            // Update the chart
+                            monthlyOrdersChart.update();
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Revenue Based on Category</h5>
+                    <canvas id="myChart2" height="217"></canvas>
+
+                    <!-- Add JavaScript to populate the chart data and render it -->
+                    <script>
+                        // Assuming you have data available in the template context
+                        var orderChartData = {
+                            labels: {{ category_labels|safe }},  // Replace with your category labels
+                            datasets: [{
+                                data: {{ order_counts|safe }},  // Replace with your actual order counts
+                                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]  // Replace with your desired colors
+                            }]
+                        };
+
+                        // Get the canvas element and create a chart
+                        var ctx = document.getElementById('myChart2').getContext('2d');
+                        var orderChart = new Chart(ctx, {
+                            type: 'pie',
+                            data: orderChartData,
+                        });
+                    </script>
                 </div>
             </div>
         </div>
     </div>
-{% endfor %}
-</div>
 
-<div class="row">
-<div class="col-xl-8 col-lg-12">
+    <!-- Latest Orders Table -->
     <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Sale Statistics</h5>
-            <canvas id="monthly-orders-chart" width="400" height="200"></canvas>
-
-            <div id="button-container" class="mt-3">
-                <button class="btn btn-primary mx-auto rounded-pill opacity-1" id="changeLabelsButton">Yearly Orders</button>
-                <button class="btn btn-secondary mx-auto rounded-pill opacity-1" id="changeLabelsButton1">Monthly Orders</button>
+        <header class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title">Latest Orders</h4>
+                <div class="text-muted">
+                    Total Amount: ₹{{ total_order_amount|floatformat:2 }}
+                </div>
             </div>
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                // Monthly Orders Chart
-                var monthlyOrdersChartCanvas = document.getElementById('monthly-orders-chart');
-                var monthlyOrdersChart;
-
-                if (monthlyOrdersChartCanvas) {
-                    monthlyOrdersChart = new Chart(monthlyOrdersChartCanvas, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                            datasets: [{
-                                label: 'Monthly Order',
-                                tension: 0.3,
-                                fill: true,
-                                backgroundColor: 'rgba(44, 120, 220, 0.2)',
-                                borderColor: 'rgba(44, 120, 210)',
-                                data: [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}]
-                            }]
-                        }
-                    });
-                } else {
-                    console.error('Monthly Orders Chart Canvas not found.');
-                }
-
-                var changeLabelsButton = document.getElementById('changeLabelsButton');
-                var changeLabelsButton1 = document.getElementById('changeLabelsButton1');
-
-                changeLabelsButton.addEventListener('click', function () {
-                    // Update chart labels for yearly orders with years
-                    monthlyOrdersChart.data.labels = [{% for item in yearly_orders %}'{{ item.year }}'{% if not forloop.last %},{% endif %}{% endfor %}];
-                    monthlyOrdersChart.data.datasets[0].data = [{% for item in yearly_orders %}{{ item.yearly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
-                    monthlyOrdersChart.data.datasets[0].label = "Yearly Order";
-
-                    // Update the chart
-                    monthlyOrdersChart.update();
-                });
-
-                changeLabelsButton1.addEventListener('click', function () {
-                    // Update chart labels for monthly orders
-                    monthlyOrdersChart.data.labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    monthlyOrdersChart.data.datasets[0].data = [{% for item in monthly_orders %}{{ item.monthly_orders }}{% if not forloop.last %},{% endif %}{% endfor %}];
-                    monthlyOrdersChart.data.datasets[0].label = "Monthly Order";
-
-                    // Update the chart
-                    monthlyOrdersChart.update();
-                });
-            });
-        </script>
-    </div>
-</div>
-
-<div class="col-xl-4 col-lg-12">
-    <div class="card mb-4">
+        </header>
         <div class="card-body">
-            <h5 class="card-title">Revenue Based on Category</h5>
-            <canvas id="myChart2" height="217"></canvas>
-
-            <!-- Add JavaScript to populate the chart data and render it -->
-            <script>
-                // Assuming you have data available in the template context
-                var orderChartData = {
-                    labels: {{ category_labels|safe }},  // Replace with your category labels
-                    datasets: [{
-                        data: {{ order_counts|safe }},  // Replace with your actual order counts
-                        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]  // Replace with your desired colors
-                    }]
-                };
-
-                // Get the canvas element and create a chart
-                var ctx = document.getElementById('myChart2').getContext('2d');
-                var orderChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: orderChartData,
-                });
-            </script>
-        </div>
-    </div>
-</div>
-</div>
-
-<div class="card mb-4">
-<header class="card-header">
-    <h4 class="card-title">Latest Orders</h4>
-    <div class="row align-items-center">
-        <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
-            <div class="custom_select">
-                <!-- Your filter options go here -->
-            </div>
-        </div>
-    </div>
-</header>
-<div class="card-body">
     <div class="table-responsive">
         <table class="table align-middle table-nowrap mb-0">
             <thead class="table-light">
                 <tr>
-                    <th scope="col" class="text-center">
-                        <div class="form-check align-middle">
-                            <input class="form-check-input" type="checkbox" id="transactionCheckHeader">
-                            <label class="form-check-label" for="transactionCheckHeader"></label>
-                        </div>
-                    </th>
-                    <th class="align-middle" scope="col">Order ID</th>
-                    <th class="align-middle" scope="col">Billing Name</th>
+                    <th class="text-center" scope="col">Order ID</th>
+                    <th class="align-middle" scope="col">Customer</th>
                     <th class="align-middle" scope="col">Date</th>
                     <th class="align-middle" scope="col">Total</th>
-                    <th class="align-middle" scope="col">Payment Status</th>
-                    <th class="align-middle" scope="col">Payment Method</th>
-                    <th class="align-middle" scope="col">View Details</th>
+                    <th class="align-middle" scope="col">Status</th>
+                    <th class="align-middle" scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in latest_orders %}
                     <tr>
+                        <!-- Order ID -->
                         <td class="text-center">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="{{ 'transactionCheck' }}{{ forloop.counter }}">
-                                <label class="form-check-label" for="{{ 'transactionCheck' }}{{ forloop.counter }}"></label>
+                            <a href="{% url 'admin_order_view' order.id %}" class="fw-bold">
+                                #{{ order.order_number|default:order.id }}
+                            </a>
+                        </td>
+
+                        <!-- Customer -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-2">
+                                    <div class="avatar-title bg-light text-secondary rounded-circle">
+                                        {{ order.user.username|first|capfirst }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ order.user.get_full_name|default:order.user.username }}</div>
+                                    <div class="text-muted small">{{ order.user.email }}</div>
+                                </div>
                             </div>
                         </td>
-                        <td><a href="#" class="fw-bold">#{{ order.order_number }}</a></td>
-                        <td>{{ order.user.username }}</td>
-                        <td>{{ order.created_at|date:"d M, Y" }}</td>
-                        <td>₹{{ order.order_total }}</td>
+
+                        <!-- Date -->
                         <td>
-                            <span class="badge badge-pill badge-soft-{{ order.status_class }}">{{ order.status }}</span>
+                            <div>{{ order.created_at|date:"d M, Y" }}</div>
+                            <div class="text-muted small">{{ order.created_at|time:"H:i" }}</div>
                         </td>
+
+                        <!-- Total -->
                         <td>
-                            <i class="material-icons md-payment font-xxl text-muted mr-5"></i> {{ order.payment_method }}
+                            <span class="fw-bold">₹{{ order.order_total|floatformat:2 }}</span>
                         </td>
+
+                        <!-- Status -->
                         <td>
-                            <a href="{% url 'view_order' order.id %}" class="btn btn-xs">View Details</a>
+                            <span class="badge rounded-pill 
+                                {% if order.status == 'Delivered' %}bg-success
+                                {% elif order.status == 'Processing' %}bg-warning
+                                {% elif order.status == 'Shipped' %}bg-info
+                                {% elif order.status == 'Cancelled' %}bg-danger
+                                {% elif order.status == 'Returned' %}bg-secondary
+                                {% else %}bg-primary
+                                {% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+
+                        <!-- Payment Method -->
+                       
+                        <!-- Actions -->
+                        <td>
+                            <a href="{% url 'admin_order_view' order.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="material-icons md-visibility me-1"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="material-icons md-shopping_cart" style="font-size: 48px;"></i>
+                                <p class="mt-2">No orders found</p>
+                                {% if query or start_date or end_date %}
+                                    <a href="{% url 'admin_home' %}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}
@@ -273,10 +326,90 @@
         </table>
     </div>
 </div>
-<div class="pagination-area mt-30 mb-50">
-    <!-- Your pagination goes here -->
-</div>
-</div>
+
+
+        <!-- Pagination -->
+        {% if latest_orders.has_other_pages %}
+        <div class="card-footer">
+            <nav aria-label="Orders pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if latest_orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                                <i class="material-icons md-first_page"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ latest_orders.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                                <i class="material-icons md-chevron_left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in latest_orders.paginator.page_range %}
+                        {% if latest_orders.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > latest_orders.number|add:'-3' and num < latest_orders.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if latest_orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ latest_orders.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                                <i class="material-icons md-chevron_right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ latest_orders.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">
+                                <i class="material-icons md-last_page"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="text-center text-muted mt-2">
+                Showing {{ latest_orders.start_index }} to {{ latest_orders.end_index }} of {{ latest_orders.paginator.count }} orders
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </section>
+
+<!-- Chart.js Scripts -->
+<script>
+// Select all orders checkbox functionality
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAllCheckbox = document.getElementById('selectAllOrders');
+    const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+    
+    selectAllCheckbox?.addEventListener('change', function() {
+        orderCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Individual checkbox change
+    orderCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('.order-checkbox:checked').length;
+            const totalCount = orderCheckboxes.length;
+            
+            selectAllCheckbox.checked = checkedCount === totalCount;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+        });
+    });
+});
+
+// Print order function
+function printOrder(orderId) {
+    window.open(`/admin/orders/${orderId}/print/`, '_blank');
+}
+</script>
 
 {% endblock content %}

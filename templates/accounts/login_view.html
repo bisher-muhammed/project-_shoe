@@ -42,6 +42,7 @@
               name="email"
               class="form-control"
               required
+              value="{{ request.POST.email|default:'' }}"
             />
           </div>
 
@@ -54,6 +55,7 @@
               name="password"
               class="form-control"
               required
+              minlength="8"
             />
           </div>
 
@@ -84,4 +86,3 @@
   </section>
 </main>
 {% endblock content %}
-

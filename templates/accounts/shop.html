@@ -12,9 +12,9 @@
           <h5 class="card-title fw-bold">Brands</h5>
           <ul class="list-group list-group-flush">
             {% for brand in brands %}
-            <li class="list-group-item">
-              <a href="{% url 'filter_products_by_brand' brand.brand_name %}" class="text-decoration-none text-dark">{{ brand.brand_name }}</a>
-            </li>
+              <li class="list-group-item hover-effect">
+                <a href="{% url 'filter_products_by_brand' brand.brand_name %}" class="text-decoration-none text-dark d-block">{{ brand.brand_name }}</a>
+              </li>
             {% endfor %}
           </ul>
         </div>
@@ -26,9 +26,9 @@
           <h5 class="card-title fw-bold">Categories</h5>
           <ul class="list-group list-group-flush">
             {% for category in categories %}
-            <li class="list-group-item">
-              <a href="{% url 'filter_products_by_category' category.category_name %}" class="text-decoration-none text-dark">{{ category.category_name }}</a>
-            </li>
+              <li class="list-group-item hover-effect">
+                <a href="{% url 'filter_products_by_category' category.category_name %}" class="text-decoration-none text-dark d-block">{{ category.category_name }}</a>
+              </li>
             {% endfor %}
           </ul>
         </div>
@@ -59,10 +59,19 @@
         {% for product in products %}
         <div class="col">
           <div class="card h-100 shadow-sm rounded-4 product-card border-0">
-            <img src="{{ product.product_img1.url }}" class="card-img-top rounded-top-4" alt="{{ product.product_name }}" style="height: 250px; object-fit: cover;">
+            <a href="{% url 'product_detials' product.id %}">
+              <img src="{{ product.product_img1.url }}" class="card-img-top rounded-top-4" alt="{{ product.product_name }}" style="height: 250px; object-fit: cover;">
+            </a>
             <div class="card-body">
               <h6 class="fw-bold">{{ product.product_name }}</h6>
-              <p class="text-muted mb-2">₹{{ product.offer_price }}</p>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <p class="text-muted m-0">₹{{ product.offer_price }}</p>
+                <a href="{% url 'add_wishlist' product.id %}?next={{ request.path }}"
+                   class="btn btn-light btn-sm border wishlist-btn"
+                   title="Add to Wishlist">
+                  <i class="far fa-heart text-danger"></i>
+                </a>
+              </div>
               <a href="{% url 'product_detials' product.id %}" class="btn btn-sm btn-primary w-100">Shop Now</a>
             </div>
           </div>
@@ -75,9 +84,9 @@
       <nav class="mt-4 d-flex justify-content-center">
         <ul class="pagination pagination-sm">
           {% for page_num in products.paginator.page_range %}
-          <li class="page-item {% if products.number == page_num %}active{% endif %}">
-            <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
-          </li>
+            <li class="page-item {% if products.number == page_num %}active{% endif %}">
+              <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
           {% endfor %}
         </ul>
       </nav>
@@ -95,15 +104,13 @@
     <div class="col-6 col-md-3 mb-4 text-center">
       <div class="position-relative">
         <img src="{{ brand.brand_image.url }}" class="img-fluid border rounded-3 shadow-sm brand-img" alt="{{ brand.brand_name }}">
-        <div class="position-absolute bottom-0 start-3 end-0  py-1 rounded-bottom-3">
-        </div>
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
 
-<!-- Optional CSS enhancements -->
+<!-- UI Enhancements -->
 <style>
   .product-card:hover {
     transform: translateY(-4px);
@@ -124,5 +131,29 @@
     background-color: #007bff;
     border-color: #007bff;
   }
+
+  .hover-effect:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+  }
+
+  .wishlist-btn:hover {
+    background-color: #ffe6ea;
+    border-color: #ffccd5;
+  }
+
+  .card-body h6 {
+    font-size: 1rem;
+  }
+
+  .card-body p {
+    font-size: 0.9rem;
+  }
 </style>
+
+<!-- Enable Bootstrap Tooltip (Optional) -->
+<script>
+  const tooltipTriggerList = Array.from(document.querySelectorAll('[title]'));
+  tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+</script>
 {% endblock %}

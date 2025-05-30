@@ -1,115 +1,99 @@
 import json
-from django.shortcuts import render,redirect
-from adminapp.models import Product,Coupon
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
+import datetime
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.contrib import messages
-from django.db.models import Sum
-from .models import *
-from user.models import Wishlist
-from django.core.exceptions import ObjectDoesNotExist
-from  user.views import *
-from django.views.decorators.http import require_POST
-from core.models import *
-import datetime
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.cache import cache_page
+
+from django.db.models import Sum
+
+from adminapp.models import Product, Coupon
+from core.models import *
+from user.models import Wishlist
+from .models import *
+from .utils import send_order_confirmation_email
+from user.views import *
 
 
 @login_required(login_url="login_view")
 def add_to_cart(request, product_id):
-    if request.method == 'POST':
-        try:
-            product = Product.objects.get(pk=product_id)
-        except Product.DoesNotExist:
-            # Handle the case where the product doesn't exist
-            return render(request, 'accounts/home.html')
+    if request.method != 'POST':
+        return HttpResponseBadRequest("Invalid request method.")
 
-        # Get the selected size (assuming you have a selected_size_id in your form)
-        selected_size_id = request.POST.get('size', None)
-        if not selected_size_id:
-            error_message = "Please select a size before adding to cart."
-            messages.error(request, error_message)
-            return redirect('product_detials', product_id=product_id)
+    product = get_object_or_404(Product, pk=product_id)
 
-        selected_size = get_object_or_404(Size, pk=selected_size_id)
+    selected_size_id = request.POST.get('size')
+    if not selected_size_id:
+        messages.error(request, "Please select a size before adding to cart.")
+        return redirect('product_detials', product_id=product_id)
 
-        # Get or create the user's active cart
-        cart, created = Cart.objects.get_or_create(user=request.user, active=True)
+    selected_size = get_object_or_404(Size, pk=selected_size_id)
 
-        # Filter the ProductSize instances based on the selected product and size
-        product_size = ProductSize.objects.filter(product=product, size=selected_size).first()
+    try:
+        quantity = int(request.POST.get('quantity', 1))
+        if quantity < 1:
+            raise ValueError
+    except ValueError:
+        messages.error(request, "Invalid quantity selected.")
+        return redirect('product_detials', product_id=product_id)
 
-        if product_size:
-            quantity = int(request.POST.get('quantity', 1))
+    product_size = ProductSize.objects.filter(product=product, size=selected_size).first()
+    if not product_size:
+        messages.error(request, "Selected size is not available for the product.")
+        return redirect('product_detials', product_id=product_id)
 
-            if product_size.quantity >= quantity:
-                with transaction.atomic():
-                    # If the order is placed, reduce the available quantity
-                    order = Order.objects.filter(cart=cart, is_ordered=True).order_by('-created_at').first()
-                    if order:
-                        product_size.quantity -= quantity
-                        product_size.save()
+    if product_size.quantity < quantity:
+        messages.error(request, f"Only {product_size.quantity} item(s) available for the selected size.")
+        return redirect('product_detials', product_id=product_id)
 
-                    # Check if the item is already in the cart
-                    cart_item, created = CartItem.objects.get_or_create(
-                        user=request.user,
-                        cart=cart,
-                        product=product,
-                        size=selected_size,
-                        defaults={'quantity':quantity}  # set quantity to 0 initially
-                    )
+    cart, _ = Cart.objects.get_or_create(user=request.user, active=True)
 
-                    if not created:
-                        # If the item is already in the cart, update the quantity
-                        cart_item.quantity += quantity
-                        cart_item.save()
+    with transaction.atomic():
+        cart_item, created = CartItem.objects.get_or_create(
+            user=request.user,
+            cart=cart,
+            product=product,
+            size=selected_size,
+            defaults={'quantity': 0}
+        )
 
-                    # Assign the corresponding ProductSize to the CartItem
-                    cart_item.product_size = product_size
-                    cart_item.save()
+        # If already exists, increase quantity
+        cart_item.quantity += quantity
+        cart_item.product_size = product_size
+        cart_item.price = cart_item.quantity * cart_item.product.offer_price
+        cart_item.save()
 
-                    # Calculate the price and save the cart item
-                    cart_item.price = cart_item.quantity * cart_item.product.offer_price
-                    cart_item.save()
+        # If previously ordered, deduct quantity
+        order = Order.objects.filter(cart=cart, is_ordered=True).order_by('-created_at').first()
+        if order:
+            product_size.quantity -= quantity
+            product_size.save()
 
-                    # Update the cart total
-                    cart.update_total()
+        cart.update_total()
 
-                # messages.success(request, "Product added to the cart!")
-                return redirect('cart_list')
+    messages.success(request, "Product added to the cart.")
+    return redirect('cart_list')
 
-            else:
-                messages.error(request, "Insufficient quantity available for the selected size.")
-                return redirect('product_detials', product_id=product_id)
-        else:
-            messages.error(request, "Selected size is not available for the product.")
-            return redirect('product_detials', product_id=product_id)
-
-    else:
-        return HttpResponseBadRequest("Invalid request method")
-
-
-
+@login_required(login_url="login_view")
 def cart_list(request):
-    cart = Cart.objects.filter(user=request.user if request.user.is_authenticated else None, active=True).first()
-
-    if cart:
-        cart_items = cart.cartitem_set.all()
-
-        # Fetch available quantity for each cart item
-        for cart_item in cart_items:
-            product_size = ProductSize.objects.filter(product=cart_item.product, size=cart_item.size).first()
-            if product_size:
-                cart_item.available_quantity = product_size.quantity
-            else:
-                cart_item.available_quantity = 0
-
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user, active=True).first()
     else:
-        cart_items = []
+        cart = None
+
+    cart_items = cart.cartitem_set.all() if cart else []
+
+    for cart_item in cart_items:
+        product_size = ProductSize.objects.filter(product=cart_item.product, size=cart_item.size).first()
+        cart_item.available_quantity = product_size.quantity if product_size else 0
 
     return render(request, 'CART/cart_list.html', {'cart_items': cart_items})
+
 
 
 
@@ -129,7 +113,7 @@ def clear_cart(request):
 
     return redirect('cart_list')
 
-
+@login_required(login_url="login_view")
 def product_list(request):
     products = Product.objects.all()
     print(products)
@@ -182,7 +166,6 @@ def cart_update(request, cart_item_id):
         'quantity': cart_item.quantity,
         'subtotal': calculate_subtotal(cart_item),
     }
-    logger.info(f"Cart update data: {json.dumps(data)}")
     return JsonResponse(data)
 
 
@@ -192,68 +175,72 @@ def calculate_cart_total(cart_items):
         total += cart_item.product.offer_price * cart_item.quantity
     return total
 
-# checkout view
-from django.db.models import Q
 
-from django.db.models import Q
 
 @login_required(login_url="login_view")
 def checkout(request):
-    # Get the user's UserProfile if it exists, otherwise create one
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-    # Get all addresses associated with the user
-    addresses = AddressUS.objects.filter(user_profile=user_profile)
-
-    # Assuming you have a user and each user has a related Cart
     user = request.user
 
-    # If the user has a UserProfile, get the related Cart; otherwise, create one
-    cart, cart_created = Cart.objects.get_or_create(user=user, active=True)
+    # Get or create UserProfile
+    user_profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    # Retrieve all coupons excluding those used by the current user
+    # Get all addresses linked to the profile
+    addresses = AddressUS.objects.filter(user_profile=user_profile)
+
+    # Get or create active cart
+    cart, _ = Cart.objects.get_or_create(user=user, active=True)
+    cart_items = cart.cartitem_set.all()
+
+    if not cart_items.exists():
+        messages.info(request, "Cannot proceed to checkout. The cart is empty.")
+        return redirect('cart_list')
+
+    # Filter valid coupons: not used by user
     used_coupons = Coupon.objects.filter(used_by=user)
     coupon_list = Coupon.objects.exclude(Q(used_by=user) | Q(id__in=used_coupons))
 
-    total = calculate_cart_total(cart.cartitem_set.all())
-    print("Total in checkout:", total)
-
-    # Initialize discount_amount to 0
+    total = calculate_cart_total(cart_items)
     discount_amount = 0
-
-    # Adjust this based on your actual model and relationships
-    default_address = addresses.filter(is_default=True).first()
-    selected_address_id = request.POST.get('selected_address')
-    selected_address = addresses.filter(id=selected_address_id).first() if selected_address_id else None
-    selected_coupon_code = request.POST.get('selected_coupon_code', '')
+    selected_coupon_code = ''
     selected_coupon = None
+    selected_address = None
 
+    # Address selection
+    selected_address_id = request.POST.get('selected_address')
+    if selected_address_id:
+        try:
+            selected_address = addresses.get(id=selected_address_id)
+        except AddressUS.DoesNotExist:
+            messages.error(request, "Selected address is invalid.")
+            return redirect('checkout')
+
+    # Coupon selection and validation
+    selected_coupon_code = request.POST.get('selected_coupon_code', '').strip()
     if selected_coupon_code:
         try:
             selected_coupon = Coupon.objects.get(coupon_code=selected_coupon_code)
 
-            # Check if the user has already used the coupon
             if selected_coupon.used_by.filter(id=user.id).exists():
                 messages.error(request, "You have already used this coupon.")
                 return redirect('checkout')
 
-            # Continue with your existing logic
             discount_amount = selected_coupon.discount_amount
-            total -= discount_amount
+            total = max(total - discount_amount, 0)  # Prevent negative total
 
-            request.session['discount_amount'] = discount_amount
+            # Remove selected coupon from the list
+            coupon_list = coupon_list.exclude(coupon_code=selected_coupon_code)
 
-            # Remove the used coupon from the list
-            coupon_list = coupon_list.exclude(Q(coupon_code=selected_coupon_code))
         except Coupon.DoesNotExist:
             messages.error(request, "Selected coupon does not exist.")
-    else:
-        request.session['discount_amount'] = 0
+            return redirect('checkout')
 
-    request.session['price_value'] = total
+    # Store values in session
+    request.session['discount_amount'] = discount_amount
     request.session['selected_coupon'] = selected_coupon_code
+    request.session['price_value'] = total
 
-    # You can also fetch other necessary data for the checkout page, e.g., shipping information, etc.
+    default_address = addresses.filter(is_default=True).first()
+
     context = {
         'cart': cart,
         'addresses': addresses,
@@ -261,30 +248,23 @@ def checkout(request):
         'selected_address': selected_address,
         'coupon_list': coupon_list,
         'selected_coupon': selected_coupon,
-        'price_value': total,  # Assuming price_value is the total after applying the discount
+        'price_value': total,
         'discount_amount': discount_amount,
         'selected_coupon_code': selected_coupon_code,
-        # Add other context variables as needed
     }
 
-    if cart.cartitem_set.exists():
-        return render(request, 'CART/checkout.html', context)
-    else:
-        messages.info(request, "Cannot proceed to checkout. The cart is empty.")
-        return redirect('cart_list')
+    return render(request, 'CART/checkout.html', context)
 
-# placeorder view
-# placeorder view
-# placeorder view
-
+@login_required(login_url="login_view")
 def placeorder(request):
     if not request.user.is_authenticated:
         return redirect("login_view")
-    current_user = request.user
 
-    # Check if the user has any items in the cart
+    current_user = request.user
     cart_items = CartItem.objects.filter(user=current_user)
-    if cart_items.count() <= 0:
+
+    if not cart_items.exists():
+        messages.warning(request, "Your cart is empty.")
         return redirect('product_list')
 
     total = calculate_cart_total(cart_items)
@@ -292,93 +272,72 @@ def placeorder(request):
 
     if request.method == 'POST':
         address_id = request.POST.get('shipping_address')
+        selected_coupon_code = request.POST.get('selected_coupon_code')
 
+        # Validate address
         try:
-            address = AddressUS.objects.get(id=address_id)
+            address = AddressUS.objects.get(id=address_id, user_profile__user=current_user)
+
+
         except AddressUS.DoesNotExist:
-            messages.warning(request, "Select a valid address.")
+            messages.error(request, "Please select a valid shipping address.")
             return redirect('checkout')
 
-        # Store the selected_coupon_code in the session
-        selected_coupon_code = request.POST.get('selected_coupon_code')
-        request.session['selected_coupon_code'] = selected_coupon_code
+        # Validate coupon (if any)
+        coupon_instance = None
+        discount_amount = 0
 
         if selected_coupon_code:
-            # Retrieve the Coupon instance based on the coupon code
             try:
                 coupon_instance = Coupon.objects.get(coupon_code=selected_coupon_code)
+                if coupon_instance.is_blocked:
+                    messages.error(request, "This coupon is no longer valid.")
+                    return redirect('checkout')
+                if coupon_instance.used_by.filter(id=current_user.id).exists():
+                    messages.error(request, "You have already used this coupon.")
+                    return redirect('checkout')
+                discount_amount = coupon_instance.discount_amount
             except Coupon.DoesNotExist:
-                messages.error(request, "Selected coupon does not exist.")
+                messages.error(request, "Invalid coupon selected.")
                 return redirect('checkout')
-        else:
-            coupon_instance = None
 
-        # Initialize the 'data' variable here
-        data = Order()
-        data.user = current_user
-        data.address = address
-        data.order_total = grand_total
-        data.order_value = grand_total  # Use grand_total as order_value
-        # Define discount_amount here before using it
-        discount_amount = 0
-        if coupon_instance:
-            discount_amount = coupon_instance.discount_amount
-            data.order_discount = discount_amount
-            data.coupon = coupon_instance
+        # Create Order
+        order = Order.objects.create(
+            user=current_user,
+            address=address,
+            order_total=grand_total,
+            coupon=coupon_instance if coupon_instance else None
+        )
+        # Generate order number
+        today = datetime.date.today()
+        order.order_number = f"{today.strftime('%Y%m%d')}{order.id}"
+        order.save()
 
-        data.save()
-
-        yr, mt, dt = map(int, datetime.date.today().strftime('%Y %m %d').split())
-        current_date = datetime.date(yr, mt, dt)
-        order_number = f"{current_date.strftime('%Y%m%d')}{data.id}"
-        data.order_number = order_number
-        data.save()
-
-        order = Order.objects.get(user=current_user, is_ordered=False, order_number=order_number)
-
-        # Calculate price_value as grand_total minus discount_amount
-        price_value = grand_total - discount_amount
-
-        print("Grand Total in placeorder:", grand_total)
-        print("Discount Amount in placeorder:", discount_amount)
-        print("Price Value in placeorder:", price_value)
-        print("Selected Coupon Code in placeorder:", selected_coupon_code)
-
-        # Remove the selected_coupon_code from the session after placing the order
-        # del request.session['selected_coupon_code']
-
-        context = {
-            'order': order,
-            'cart_items': cart_items,
-            'total': total,
-            'grand_total': grand_total,
-            'address': address,
-            'selected_address': address,
-            'discount_amount': discount_amount,
-            'price_value': price_value,
-            'selected_coupon_code': selected_coupon_code,
-        }
-
-        # Check if the user has already used the coupon
-        if coupon_instance and coupon_instance.used_by.filter(id=current_user.id).exists():
-            messages.error(request, "You have already used this coupon.")
-            return redirect('checkout')
-
-        # Remove the used coupon from the user's coupon list
+        # Add user to coupon used list
         if coupon_instance:
             coupon_instance.used_by.add(current_user)
 
+        # Final price after discount
+        price_value = grand_total - discount_amount
+
+        # Debug prints (you can remove in production)
+        print("Grand Total:", grand_total)
+        print("Discount:", discount_amount)
+        print("Final Price:", price_value)
+        print("Coupon Code:", selected_coupon_code)
+
+        # Optional: clean session
+        if 'selected_coupon_code' in request.session:
+            del request.session['selected_coupon_code']
+
         return redirect('payments', order_id=order.id)
-    
-    # Redirect to the checkout page if the request method is not POST
+
     return redirect('checkout')
 
-# payments view
 
-# payments view
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.http import require_http_methods
-from decimal import Decimal
+
+
+
 
 @require_http_methods(["GET", "POST"])
 def payments(request, order_id):
@@ -438,7 +397,7 @@ def payments(request, order_id):
 
 
 
-
+@login_required(login_url="login_view")
 @transaction.atomic
 def cash_on_delivery(request, order_id):
     current_user = request.user
@@ -489,6 +448,7 @@ def cash_on_delivery(request, order_id):
 def order_confirmed(request, order_id):
     order = get_object_or_404(Order, id=order_id, is_ordered=True)
     order_products = ProductOrder.objects.filter(user=request.user, order=order)
+    send_order_confirmation_email(order)
     
 
     total_amount = 0
@@ -530,7 +490,7 @@ def coupon_list(request):
 
 
 
-from django.shortcuts import redirect, get_object_or_404
+
 
 @transaction.atomic
 def confirm_razorpay_payment(request, order_id):
@@ -581,11 +541,9 @@ def confirm_razorpay_payment(request, order_id):
 
 
 
-from decimal import Decimal
-from django.db import transaction
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib import messages
 
+
+@login_required(login_url="login_view")
 @transaction.atomic
 def wallet_pay(request, order_id):
     current_user = request.user
@@ -653,7 +611,7 @@ def wallet_pay(request, order_id):
     return redirect('order_confirmed', order_id=order_id)
 
 
-
+@login_required(login_url="login_view")
 def add_to_cart_from_wishlist(request, product_id, quantity=1):
     product = get_object_or_404(Product, id=product_id)
 

@@ -2,13 +2,12 @@
 {% load static %}
 
 {% block content %}
-<!-- Prevent scrollbars -->
-<section class="content-main" style="overflow: hidden;">
-    <div class="card-body">
-        <!-- Remove horizontal scrollbar -->
-        <div class="table-responsive" style="overflow-x: hidden;">
-            <table class="table table-hover">
-                <thead>
+<section class="content-main">
+    <div class="card-body px-2 px-md-4">
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                     <tr>
                         <th>#ID</th>
                         <th>Name</th>
@@ -16,16 +15,20 @@
                         <th>Total</th>
                         <th>Status</th>
                         <th>Date</th>
-                        <th>Quantity</th>
+                        <th>Items</th>
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for order in orders %}
                         <tr>
+                            <!-- Order Info -->
                             <td>{{ order.order_number }}</td>
-                            <td><b>{{ order.address.first_name }}</b></td>
+                            <td><strong>{{ order.address.first_name }}</strong></td>
                             <td>{{ order.user.email }}</td>
+
+                            <!-- Order Total -->
                             <td>
                                 {% if order.coupon %}
                                     ₹{{ order.order_value }}
@@ -33,77 +36,96 @@
                                     ₹{{ order.order_total }}
                                 {% endif %}
                             </td>
+
+
+                            <!-- Order Status -->
                             <td>
                                 <span class="badge rounded-pill 
-                                      {% if order.status == 'Pending' %}alert-warning
-                                      {% elif order.status == 'Received' %}alert-success
-                                      {% else %}alert-danger{% endif %}">
+                                    {% if order.status == 'Pending' %} bg-warning 
+                                    {% elif order.status == 'Received' %} bg-success 
+                                    {% else %} bg-danger 
+                                    {% endif %}">
                                     {{ order.status }}
                                 </span>
                             </td>
+
+                            <!-- Order Date -->
                             <td>{{ order.created_at|date:"F d, Y" }}</td>
+
+                            <!-- Items Summary -->
                             <td>
                                 {% for product_order in order.productorder_set.all %}
-                                    {{ product_order.quantity }} x {{ product_order.product.product_name }}<br>
+                                    <div>{{ product_order.quantity }} × {{ product_order.product.product_name }}</div>
                                 {% endfor %}
                             </td>
+
+                            <!-- Actions -->
                             <td>
-                                <a href="#" class="btn btn-md rounded font-sm">Detail</a>
-                                <div class="dropdown d-inline-block">
-                                    <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm">
-                                        <i class="material-icons md-more_horiz"></i>
-                                    </a>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="{% url 'admin_order_view' order.id %}">View detail</a>
-                                        <form action="{% url 'update_order_status' order_id=order.id %}" method="post" class="dropdown-item">
-                                            {% csrf_token %}
-                                            <label for="status-select" class="form-label">Change Status:</label>
-                                            <select id="status-select" name="new_status" class="form-select">
-                                                {% for status, status_display in order.STATUS %}
-                                                    <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status_display }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button type="submit" class="btn btn-primary btn-sm mt-2">Update Status</button>
-                                        </form>
+                                <div class="d-flex flex-column">
+                                    <a href="{% url 'admin_order_view' order.id %}" class="btn btn-outline-primary btn-sm">Details</a>
+
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle mt-3 px-4" type="button" data-bs-toggle="dropdown">
+                                            Update Status
+                                        </button>
+
+                                        <div class="dropdown-menu p-3" style="min-width: 250px;">
+                                            <form method="post" action="{% url 'update_order_status' order_id=order.id %}">
+                                                {% csrf_token %}
+                                                <div class="mb-2">
+                                                    <label for="status-select-{{ order.id }}" class="form-label">Status</label>
+                                                    <select name="new_status" id="status-select-{{ order.id }}" class="form-select form-select-sm">
+                                                        {% for status, status_display in order.STATUS %}
+                                                            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+                                                                {{ status_display }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-sm w-100">Update</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No orders found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- Pagination -->
-    <div class="pagination-area mt-15 mb-50">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                {% if orders.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1" aria-label="First">
-                            <span aria-hidden="true">&laquo;&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ orders.previous_page_number }}">{{ orders.previous_page_number }}</a>
-                    </li>
-                {% endif %}
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+            <div class="d-flex justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo;&laquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}">&laquo;</a>
+                        </li>
+                    {% endif %}
 
-                <li class="page-item active"><a class="page-link" href="?page={{ orders.number }}">{{ orders.number }}</a></li>
+                    <li class="page-item active">
+                        <span class="page-link">{{ orders.number }}</span>
+                    </li>
 
-                {% if orders.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ orders.next_page_number }}">{{ orders.next_page_number }}</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ orders.paginator.num_pages }}" aria-label="Last">
-                            <span aria-hidden="true">&raquo;&raquo;</span>
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}">&raquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.paginator.num_pages }}">&raquo;&raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock content %}

@@ -2,92 +2,142 @@
 {% load static %}
 {% block content %}
 
-<div class="bg-gray-100 py-4">
+<!-- Breadcrumb Navigation -->
+<div class="bg-gray-50 py-3 border-b">
     <div class="container">
-        <nav class="text-sm text-gray-500">
-            <a href="{% url 'home' %}" class="hover:text-gray-800">Home</a>
-            <span class="mx-2">/</span> 
-            <span>Shop</span>
-            <span class="mx-2">/</span> 
-            <span class="text-gray-700 font-semibold">Checkout</span>
+        <nav class="text-sm text-gray-600">
+            <a href="{% url 'home' %}" class="hover:text-blue-600 transition-colors">Home</a>
+            <span class="mx-2 text-gray-400">›</span> 
+            <a href="#" class="hover:text-blue-600 transition-colors">Shop</a>
+            <span class="mx-2 text-gray-400">›</span> 
+            <span class="text-gray-800 font-medium">Secure Checkout</span>
         </nav>
     </div>
 </div>
 
-<div class="col-md-3">
-    <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-200">
-        <div class="d-flex align-items-center mb-4">
-            <i class="fas fa-map-marker-alt text-primary me-2 fs-5"></i>
-            <h5 class="fw-semibold text-dark mb-0">Shipping Address</h5>
+<div class="container py-6">
+    <div class="row g-4">
+        
+        <!-- Shipping Address Section -->
+        <div class="col-md-3">
+            <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-200">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-blue-100 p-2 rounded-circle me-3">
+                        <i class="fas fa-map-marker-alt text-blue-600"></i>
+                    </div>
+                    <h5 class="fw-semibold text-dark mb-0">Shipping Address</h5>
+                </div>
+
+                {% if default_address %}
+                    <div class="bg-gray-50 p-3 rounded mb-3">
+                        <div class="fw-semibold text-dark mb-1">{{ default_address.first_name }} {{ default_address.last_name }}</div>
+                        <div class="text-secondary small">{{ default_address.address_1 }}</div>
+                        <div class="text-secondary small">{{ default_address.city }}, {{ default_address.state }} - {{ default_address.zipcode }}</div>
+                    </div>
+
+                {% elif selected_address %}
+                    <div class="bg-gray-50 p-3 rounded mb-3">
+                        <div class="fw-semibold text-dark mb-1">{{ selected_address.first_name }} {{ selected_address.last_name }}</div>
+                        <div class="text-secondary small">{{ selected_address.address_1 }}</div>
+                        <div class="text-secondary small">{{ selected_address.city }}, {{ selected_address.state }} - {{ selected_address.zipcode }}</div>
+                    </div>
+                    
+                    <a href="{% url 'checkout' %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-edit me-1"></i> Change Address
+                    </a>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt text-gray-400 fs-2 mb-2"></i>
+                        <p class="text-muted mb-3">No address found.</p>
+                        <a href="{% url 'add_address' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-1"></i> Add Address
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <!-- Delivery Info -->
+                <div class="mt-4 p-3 bg-green-50 rounded border-start border-success border-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-truck text-success me-2"></i>
+                        <div>
+                            <div class="fw-semibold text-success small">Free Delivery</div>
+                            <div class="text-success small">3-5 business days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {% if default_address %}
-            <div class="text-secondary small lh-lg">
-                <div class="fw-semibold text-dark">{{ default_address.first_name }} {{ default_address.last_name }}</div>
-                <div>{{ default_address.address_1 }}</div>
-                <div>{{ default_address.city }}, {{ default_address.state }} - {{ default_address.zipcode }}</div>
-            </div>
-        {% elif selected_address %}
-            <div class="text-secondary small lh-lg">
-                <div class="fw-semibold text-dark">{{ selected_address.first_name }} {{ selected_address.last_name }}</div>
-                <div>{{ selected_address.address_1 }}</div>
-                <div>{{ selected_address.city }}, {{ selected_address.state }} - {{ selected_address.zipcode }}</div>
-            </div>
-        {% else %}
-            <div class="text-muted small">
-                <p class="mb-0">No address found.</p>
-                <a href="{% url 'add_address' %}" class="text-primary fw-semibold d-inline-block mt-1 text-decoration-none hover-underline">+ Add Address</a>
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-
-        <!-- Order Summary -->
+        <!-- Order Summary & Payment -->
         <div class="col-md-9">
+            
+            <!-- Order Summary -->
             <div class="bg-white p-4 rounded shadow-sm mb-4">
-                <h4 class="fw-bold text-xl text-gray-800 mb-4">Your Orders</h4>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h4 class="fw-bold text-xl text-gray-800 mb-0">
+                        <i class="fas fa-shopping-cart text-primary me-2"></i>
+                        Your Orders
+                    </h4>
+                </div>
+                
                 <div class="table-responsive">
                     <table class="table align-middle">
                         <thead class="bg-gray-50 text-gray-700">
                             <tr>
-                                <th colspan="2">Product</th>
-                                <th>Total</th>
+                                <th colspan="2" class="border-0 fw-semibold">Product</th>
+                                <th class="border-0 fw-semibold text-end">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in cart_items %}
-                                <tr>
-                                    <td class="w-25">
-                                        <img src="{{ item.product.product_img1.url }}" alt="{{ item.product.product_name }}" class="img-fluid rounded">
+                                <tr class="border-bottom">
+                                    <td class="w-25 py-3">
+                                        <img src="{{ item.product.product_img1.url }}" 
+                                             alt="{{ item.product.product_name }}" 
+                                             class="img-fluid rounded shadow-sm">
                                     </td>
-                                    <td>
-                                        <h6 class="mb-1 text-gray-800">{{ item.product.product_name }}</h6>
-                                        <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
+                                    <td class="py-3">
+                                        <h6 class="mb-1 text-gray-800 fw-semibold">{{ item.product.product_name }}</h6>
+                                        <p class="text-sm text-gray-500 mb-0">
+                                            <i class="fas fa-cube me-1"></i>Qty: {{ item.quantity }}
+                                        </p>
                                     </td>
-                                    <td class="text-gray-800">₹{{ item.total_price }}</td>
+                                    <td class="text-gray-800 fw-semibold text-end">₹{{ item.total_price }}</td>
                                 </tr>
                             {% endfor %}
-                            <tr class="border-t">
-                                <td colspan="2" class="text-end fw-bold text-gray-700">SubTotal</td>
-                                <td>₹{{ total }}</td>
+                            
+                            <tr class="border-top">
+                                <td colspan="2" class="text-end fw-bold text-gray-700 py-2">Subtotal</td>
+                                <td class="fw-bold text-end">₹{{ total }}</td>
                             </tr>
+                            {% if discount_amount > 0 %}
                             <tr>
-                                <td colspan="2" class="text-end fw-bold text-gray-700">Discount</td>
-                                <td>₹{{ discount_amount }}</td>
+                                <td colspan="2" class="text-end fw-bold text-success py-2">
+                                    <i class="fas fa-tag me-1"></i>Discount Applied
+                                </td>
+                                <td class="fw-bold text-success text-end">-₹{{ discount_amount }}</td>
                             </tr>
+                            {% endif %}
                             <tr>
-                                <td colspan="2" class="text-end fw-bold text-gray-700">Shipping</td>
-                                <td><em>Free Shipping</em></td>
+                                <td colspan="2" class="text-end fw-bold text-gray-700 py-2">Shipping</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-gift me-1"></i>Free Shipping
+                                    </span>
+                                </td>
                             </tr>
-                            <tr class="text-lg text-brand fw-bold">
-                                <td colspan="2" class="text-end">Total</td>
-                                <td>
-                                    {% if selected_coupon_code and not selected_coupon_code.is_blocked %}
-                                        ₹{{ price_value }}
-                                    {% else %}
-                                        ₹{{ grand_total }}
-                                    {% endif %}
+                            <tr class="bg-light">
+                                <td colspan="2" class="text-end fw-bold text-lg py-3">
+                                    <h5 class="mb-0">Total Amount</h5>
+                                </td>
+                                <td class="fw-bold text-lg text-primary text-end py-3">
+                                    <h4 class="mb-0">
+                                        {% if selected_coupon_code and not selected_coupon_code.is_blocked %}
+                                            ₹{{ price_value }}
+                                        {% else %}
+                                            ₹{{ grand_total }}
+                                        {% endif %}
+                                    </h4>
                                 </td>
                             </tr>
                         </tbody>
@@ -95,44 +145,173 @@
                 </div>
             </div>
 
-            <!-- Payment Section -->
+            <!-- Payment Method Selection -->
             <div class="bg-white p-4 rounded shadow-sm mb-4">
-                <h5 class="fw-bold mb-3 text-lg text-gray-800">Select Payment Method</h5>
+                <h5 class="fw-bold mb-3 text-lg text-gray-800">
+                    <i class="fas fa-credit-card text-primary me-2"></i>
+                    Select Payment Method
+                </h5>
+                
                 <div class="space-y-2">
-                    <div class="form-check">
+                    <div class="form-check payment-option">
                         <input class="form-check-input" type="radio" name="payment_option" id="cash_on_delivery" value="cash_on_delivery">
-                        <label class="form-check-label" for="cash_on_delivery">Cash on Delivery</label>
+                        <label class="form-check-label payment-label" for="cash_on_delivery">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-money-bill-wave text-success me-3 fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold">Cash on Delivery</div>
+                                    <small class="text-muted">Pay when you receive your order</small>
+                                </div>
+                            </div>
+                        </label>
                     </div>
-                    <div class="form-check">
+                    
+                    <div class="form-check payment-option">
                         <input class="form-check-input" type="radio" name="payment_option" id="wallet" value="wallet">
-                        <label class="form-check-label" for="wallet">Pay with Wallet</label>
+                        <label class="form-check-label payment-label" for="wallet">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-wallet text-info me-3 fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold">Pay with Wallet</div>
+                                    <small class="text-muted">Quick and secure wallet payment</small>
+                                </div>
+                            </div>
+                        </label>
                     </div>
-                    <div class="form-check">
+                    
+                    <div class="form-check payment-option">
                         <input class="form-check-input" type="radio" name="payment_option" id="razorpay" value="razorpay">
-                        <label class="form-check-label" for="razorpay">Pay with Razorpay</label>
+                        <label class="form-check-label payment-label" for="razorpay">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-credit-card text-primary me-3 fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold">Pay with Razorpay</div>
+                                    <small class="text-muted">Card, UPI, Net Banking & more</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="mt-4 p-3 bg-blue-50 rounded border-start border-primary border-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                        <small class="text-primary">
+                            <strong>100% Secure:</strong> Your payment information is encrypted and protected
+                        </small>
                     </div>
                 </div>
             </div>
 
-             {% for message in messages %}   
-                            <div class="alert alert-{{ message.tags }} mb-3" role="alert">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
+            <!-- Messages -->
+            {% for message in messages %}   
+                <div class="alert alert-{{ message.tags }} d-flex align-items-center mb-3" role="alert">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle me-2"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle me-2"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
 
-            <!-- Buttons Section -->
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <button id="printButton" class="btn btn-outline-secondary">Download Summary</button>
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-white rounded shadow-sm">
                 <div class="d-flex gap-2">
-                    <a href="{% url 'cash_on_delivery' order.id %}" id="cash-on-delivery-btn" class="btn btn-primary" style="display: none;">Confirm COD</a>
-                    <a id="rzp-button1" class="btn btn-success" style="display: none;">Pay with Razorpay</a>
-                    <a href="{% url 'wallet_pay' order.id %}" id="wallet-btn" class="btn btn-info text-white" style="display: none;">Pay with Wallet</a>
+                    <button id="printButton" class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i> Download Summary
+                    </button>
+                    <a href="{% url 'cart_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Cart
+                    </a>
+                </div>
+                
+                <div class="d-flex gap-2 align-items-center">
+                    <div id="payment-message" class="text-muted small me-3" style="display: block;">
+                        <i class="fas fa-arrow-up me-1"></i>Please select a payment method above
+                    </div>
+                    
+                    <a href="{% url 'cash_on_delivery' order.id %}" 
+                       id="cash-on-delivery-btn" 
+                       class="btn btn-success btn-lg" 
+                       style="display: none;">
+                        <i class="fas fa-check me-1"></i> Confirm COD Order
+                    </a>
+                    
+                    <a id="rzp-button1" 
+                       class="btn btn-primary btn-lg" 
+                       style="display: none;">
+                        <i class="fas fa-credit-card me-1"></i> Pay Securely Now
+                    </a>
+                    
+                    <a href="{% url 'wallet_pay' order.id %}" 
+                       id="wallet-btn" 
+                       class="btn btn-info text-white btn-lg" 
+                       style="display: none;">
+                        <i class="fas fa-wallet me-1"></i> Pay with Wallet
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.payment-option {
+    margin-bottom: 1rem;
+}
+
+.payment-label {
+    display: block;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.payment-label:hover {
+    border-color: #3b82f6;
+    background-color: #f8fafc;
+}
+
+.form-check-input:checked + .payment-label {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.transition-colors {
+    transition: color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .d-flex.gap-2 {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn {
+        flex: 1;
+    }
+    
+    #payment-message {
+        text-align: center;
+        margin: 0 0 1rem 0;
+    }
+}
+</style>
 <!-- Razorpay Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>

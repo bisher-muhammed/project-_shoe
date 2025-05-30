@@ -2,83 +2,145 @@
 {% load static %}
 
 {% block content %}
-<section class="content-main">
-    <!-- Page Title -->
-    <div class="d-flex justify-content-between align-items-center mb-4 px-2 px-md-4">
-        <h2 class="fw-bold mb-0">Product Listings</h2>
-
-        <a href="{% url 'add_product' %}" class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="material-icons">Add Product</i> 
+<section class="content-main py-4">
+    <!-- Title & Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center px-3 px-md-4 mb-4">
+        <h2 class="fw-bold mb-3 mb-md-0">📦 Product Listings</h2>
+        <a href="{% url 'add_product' %}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+            <i class="material-icons"></i> Add Product
         </a>
     </div>
 
-    <!-- Product Grid -->
-    <div class="container-fluid px-2 px-md-4">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
-            {% for product in products %}
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 rounded-4 product-card transition-hover">
+    <!-- Filter Panel -->
+    <div class="bg-white shadow-sm rounded-4 p-3 p-md-4 mb-4 mx-2 mx-md-4 border">
+        <form method="get" class="row gy-3 gx-4 align-items-end">
+            <!-- Search -->
+            <div class="col-12 col-md-3">
+                <label for="search" class="form-label">🔍 Search</label>
+                <input id="search" type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Name, brand, category">
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-6 col-md-2">
+                <label for="category" class="form-label">📂 Category</label>
+                <select id="category" name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category_id == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.category_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Brand Filter -->
+            <div class="col-6 col-md-2">
+                <label for="brand" class="form-label">🏷️ Brand</label>
+                <select id="brand" name="brand" class="form-select">
+                    <option value="">All Brands</option>
+                    {% for brand in brands %}
+                        <option value="{{ brand.id }}" {% if brand_id == brand.id|stringformat:"s" %}selected{% endif %}>
+                            {{ brand.brand_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date Range -->
+            <div class="col-6 col-md-2">
+                <label for="start_date" class="form-label">📅 Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="form-control" max="{{ today }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label for="end_date" class="form-label">📅 End Date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="form-control" max="{{ today }}">
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-12 col-md-1 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'admin_product_list' %}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+
+        {% if error %}
+            <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+    </div>
+
+    <div class="px-4 px-md-5">
+    <div class="d-flex flex-wrap gap-4 justify-content-start">
+        {% for product in products %}
+            <div class="product-square-card">
+                <div class="card h-100 border-0 shadow-sm rounded-4 d-flex flex-column product-card transition-hover">
                     <!-- Product Image -->
                     {% if product.product_img1 %}
-                        <img src="{{ product.product_img1.url }}" alt="{{ product.product_name }}" class="card-img-top rounded-top-4" style="height: 200px; object-fit: cover;">
+                        <img 
+                            src="{{ product.product_img1.url }}" 
+                            alt="{{ product.product_name|default:'Product Image' }}" 
+                            class="card-img-top rounded-top-4 square-image"
+                        >
                     {% else %}
-                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted rounded-top-4" style="height: 200px;">
-                            No image available
+                        <div class="square-image d-flex align-items-center justify-content-center bg-light text-muted rounded-top-4">
+                            No image
                         </div>
                     {% endif %}
 
                     <!-- Card Body -->
-                    <div class="card-body d-flex flex-column">
-                        <!-- Product Name -->
-                        <h6 class="card-title text-truncate fw-semibold mb-1">{{ product.product_name }}</h6>
-
-                        <!-- Price -->
-                        <div class="text-dark fw-bold mb-1">₹{{ product.offer_price }}</div>
-
-                        <!-- Brand & Category -->
-                        <div class="text-muted small mb-3">
-                            {{ product.brand }} - {{ product.category }}
+                    <div class="card-body d-flex flex-column p-3">
+                        <h6 class="card-title text-truncate fw-semibold mb-1" title="{{ product.product_name }}">
+                            {{ product.product_name }}
+                        </h6>
+                        <div class="fw-bold text-dark mb-1">₹{{ product.offer_price }}</div>
+                        <div class="text-muted small mb-2 text-truncate" title="{{ product.brand.brand_name }} - {{ product.category.category_name }}">
+                            {{ product.brand.brand_name }} &mdash; {{ product.category.category_name }}
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="mt-auto d-flex justify-content-between gap-2">
-                            <a href="{% url 'edit_product' product.id %}" class="btn btn-outline-primary btn-sm w-50">
-                                <i class="material-icons md-edit"></i> Edit
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{% url 'edit_product' product.id %}" class="btn btn-outline-primary btn-sm w-100" aria-label="Edit {{ product.product_name }}">
+                                Edit
                             </a>
                             {% if product.is_active %}
-                                <a class="btn btn-danger btn-sm w-50" href="{% url 'deactivate_product' product.id %}">
+                                <a href="{% url 'deactivate_product' product.id %}" class="btn btn-danger btn-sm w-100" aria-label="Block {{ product.product_name }}">
                                     Block
                                 </a>
                             {% else %}
-                                <a class="btn btn-success btn-sm w-50" href="{% url 'activate_product' product.id %}">
-                                    Active
+                                <a href="{% url 'activate_product' product.id %}" class="btn btn-success btn-sm w-100" aria-label="Activate {{ product.product_name }}">
+                                    Activate
                                 </a>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
+        {% empty %}
+            <div class="w-100 alert alert-warning text-center">No products found with current filters.</div>
+        {% endfor %}
     </div>
-</section>
-
-{% endblock %}
+</div>
 
 <style>
-    /* Ensures all cards have the same height */
-    .product-card {
-        display: flex;
-        flex-direction: column;
-    }
+/* Flex container */
+.d-flex.flex-wrap.gap-4 {
+    padding-bottom: 1rem;
+}
 
-    .product-card .card-body {
-        flex-grow: 1;
-    }
+/* Square card wrapper */
+.product-square-card {
+    width: 200px;
+    flex: 0 0 auto;
+}
 
-    /* Optional: Add hover effect */
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
+/* Maintain square aspect for images */
+.square-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    height: auto;
+}
+
+.product-card.transition-hover:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
 </style>
+{% endblock %}
