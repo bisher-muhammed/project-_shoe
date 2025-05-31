@@ -151,134 +151,458 @@
                                     </div>
                                 </form>
 
-                                <!-- jQuery CDN -->
-                                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                
+                                <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Keep your existing CSS classes and styling */
+        .detail-qty {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .detail-qty.border {
+            border: 1px solid #ddd;
+        }
+        
+        .detail-qty.radius {
+            border-radius: 4px;
+        }
+        
+        .qty-down, .qty-up {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .qty-down:hover, .qty-up:hover {
+            background: #e9ecef;
+        }
+        
+        .qty-down.disabled, .qty-up.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .qty-val {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 35px;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            background: white;
+            font-weight: 500;
+        }
+        
+        .detail-extralink {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .button.button-add-to-cart {
+            background: #3BB77E;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .button.button-add-to-cart:hover:not(:disabled) {
+            background: #2a9d69;
+        }
+        
+        .button.button-add-to-cart:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .bt-1.border-color-1 {
+            border-top: 1px solid #ececec;
+        }
+        
+        .mt-30 { margin-top: 30px; }
+        .mb-30 { margin-bottom: 30px; }
+        .mt-50 { margin-top: 50px; }
+        .mb-5 { margin-bottom: 5px; }
+        .mr-5 { margin-right: 5px; }
+        .mr-1 { margin-right: 5px; }
+        .mr-2 { margin-right: 10px; }
+        
+        .product-meta {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .font-xs {
+            font-size: 14px;
+        }
+        
+        .color-grey {
+            color: #7e7e7e;
+        }
+        
+        .text-success {
+            color: #3BB77E !important;
+        }
+        
+        .badge.badge-light {
+            background-color: #f8f9fa;
+            color: #495057;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .stock-alert {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Size Selection Helper Text -->
+        <small class="text-muted">
+            <i class="fi-rs-info mr-1"></i>
+            Please select a size to add to cart. Stock levels are updated in real-time.
+        </small>
 
-                                <script>
-                                (function () {
-                                    'use strict';
+        <!-- Messages Display -->
+        {% for message in messages %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
 
-                                    $(document).ready(function () {
-                                        const addToCartBtn = $('#add-to-cart-btn');
-                                        const qtyVal = $('.qty-val');
-                                        const quantityInput = $('#quantity-input');
-                                        const sizeCheckboxes = $('.size-checkbox');
-                                        const qtyUp = $('.qty-up');
-                                        const qtyDown = $('.qty-down');
-                                        const detailExtraLink = $('.detail-extralink');
+        <div class="bt-1 border-color-1 mt-30 mb-30"></div>
 
-                                        // Store stock for each size
-                                        const sizeStock = {
-                                            {% for size_info in sizes_with_quantities %}
-                                            '{{ size_info.size.id }}': {{ size_info.quantity }},
-                                            {% endfor %}
-                                        };
+        <!-- Product Form -->
+        <form method="post" action="">
+            {% csrf_token %}
+            
+            <!-- Hidden quantity input -->
+            <input type="hidden" id="quantity-input" name="quantity" value="0">
+            
+            <!-- Size Selection (Add your size selection HTML here) -->
+            <div class="mb-4">
+                <h6 class="mb-3">Select Size:</h6>
+                <div class="row">
+                    {% for size_info in sizes_with_quantities %}
+                    <div class="col-auto">
+                        <div class="form-check">
+                            <input class="form-check-input size-checkbox" type="checkbox" 
+                                   name="size" value="{{ size_info.size.id }}" 
+                                   id="size-{{ size_info.size.id }}">
+                            <label class="form-check-label" for="size-{{ size_info.size.id }}">
+                                {{ size_info.size.name }}
+                                {% if size_info.quantity > 0 %}
+                                    <small class="text-muted">({{ size_info.quantity }} available)</small>
+                                {% else %}
+                                    <small class="text-danger">(Out of stock)</small>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
-                                        function getSelectedSizeStock() {
-                                            const selectedSize = sizeCheckboxes.filter(':checked').val();
-                                            return selectedSize ? sizeStock[selectedSize] : 0;
-                                        }
+            <!-- Quantity and Add to Cart -->
+            <div class="detail-extralink">
+                <div class="detail-qty border radius">
+                    <a href="#" class="qty-down"><i class="fi-rs-angle-small-down">−</i></a>
+                    <span class="qty-val">0</span>
+                    <a href="#" class="qty-up"><i class="fi-rs-angle-small-up">+</i></a>
+                </div>
 
-                                        function updateQuantityAndButton(quantity) {
-                                            qtyVal.text(quantity);
-                                            quantityInput.val(quantity);
-                                            const stock = getSelectedSizeStock();
-                                            if (quantity > 0 && quantity <= stock) {
-                                                addToCartBtn.html(`<i class="fi-rs-shopping-cart mr-5"></i>Add ${quantity} to Cart`);
-                                            }
-                                        }
+                <div class="product-extra-link2">
+                    <button type="submit" class="button button-add-to-cart" id="add-to-cart-btn" disabled>
+                        <i class="fi-rs-shopping-cart mr-5">🛒</i>
+                        Select Size to Add to Cart
+                    </button>
+                </div>
+            </div>
+        </form>
 
-                                        function updateQuantityControls() {
-                                            const currentQty = parseInt(qtyVal.text());
-                                            const stock = getSelectedSizeStock();
+        <!-- Product Meta Information -->
+        <ul class="product-meta font-xs color-grey mt-50">
+            <li class="mb-5"><strong>SKU:</strong> <span class="text-muted">{{ product.sku|default:"FWM15VKT" }}</span></li>
+            <li class="mb-5"><strong>Tags:</strong> 
+                <a href="#" rel="tag" class="badge badge-light mr-1">{{ product.category }}</a>
+                <a href="#" rel="tag" class="badge badge-light mr-1">{{ product.brand }}</a>
+            </li>
+            <li class="mb-5"><strong>Availability:</strong> 
+                <span class="text-success">
+                    <i class="fi-rs-check-circle mr-1">✓</i>
+                    {% if sizes_with_quantities|length > 0 %}In Stock{% else %}Contact for Availability{% endif %}
+                </span>
+            </li>
+        </ul>
+    </div>
 
-                                            qtyDown.toggleClass('disabled', currentQty <= 1).css('opacity', currentQty <= 1 ? '0.5' : '1');
-                                            qtyUp.toggleClass('disabled', currentQty >= stock).css('opacity', currentQty >= stock ? '0.5' : '1');
-                                        }
+    <!-- Size stock data for JavaScript -->
+    <script>
+        window.PRODUCT_SIZE_STOCK = {
+            {% for size_info in sizes_with_quantities %}
+            '{{ size_info.size.id }}': {{ size_info.quantity }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+    </script>
 
-                                        function showStockAlert(message) {
-                                            $('.stock-alert').remove();
-                                            const alertHtml = `
-                                                <div class="alert alert-warning alert-dismissible fade show stock-alert" role="alert">
-                                                    <i class="fi-rs-exclamation mr-2"></i>${message}
-                                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                </div>
-                                            `;
-                                            detailExtraLink.before(alertHtml);
-                                            setTimeout(() => $('.stock-alert').fadeOut(), 3000);
-                                        }
-
-                                        sizeCheckboxes.on('change', function () {
-                                            if ($(this).is(':checked')) {
-                                                const stock = getSelectedSizeStock();
-                                                if (stock > 0) {
-                                                    updateQuantityAndButton(1);
-                                                    updateQuantityControls();
-                                                    addToCartBtn.prop('disabled', false)
-                                                        .html('<i class="fi-rs-shopping-cart mr-5"></i>Add to Cart');
-                                                } else {
-                                                    addToCartBtn.prop('disabled', true)
-                                                        .html('<i class="fi-rs-shopping-cart mr-5"></i>Out of Stock');
-                                                    updateQuantityAndButton(0);
-                                                }
-                                            }
-                                        });
-
-                                        qtyUp.on('click', function (e) {
-                                            e.preventDefault();
-                                            const currentQty = parseInt(qtyVal.text());
-                                            const stock = getSelectedSizeStock();
-                                            if (currentQty < stock) {
-                                                updateQuantityAndButton(currentQty + 1);
-                                                updateQuantityControls();
-                                            } else {
-                                                showStockAlert(`Only ${stock} items available in stock!`);
-                                            }
-                                        });
-
-                                        qtyDown.on('click', function (e) {
-                                            e.preventDefault();
-                                            const currentQty = parseInt(qtyVal.text());
-                                            if (currentQty > 1) {
-                                                updateQuantityAndButton(currentQty - 1);
-                                                updateQuantityControls();
-                                            }
-                                        });
-
-                                        $('form').on('submit', function (e) {
-                                            const selected = sizeCheckboxes.filter(':checked');
-                                            if (!selected.length) {
-                                                e.preventDefault();
-                                                showStockAlert('Please select a size before adding to cart.');
-                                                return false;
-                                            }
-
-                                            const qty = parseInt(quantityInput.val());
-                                            const stock = getSelectedSizeStock();
-
-                                            if (qty > stock) {
-                                                e.preventDefault();
-                                                showStockAlert(`Cannot add ${qty} items. Only ${stock} available.`);
-                                                return false;
-                                            }
-
-                                            if (qty < 1) {
-                                                e.preventDefault();
-                                                showStockAlert('Quantity must be at least 1.');
-                                                return false;
-                                            }
-                                        });
-
-                                        // Init
-                                        updateQuantityAndButton(0);
-                                        updateQuantityControls();
-                                        addToCartBtn.prop('disabled', true);
-                                    });
-                                })();
-                                </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 
 
+    <!-- Production-Ready Cart Manager (Same UI, Clean Code) -->
+    <script>
+        /**
+         * ProductCartManager - Production-ready with original UI preserved
+         */
+        class ProductCartManager {
+            constructor() {
+                this.sizeStock = window.PRODUCT_SIZE_STOCK || {};
+                this.currentQuantity = 0;
+                this.elements = {};
+                
+                this.init();
+            }
 
+            init() {
+                this.cacheElements();
+                this.bindEvents();
+                this.updateUI();
+                console.log('ProductCartManager initialized');
+            }
+
+            cacheElements() {
+                this.elements = {
+                    addToCartBtn: document.getElementById('add-to-cart-btn'),
+                    qtyVal: document.querySelector('.qty-val'),
+                    quantityInput: document.getElementById('quantity-input'),
+                    sizeCheckboxes: document.querySelectorAll('.size-checkbox'),
+                    qtyUp: document.querySelector('.qty-up'),
+                    qtyDown: document.querySelector('.qty-down'),
+                    form: document.querySelector('form'),
+                    detailExtralink: document.querySelector('.detail-extralink')
+                };
+            }
+
+            bindEvents() {
+                // Size selection events
+                this.elements.sizeCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => this.handleSizeChange(e));
+                });
+
+                // Quantity controls
+                this.elements.qtyUp?.addEventListener('click', (e) => this.handleQuantityUp(e));
+                this.elements.qtyDown?.addEventListener('click', (e) => this.handleQuantityDown(e));
+
+                // Form submission
+                this.elements.form?.addEventListener('submit', (e) => this.handleFormSubmit(e));
+
+                // Direct quantity input change
+                this.elements.quantityInput?.addEventListener('change', (e) => this.handleQuantityInputChange(e));
+            }
+
+            handleSizeChange(event) {
+                const checkbox = event.target;
+                
+                if (checkbox.checked) {
+                    // Uncheck other checkboxes (single selection)
+                    this.elements.sizeCheckboxes.forEach(cb => {
+                        if (cb !== checkbox) cb.checked = false;
+                    });
+
+                    const availableStock = this.getSelectedSizeStock();
+                    if (availableStock > 0) {
+                        this.updateQuantityAndButton(1);
+                        this.elements.addToCartBtn.disabled = false;
+                        this.elements.addToCartBtn.innerHTML = '<i class="fi-rs-shopping-cart mr-5">🛒</i>Add to Cart';
+                        this.updateQuantityControls();
+                    } else {
+                        this.showStockAlert('This size is out of stock.');
+                        checkbox.checked = false;
+                    }
+                }
+            }
+
+            handleQuantityUp(event) {
+                event.preventDefault();
+                
+                if (this.getSelectedSize()) {
+                    const currentQty = parseInt(this.elements.qtyVal.textContent);
+                    const availableStock = this.getSelectedSizeStock();
+                    
+                    if (currentQty < availableStock) {
+                        this.updateQuantityAndButton(currentQty + 1);
+                        this.updateQuantityControls();
+                    } else {
+                        this.showStockAlert(`Only ${availableStock} items available in stock!`);
+                    }
+                }
+            }
+
+            handleQuantityDown(event) {
+                event.preventDefault();
+                
+                if (this.getSelectedSize()) {
+                    const currentQty = parseInt(this.elements.qtyVal.textContent);
+                    if (currentQty > 1) {
+                        this.updateQuantityAndButton(currentQty - 1);
+                        this.updateQuantityControls();
+                    }
+                }
+            }
+
+            handleQuantityInputChange(event) {
+                const newQuantity = parseInt(event.target.value) || 0;
+                const availableStock = this.getSelectedSizeStock();
+                
+                if (newQuantity > availableStock) {
+                    this.showStockAlert(`Only ${availableStock} items available in stock!`);
+                    this.updateQuantityAndButton(availableStock);
+                } else if (newQuantity < 1) {
+                    this.updateQuantityAndButton(1);
+                } else {
+                    this.updateQuantityAndButton(newQuantity);
+                }
+                this.updateQuantityControls();
+            }
+
+            handleFormSubmit(event) {
+                if (!this.getSelectedSize()) {
+                    event.preventDefault();
+                    this.showStockAlert('Please select a size before adding to cart.');
+                    return false;
+                }
+                
+                const currentQty = parseInt(this.elements.quantityInput.value);
+                const availableStock = this.getSelectedSizeStock();
+                
+                if (currentQty > availableStock) {
+                    event.preventDefault();
+                    this.showStockAlert(`Cannot add ${currentQty} items. Only ${availableStock} items available in stock!`);
+                    return false;
+                }
+                
+                if (currentQty < 1) {
+                    event.preventDefault();
+                    this.showStockAlert('Quantity must be at least 1.');
+                    return false;
+                }
+                
+                return true;
+            }
+
+            getSelectedSize() {
+                const selectedCheckbox = Array.from(this.elements.sizeCheckboxes)
+                    .find(checkbox => checkbox.checked);
+                return selectedCheckbox ? selectedCheckbox.value : null;
+            }
+
+            getSelectedSizeStock() {
+                const selectedSize = this.getSelectedSize();
+                return selectedSize ? (this.sizeStock[selectedSize] || 0) : 0;
+            }
+
+            updateQuantityAndButton(quantity) {
+                this.currentQuantity = quantity;
+                this.elements.qtyVal.textContent = quantity;
+                this.elements.quantityInput.value = quantity;
+            }
+
+            updateQuantityControls() {
+                const currentQty = parseInt(this.elements.qtyVal.textContent);
+                const availableStock = this.getSelectedSizeStock();
+                
+                // Update down button
+                if (currentQty <= 1) {
+                    this.elements.qtyDown.classList.add('disabled');
+                    this.elements.qtyDown.style.opacity = '0.5';
+                } else {
+                    this.elements.qtyDown.classList.remove('disabled');
+                    this.elements.qtyDown.style.opacity = '1';
+                }
+                
+                // Update up button
+                if (currentQty >= availableStock) {
+                    this.elements.qtyUp.classList.add('disabled');
+                    this.elements.qtyUp.style.opacity = '0.5';
+                } else {
+                    this.elements.qtyUp.classList.remove('disabled');
+                    this.elements.qtyUp.style.opacity = '1';
+                }
+                
+                // Update add to cart button with stock info
+                if (currentQty > 0 && currentQty <= availableStock) {
+                    this.elements.addToCartBtn.innerHTML = `<i class="fi-rs-shopping-cart mr-5">🛒</i>Add ${currentQty} to Cart`;
+                }
+            }
+
+            showStockAlert(message) {
+                // Remove existing alerts
+                document.querySelectorAll('.stock-alert').forEach(alert => alert.remove());
+                
+                // Create and show new alert
+                const alertHtml = `
+                    <div class="alert alert-warning alert-dismissible fade show stock-alert" role="alert">
+                        <i class="fi-rs-exclamation mr-2">⚠️</i>${this.escapeHtml(message)}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                this.elements.detailExtralink.insertAdjacentHTML('beforebegin', alertHtml);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    const alert = document.querySelector('.stock-alert');
+                    if (alert) {
+                        alert.style.transition = 'opacity 0.3s ease-out';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 300);
+                    }
+                }, 3000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            updateUI() {
+                this.updateQuantityAndButton(0);
+                this.updateQuantityControls();
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.cartManager = new ProductCartManager();
+        });
+    </script>
+</body>
+</html>
 
                                 <!-- Product Meta Information -->
                                 <ul class="product-meta font-xs color-grey mt-50">
