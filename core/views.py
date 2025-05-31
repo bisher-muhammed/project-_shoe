@@ -1,6 +1,5 @@
 import json
 import datetime
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.contrib import messages
@@ -309,9 +308,10 @@ def placeorder(request):
             coupon=coupon_instance if coupon_instance else None
         )
         # Generate order number
-        today = datetime.date.today()
+        today = date.today()
         order.order_number = f"{today.strftime('%Y%m%d')}{order.id}"
         order.save()
+
 
         # Add user to coupon used list
         if coupon_instance:
