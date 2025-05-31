@@ -152,139 +152,8 @@
                                 </form>
 
                                 
-                                <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Keep your existing CSS classes and styling */
-        .detail-qty {
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .detail-qty.border {
-            border: 1px solid #ddd;
-        }
-        
-        .detail-qty.radius {
-            border-radius: 4px;
-        }
-        
-        .qty-down, .qty-up {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 35px;
-            height: 35px;
-            background: #f8f9fa;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            color: #333;
-        }
-        
-        .qty-down:hover, .qty-up:hover {
-            background: #e9ecef;
-        }
-        
-        .qty-down.disabled, .qty-up.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        .qty-val {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            height: 35px;
-            border-left: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            background: white;
-            font-weight: 500;
-        }
-        
-        .detail-extralink {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .button.button-add-to-cart {
-            background: #3BB77E;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .button.button-add-to-cart:hover:not(:disabled) {
-            background: #2a9d69;
-        }
-        
-        .button.button-add-to-cart:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
-        
-        .bt-1.border-color-1 {
-            border-top: 1px solid #ececec;
-        }
-        
-        .mt-30 { margin-top: 30px; }
-        .mb-30 { margin-bottom: 30px; }
-        .mt-50 { margin-top: 50px; }
-        .mb-5 { margin-bottom: 5px; }
-        .mr-5 { margin-right: 5px; }
-        .mr-1 { margin-right: 5px; }
-        .mr-2 { margin-right: 10px; }
-        
-        .product-meta {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .font-xs {
-            font-size: 14px;
-        }
-        
-        .color-grey {
-            color: #7e7e7e;
-        }
-        
-        .text-success {
-            color: #3BB77E !important;
-        }
-        
-        .badge.badge-light {
-            background-color: #f8f9fa;
-            color: #495057;
-            padding: 4px 8px;
-            border-radius: 3px;
-            text-decoration: none;
-            font-size: 12px;
-        }
-        
-        .stock-alert {
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Size Selection Helper Text -->
-        <small class="text-muted">
-            <i class="fi-rs-info mr-1"></i>
-            Please select a size to add to cart. Stock levels are updated in real-time.
-        </small>
+
+
 
         <!-- Messages Display -->
         {% for message in messages %}
@@ -600,8 +469,7 @@
             window.cartManager = new ProductCartManager();
         });
     </script>
-</body>
-</html>
+
 
                                 <!-- Product Meta Information -->
                                 <ul class="product-meta font-xs color-grey mt-50">
