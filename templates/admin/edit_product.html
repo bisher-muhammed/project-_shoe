@@ -98,21 +98,21 @@
                                 <div class="col-md-6 mb-4">
                                     <!-- Category Dropdown -->
                                     <label class="form-label fw-bold" for="product_category">Category <span class="text-danger">*</span></label>
-                                    <select name="product_category" class="form-select" id="product_category" required>
-                                        <option value="">Choose a category...</option>
-                                        {% for category in categories %}
-                                            {% if not category.is_blocked %}
-                                                <option value="{{ category.id }}" 
-                                                    {% if form_data.product_category %}
-                                                        {% if form_data.product_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}
-                                                    {% else %}
-                                                        {% if product.product_category.id == category.id %}selected{% endif %}
-                                                    {% endif %}>
-                                                    {{ category.category_name }}
-                                                </option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
+                                   
+                                        
+                                                <select name="product_category" class="form-select" id="product_category" required>
+                                                <option value="">Choose a category...</option>
+                                                {% for category in categories %}
+                                                    {% if category.is_blocked %}
+                                                    {% with selected=form_data.product_category|stringformat:"s" %}
+                                                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected %}selected{% endif %}>
+                                                        {{ category.category_name }}
+                                                        </option>
+                                                    {% endwith %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                </select>
+
                                     <div class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6 mb-4">

@@ -71,7 +71,7 @@
             <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
         </div>
         <div class="col-md-3">
-            <label for="search">Search (Username or Payment Method):</label>
+            <label for="search">Search (Username ):</label>
             <input type="text" id="search" name="search" class="form-control" value="{{ search_query }}">
         </div>
         <div class="col-md-3">
@@ -102,7 +102,8 @@
                     <td>{{ order.address }}</td>
                     <td>₹{{order.order_total}}</td>
                     <td>{{ order.status }}</td>
-                    <td>{{ order.payment_method }}</td>
+                    <td>{{ order.payments.first.payment_method }}</td>
+
                     <td>
                         <ul>
                             {% for product_order in order.productorder_set.all %}

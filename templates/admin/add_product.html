@@ -523,7 +523,10 @@
                 { field: offerPrice, message: 'Sale price is required' },
                 { field: document.querySelector('[name="product_category"]'), message: 'Please select a category' },
                 { field: document.querySelector('[name="product_brand"]'), message: 'Please select a brand' },
-                { field: document.getElementById('image1'), message: 'Main image is required' }
+                { field: document.getElementById('image1'), message: 'Main image is required' },
+                {field:document.getElementById('image2'),message:'image is required'},
+                {field:document.getElementById('image3'),message:'image is required'},
+
             ];
 
             for (var i = 0; i < requiredFields.length; i++) {

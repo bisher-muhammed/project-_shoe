@@ -44,8 +44,9 @@ from django.db.models import Q
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 @never_cache
 def home(request):
-    # if request.user.is_anonymous:
-    #     return redirect('login_view')
+    if request.user.is_superuser:
+        return redirect('admin_home') 
+    
 
     context = {}  # Initialize the context variable
 

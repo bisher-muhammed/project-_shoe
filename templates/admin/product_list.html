@@ -26,9 +26,11 @@
                 <select id="category" name="category" class="form-select">
                     <option value="">All Categories</option>
                     {% for category in categories %}
+                        {% if category.is_blocked %}
                         <option value="{{ category.id }}" {% if category_id == category.id|stringformat:"s" %}selected{% endif %}>
                             {{ category.category_name }}
                         </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>

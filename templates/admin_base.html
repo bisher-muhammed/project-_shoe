@@ -166,20 +166,12 @@
                         </li>
             
                         <!-- Logout Dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="material-icons md-exit_to_app"></i> Logout
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li>
-                                    <a class="dropdown-item text-danger" href="{% url 'admin_logout' %}">
-                                        <i class="material-icons md-exit_to_app"></i> Logout
-                                    </a>
+                                <li class="nav-item">
+                                <a class="nav-link text-danger d-flex align-items-center gap-1" href="{% url 'admin_logout' %}">
+                                    <i class="material-icons md-exit_to_app"></i> Logout
+                                </a>
+                            </li>
 
-                                    <button id="darkModeToggle" class="toggle-btn">
-                                        🌙
-                                      </button>
-                                </li>
                             </ul>
                         </li>
                     </ul>

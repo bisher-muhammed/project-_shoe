@@ -48,6 +48,15 @@
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
+
+                            {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
                             <tbody class="text-center">
                                 {% for size in size_list %}
                                     <tr>

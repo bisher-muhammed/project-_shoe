@@ -52,6 +52,15 @@
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
+
+                                {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
                             <tbody>
                                 {% for brand in brand_list %}
                                 <tr>

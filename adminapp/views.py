@@ -64,8 +64,8 @@ def admin_login(request):
 
 
 
-from django.utils.timezone import make_aware
-from datetime import datetime
+
+
 
 @superuser_required
 def admin_home(request):
@@ -80,7 +80,6 @@ def admin_home(request):
     start_date = end_date = None
 
     try:
-        # Parse and make timezone-aware start and end dates
         if start_date_str:
             start_date = timezone.make_aware(datetime.strptime(start_date_str, "%Y-%m-%d"))
             start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -91,38 +90,26 @@ def admin_home(request):
 
         now = timezone.now()
 
-        # Validate future dates
         if start_date and start_date > now:
-            print("Start date is in the future, ignoring.")
+            messages.warning(request, "Start date is in the future. Ignoring start date.")
             start_date = None
         if end_date and end_date > now:
-            print("End date is in the future, adjusting to now.")
+            messages.warning(request, "End date is in the future. Adjusting to the current time.")
             end_date = now
 
-        # Handle invalid range
         if start_date and end_date and start_date > end_date:
-            print("Start date is after end date, ignoring both.")
+            messages.error(request, "Invalid date range. Start date cannot be after end date.")
             start_date = end_date = None
 
-        # Apply valid filters
         if start_date and end_date:
             order_filter &= Q(created_at__range=(start_date, end_date))
-            print("Filtering orders between", start_date, "and", end_date)
         elif start_date:
             order_filter &= Q(created_at__gte=start_date)
-            print("Filtering orders from", start_date)
         elif end_date:
             order_filter &= Q(created_at__lte=end_date)
-            print("Filtering orders up to", end_date)
 
-    except ValueError as e:
-        print("Invalid date format:", e)
-
-    # Print range for debug
-    first_order = Order.objects.order_by('created_at').first()
-    last_order = Order.objects.order_by('-created_at').first()
-    print("Earliest order in DB:", first_order.created_at if first_order else "N/A")
-    print("Latest order in DB:", last_order.created_at if last_order else "N/A")
+    except ValueError:
+        messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
 
     # Chart data
     category_order_counts = (
@@ -187,19 +174,14 @@ def admin_home(request):
 
     if query:
         latest_orders = latest_orders.filter(
-            Q(user__username__icontains=query) | Q(id__icontains=query)
+            Q(user__username__icontains=query) | Q(order_numbe__icontains=query)
         )
-        print("Search query applied:", query)
+        messages.info(request, f"Search results for: '{query}'")
 
-    print("Total latest orders after filters:", latest_orders.count())
-
-    # Add payment method info
     for order in latest_orders[:50]:
         payment_data = Payment.objects.filter(user=order.user, created_at__gte=order.created_at).first()
         order.payment_method = payment_data.payment_method if payment_data else 'N/A'
-        
 
-    # Total amount
     total_order_amount = latest_orders.aggregate(total_order_amount=Sum('order_total'))['total_order_amount'] or 0
 
     # Pagination
@@ -232,6 +214,7 @@ def admin_home(request):
     }
 
     return render(request, 'admin/admin_home.html', context)
+
 
 
 @superuser_required
@@ -538,14 +521,15 @@ def add_size(request):
         size_name = request.POST.get('size_name')
         
         if not size_name:
-            return HttpResponse("Please fill out the 'Size Name' field.")
+            messages.error(request, "⚠️ Please fill out the 'Size Name' field.")
+            return redirect('variance_management')
 
-        # Check if size with the same name already exists
         if Size.objects.filter(name=size_name).exists():
-            return HttpResponse("Size with this name already exists.")
+            messages.warning(request, "❗Size with this name already exists.")
+            return redirect('variance_management')
 
-        size = Size.objects.create(name=size_name)
-        size.save()
+        Size.objects.create(name=size_name)
+        messages.success(request, f"✅ Size '{size_name}' added successfully.")
 
     return redirect('variance_management')
 
@@ -572,7 +556,7 @@ def deactivate_size(request, size_id):
 def admin_product_list(request):
     products = Product.objects.select_related('brand', 'category').filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)
-    categories = Category.objects.filter(is_blocked=False)
+    categories = Category.objects.filter(is_blocked=True)  # Show only blocked categories
 
     search_query = request.GET.get('search', '').strip()
     category_id = request.GET.get('category')
@@ -583,45 +567,53 @@ def admin_product_list(request):
     error = None
     today = now().date()
 
-    # Parse and validate dates same as before...
     start_date_obj = None
     end_date_obj = None
-    # ... (date parsing code unchanged)
 
-    # Apply filters only if no error
-    if not error:
-        # Build a dictionary of filters
-        filter_kwargs = {}
+    date_format = "%Y-%m-%d"
+    try:
+        if start_date:
+            start_date_obj = datetime.strptime(start_date, date_format).date()
+        if end_date:
+            end_date_obj = datetime.strptime(end_date, date_format).date()
+        if start_date_obj and end_date_obj and start_date_obj > end_date_obj:
+            error = "Start date must be before end date."
+    except ValueError:
+        error = "Invalid date format. Please use YYYY-MM-DD."
 
-        if category_id:
-            try:
-                category = Category.objects.get(id=category_id, is_blocked=False)
-                filter_kwargs['category'] = category
-            except Category.DoesNotExist:
-                error = "Selected category is invalid."
+    # Apply category filter
+    if category_id:
+        try:
+            category = Category.objects.get(id=category_id, is_blocked=True)
+            products = products.filter(category=category)
+        except Category.DoesNotExist:
+            error = "Selected category is invalid."
 
-        if brand_id:
-            try:
-                brand = Brand.objects.get(id=brand_id, is_active=True)
-                filter_kwargs['brand'] = brand
-            except Brand.DoesNotExist:
-                error = "Selected brand is invalid."
+    # Apply brand filter
+    if brand_id:
+        try:
+            brand = Brand.objects.get(id=brand_id, is_active=True)
+            products = products.filter(brand=brand)
+        except Brand.DoesNotExist:
+            error = "Selected brand is invalid."
 
-        if start_date_obj:
-            filter_kwargs['created_at__date__gte'] = start_date_obj
-        if end_date_obj:
-            filter_kwargs['created_at__date__lte'] = end_date_obj
+    # Apply date filters
+    if start_date_obj:
+        products = products.filter(created_at__date__gte=start_date_obj)
+    if end_date_obj:
+        products = products.filter(created_at__date__lte=end_date_obj)
 
-        # Apply the filters at once
-        products = products.filter(**filter_kwargs)
+    # Apply search (after brand/category/date filters)
+    if search_query:
+        products = products.filter(
+            Q(product_name__icontains=search_query) |
+            Q(brand__brand_name__icontains=search_query) |
+            Q(category__category_name__icontains=search_query)
+        )
 
-        # Search filter with OR on multiple fields
-        if search_query:
-            products = products.filter(
-                Q(product_name__icontains=search_query) |
-                Q(brand__brand_name__icontains=search_query) |
-                Q(category__category_name__icontains=search_query)
-            )
+    # Display validation message if any
+    if error:
+        messages.error(request, error)
 
     context = {
         'products': products,
