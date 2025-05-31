@@ -1,5 +1,6 @@
-{% extends "user_base.html" %}
+% extends "user_base.html" %}
 {% load static %}
+
 
 {% block content %}
 
@@ -43,8 +44,6 @@
                                     <div class="product-rate-cover text-end">
                                         <div class="product-rate d-inline-block">
                                             <div class="product-rating" style="width:90%"></div>
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="clearfix product-price-cover">
                                     <div class="product-price primary-color float-left">
@@ -75,652 +74,276 @@
                                         <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
                                     </ul>
                                 </div>
+                                <form method="post" action="{% url 'add_to_cart' product.id %}">
+                                <input type="hidden" name="quantity" id="quantity-input" value="1">
 
-                                <!-- Validation Messages Container -->
-                                <div id="validation-messages" class="mb-3"></div>
 
-                                <!-- Messages -->
-                                {% for message in messages %}
-                                    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
-                                        <i class="fi-rs-check-circle me-2"></i>{{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                {% endfor %}
-
-                                <!-- Size Selection Section -->
-                                <div class="size-selection-section mb-4">
-                                    <div class="selection-header mb-3">
-                                        <h6 class="mb-2">
-                                            <i class="fi-rs-shuffle me-2"></i>Choose Size 
-                                            <span class="required-indicator">*</span>
-                                        </h6>
-                                        <p class="size-help-text mb-0">Select your preferred size</p>
-                                    </div>
-                                    
-                                    <div class="size-options">
-                                        {% for size_info in sizes_with_quantities %}
-                                            <div class="size-option-wrapper">
-                                                <input type="radio" 
-                                                       class="size-radio" 
-                                                       name="size" 
-                                                       id="size-{{ size_info.size.id }}" 
-                                                       value="{{ size_info.size.id }}" 
-                                                       data-quantity="{{ size_info.quantity }}"
-                                                       data-size-name="{{ size_info.size.name }}"
-                                                       {% if size_info.quantity == 0 %}disabled{% endif %}>
-                                                <label class="size-option {% if size_info.quantity == 0 %}out-of-stock{% endif %}" 
-                                                       for="size-{{ size_info.size.id }}">
-                                                    <div class="size-name">{{ size_info.size.name }}</div>
-                                                    <div class="size-stock">
-                                                        {% if size_info.quantity == 0 %}
-                                                            <span class="stock-status out-of-stock">
-                                                                <i class="fi-rs-cross-small"></i> Out of Stock
-                                                            </span>
-                                                        {% else %}
-                                                            <span class="stock-status in-stock">
-                                                                <i class="fi-rs-check"></i> {{ size_info.quantity }} left
-                                                            </span>
-                                                        {% endif %}
-                                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Size: </strong>
+                                        <div class="btn-group" role="group">
+                                            {% for size in product.sizes.all %}
+                                                <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size.name }}" value="{{ size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
+                                                <label class="btn btn-outline-secondary" for="size-{{ size.name }}">
+                                                    {{ size.name }}
                                                 </label>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-
-                                <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-
-                                <!-- Quantity & Add to Cart Section -->
-                                <div class="quantity-cart-section">
-                                    <div class="section-header mb-3">
-                                        <h6 class="mb-2">
-                                            <i class="fi-rs-calculator me-2"></i>Quantity & Add to Cart
-                                        </h6>
-                                        <div id="selected-size-info" class="selected-info" style="display: none;">
-                                            <span class="selected-text">
-                                                <i class="fi-rs-check-circle me-1"></i>
-                                                Size <strong id="selected-size-name">-</strong> selected
-                                            </span>
-                                            <span class="stock-indicator ms-3">
-                                                <i class="fi-rs-boxes me-1"></i>
-                                                <span id="available-stock">0</span> available
-                                            </span>
+                                            {% endfor %}
                                         </div>
                                     </div>
-
-                                    <form method="post" action="{% url 'add_to_cart' product.id %}" id="add-to-cart-form">
+                                       
+                                
+                                    {% for message in messages %}
+                                        <p>{{ message }}</p>
+                                    {% endfor %}
+                                
+                                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                                
+                                    <div class="detail-extralink">
+                                        <div class="detail-qty border radius">
+                                            <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
+                                            <span class="qty-val">1</span>
+                                            <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+                                        </div>
+                                
                                         {% csrf_token %}
-                                        <input type="hidden" name="quantity" id="quantity-input" value="1">
-                                        <input type="hidden" name="selected_size" id="selected-size-input" value="">
+                                        <div class="product-extra-link2">
+                                            <button type="submit" class="button button-add-to-cart">Add to cart</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                
+                                
+                                <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+                                <script>
+                                            $(document).ready(function () {
+                                                // When size is selected
+                                                $('.size-checkbox').on('change', function () {
+                                                    updateQuantity();
+                                                });
 
-                                        <div class="cart-controls">
-                                            <!-- Quantity Selector -->
-                                            <div class="quantity-selector">
-                                                <label class="quantity-label">Quantity:</label>
-                                                <div class="quantity-controls">
-                                                    <button type="button" class="qty-btn qty-decrease" id="qty-decrease" disabled>
-                                                        <i class="fi-rs-minus-small"></i>
-                                                    </button>
-                                                    <input type="number" class="qty-input" id="qty-display" value="1" min="1" readonly>
-                                                    <button type="button" class="qty-btn qty-increase" id="qty-increase" disabled>
-                                                        <i class="fi-rs-plus-small"></i>
-                                                    </button>
+                                                // When form is submitted
+                                                $('form').on('submit', function () {
+                                                    updateQuantity(); // Ensure the quantity is up to date
+                                                });
+
+                                                // Update both visible and hidden quantity
+                                                function updateQuantity() {
+                                                    var selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
+
+                                                    // Update visible span
+                                                    $('.qty-val').text(selectedSize);
+
+                                                    // Update hidden input
+                                                    $('#quantity-input').val(selectedSize);
+                                                }
+
+                                                // Run once at the beginning
+                                                updateQuantity();
+                                            });
+                                        </script>
+
+                                        <ul class="product-meta font-xs color-grey mt-50">
+                                            <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
+                                            <li class="mb-5">Tags: <a href="#" rel="tag">Cloth</a>, <a href="#" rel="tag">MEN</a>, <a href="#" rel="tag">SHOES</a></li>
+                                            {% for size_info in sizes_with_quantities %}
+                                                <div class="form-check form-check-inline">
+                                                    <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size_info.size.id }}" value="{{ size_info.size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
+                                                    <label for="size-{{ size_info.size.name }}">
+                                                        <p style="color: {% if size_info.quantity == 0 %}red{% else %}inherit{% endif %}">
+                                                            {{ size_info.size.name }} Quantity: {% if size_info.quantity == 0 %}Out of Stock{% else %}{{ size_info.quantity }}{% endif %}
+                                                        </p>
+                                                    </label>
                                                 </div>
-                                            </div>
-
-                                            <!-- Add to Cart Button -->
-                                            <div class="add-to-cart-wrapper">
-                                                <button type="submit" 
-                                                        class="add-to-cart-btn disabled" 
-                                                        id="add-to-cart-btn"
-                                                        disabled>
-                                                    <span class="btn-icon">
-                                                        <i class="fi-rs-shopping-cart"></i>
-                                                    </span>
-                                                    <span class="btn-text">Select Size First</span>
-                                                </button>
-                                            </div>
+                                            {% endfor %}
+                                        </ul>
+                                                                                    
+                                        
                                         </div>
-                                    </form>
-                                </div>
-
-                                <ul class="product-meta font-xs color-grey mt-50">
-                                    <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
-                                    <li class="mb-5">Tags: <a href="#" rel="tag">Cloth</a>, <a href="#" rel="tag">MEN</a>, <a href="#" rel="tag">SHOES</a></li>
-                                </ul>
-                            </div>
-                            <!-- Detail Info -->
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-10 m-auto entry-main-content">
-                            <h2 class="section-title style-1 mb-30">Description</h2>
-                            <div class="description mb-50">
-                                <!-- Display dynamic description from the product -->
-                                <p>{{ product.product_description }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <ul class="product-more-infor mt-30">
-                        <li><span>Type Of Packing</span> Bottle</li>
-                        <li><span>Color</span> Green, Pink, Powder Blue, Purple</li>
-                        <li><span>Quantity Per Case</span> 100ml</li>
-                        <li><span>Ethyl Alcohol</span> 70%</li>
-                        <li><span>Piece In One</span> Carton</li>
-                    </ul>
-                    <hr class="wp-block-separator is-style-dots">
-                    <p>Laconic overheard dear woodchuck wow this outrageously taut beaver hey hello far meadowlark imitatively egregiously hugged that yikes minimally unanimous pouted flirtatiously as beaver beheld above forward
-                        energetic across this jeepers beneficently cockily less a the raucously that magic upheld far so the this where crud then below after jeez enchanting drunkenly more much wow callously irrespective limpet.</p>
-                    <h4 class="mt-30">Packaging & Delivery</h4>
-                    <hr class="wp-block-separator is-style-wide">
-                    <p>Less lion goodness that euphemistically robin expeditiously bluebird smugly scratched far while thus cackled sheepishly rigid after due one assenting regarding censorious while occasional or this more crane
-                        went more as this less much amid overhung anathematic because much held one exuberantly sheep goodness so where rat wry well concomitantly.
-                    </p>
-                    <p>Scallop or far crud plain remarkably far by thus far iguana lewd precociously and and less rattlesnake contrary caustic wow this near alas and next and pled the yikes articulate about as less cackled dalmatian
-                        in much less well jeering for the thanks blindly sentimental whimpered less across objectively fanciful grimaced wildly some wow and rose jeepers outgrew lugubrious luridly irrationally attractively
-                        dachshund.
-                    </p>
-                </div>
-                <h3 class="section-title style-1 mb-30">Additional info</h3>
-                <table class="font-md mb-30">
-                    <tbody>
-                        <tr class="stand-up">
-                            <th>Stand Up</th>
-                            <td>
-                                <p>35″L x 24″W x 37-45″H(front to back wheel)</p>
-                            </td>
-                        </tr>
-                        <tr class="folded-wo-wheels">
-                            <th>Folded (w/o wheels)</th>
-                            <td>
-                                <p>32.5″L x 18.5″W x 16.5″H</p>
-                            </td>
-                        </tr>
-                        <tr class="folded-w-wheels">
-                            <th>Folded (w/ wheels)</th>
-                            <td>
-                                <p>32.5″L x 24″W x 18.5″H</p>
-                            </td>
-                        </tr>
-                        <tr class="door-pass-through">
-                            <th>Door Pass Through</th>
-                            <td>
-                                <p>24</p>
-                            </td>
-                        </tr>
-                        <tr class="frame">
-                            <th>Frame</th>
-                            <td>
-                                <p>Aluminum</p>
-                            </td>
-                        </tr>
-                        <tr class="weight-wo-wheels">
-                            <th>Weight (w/o wheels)</th>
-                            <td>
-                                <p>20 LBS</p>
-                            </td>
-                        </tr>
-                        <tr class="weight-capacity">
-                            <th>Weight Capacity</th>
-                            <td>
-                                <p>60 LBS</p>
-                            </td>
-                        </tr>
-                        <tr class="width">
-                            <th>Width</th>
-                            <td>
-                                <p>24″</p>
-                            </td>
-                        </tr>
-                        <tr class="handle-height-ground-to-handle">
-                            <th>Handle height (ground to handle)</th>
-                            <td>
-                                <p>37-45″</p>
-                            </td>
-                        </tr>
-                        <tr class="wheels">
-                            <th>Wheels</th>
-                            <td>
-                                <p>12″ air / wide track slick tread</p>
-                            </td>
-                        </tr>
-                        <tr class="seat-back-height">
-                            <th>Seat back height</th>
-                            <td>
-                                <p>21.5″</p>
-                            </td>
-                        </tr>
-                        <tr class="head-room-inside-canopy">
-                            <th>Head room (inside canopy)</th>
-                            <td>
-                                <p>25″</p>
-                            </td>
-                        </tr>
-                        <tr class="pa_color">
-                            <th>Color</th>
-                            <td>
-                                <p>Black, Blue, Red, White</p>
-                            </td>
-                        </tr>
-                        <tr class="pa_size">
-                            <th>Size</th>
-                            <td>
-                                <p>M, S</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="social-icons single-share">
-                    <ul class="text-grey-5 d-inline-block">
-                        <li><strong class="mr-10">Share this:</strong></li>
-                        <li class="social-facebook"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt=""></a></li>
-                        <li class="social-twitter"> <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt=""></a></li>
-                        <li class="social-instagram"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt=""></a></li>
-                        <li class="social-linkedin"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a></li>
-                    </ul>
-                </div>
-
-                <div class="row mt-60">
-                    <div class="col-12">
-                        <h3 class="section-title style-1 mb-30">Related products</h3>
-                    </div>
-                    <div class="col-12">
-                        <div class="row related-products">
-                            {% for related_product in related_products %}
-                            <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
-                                <div class="card h-100 product-cart-wrap small hover-up">
-                                    <div class="product-img-action-wrap">
-                                        <div class="product-img product-img-zoom">
-                                            <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
-                                                <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
-                                            </a>
-                                        </div>
-                                        <div class="product-badges product-badges-position product-badges-mrg">
-                                            {% if best_offer %}
-                                                <span>{{ best_offer.percentage }}%</span>
-                                            {%endif%}        
-                                        </div>
+                                            
+                                        </ul>
                                     </div>
-                                    <div class="card-body product-content-wrap">
-                                        <h2 class="card-title"><a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a></h2>
-                                        <p class="card-text product-price">
-                                            <span>₹{{ related_product.offer_price }}</span>
-                                            {% if related_product.original_price %}
-                                            <span class="old-price">₹{{ related_product.original_price }}</span>
-                                            {% endif %}
+                                    <!-- Detail Info -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-10 m-auto entry-main-content">
+                                    <h2 class="section-title style-1 mb-30">Description</h2>
+                                    <div class="description mb-50">
+                                        <!-- Display dynamic description from the product -->
+                                        <p>{{ product.product_description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                                        <ul class="product-more-infor mt-30">
+                                            <li><span>Type Of Packing</span> Bottle</li>
+                                            <li><span>Color</span> Green, Pink, Powder Blue, Purple</li>
+                                            <li><span>Quantity Per Case</span> 100ml</li>
+                                            <li><span>Ethyl Alcohol</span> 70%</li>
+                                            <li><span>Piece In One</span> Carton</li>
+                                        </ul>
+                                        <hr class="wp-block-separator is-style-dots">
+                                        <p>Laconic overheard dear woodchuck wow this outrageously taut beaver hey hello far meadowlark imitatively egregiously hugged that yikes minimally unanimous pouted flirtatiously as beaver beheld above forward
+                                            energetic across this jeepers beneficently cockily less a the raucously that magic upheld far so the this where crud then below after jeez enchanting drunkenly more much wow callously irrespective limpet.</p>
+                                        <h4 class="mt-30">Packaging & Delivery</h4>
+                                        <hr class="wp-block-separator is-style-wide">
+                                        <p>Less lion goodness that euphemistically robin expeditiously bluebird smugly scratched far while thus cackled sheepishly rigid after due one assenting regarding censorious while occasional or this more crane
+                                            went more as this less much amid overhung anathematic because much held one exuberantly sheep goodness so where rat wry well concomitantly.
                                         </p>
-                                        <a href="{% url 'add_wishlist' related_product.id %}" class="btn btn-outline-danger btn-sm">
-                                            <i class="fi-rs-heart"></i> Add to Wishlist
-                                        </a>
+                                        <p>Scallop or far crud plain remarkably far by thus far iguana lewd precociously and and less rattlesnake contrary caustic wow this near alas and next and pled the yikes articulate about as less cackled dalmatian
+                                            in much less well jeering for the thanks blindly sentimental whimpered less across objectively fanciful grimaced wildly some wow and rose jeepers outgrew lugubrious luridly irrationally attractively
+                                            dachshund.
+                                        </p>
                                     </div>
-                                </div>
-                            </div>
-                            {% endfor %}
+                                    <h3 class="section-title style-1 mb-30">Additional info</h3>
+                                    <table class="font-md mb-30">
+                                        <tbody>
+                                            <tr class="stand-up">
+                                                <th>Stand Up</th>
+                                                <td>
+                                                    <p>35″L x 24″W x 37-45″H(front to back wheel)</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="folded-wo-wheels">
+                                                <th>Folded (w/o wheels)</th>
+                                                <td>
+                                                    <p>32.5″L x 18.5″W x 16.5″H</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="folded-w-wheels">
+                                                <th>Folded (w/ wheels)</th>
+                                                <td>
+                                                    <p>32.5″L x 24″W x 18.5″H</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="door-pass-through">
+                                                <th>Door Pass Through</th>
+                                                <td>
+                                                    <p>24</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="frame">
+                                                <th>Frame</th>
+                                                <td>
+                                                    <p>Aluminum</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="weight-wo-wheels">
+                                                <th>Weight (w/o wheels)</th>
+                                                <td>
+                                                    <p>20 LBS</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="weight-capacity">
+                                                <th>Weight Capacity</th>
+                                                <td>
+                                                    <p>60 LBS</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="width">
+                                                <th>Width</th>
+                                                <td>
+                                                    <p>24″</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="handle-height-ground-to-handle">
+                                                <th>Handle height (ground to handle)</th>
+                                                <td>
+                                                    <p>37-45″</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="wheels">
+                                                <th>Wheels</th>
+                                                <td>
+                                                    <p>12″ air / wide track slick tread</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="seat-back-height">
+                                                <th>Seat back height</th>
+                                                <td>
+                                                    <p>21.5″</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="head-room-inside-canopy">
+                                                <th>Head room (inside canopy)</th>
+                                                <td>
+                                                    <p>25″</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="pa_color">
+                                                <th>Color</th>
+                                                <td>
+                                                    <p>Black, Blue, Red, White</p>
+                                                </td>
+                                            </tr>
+                                            <tr class="pa_size">
+                                                <th>Size</th>
+                                                <td>
+                                                    <p>M, S</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="social-icons single-share">
+                                        <ul class="text-grey-5 d-inline-block">
+                                            <li><strong class="mr-10">Share this:</strong></li>
+                                            <li class="social-facebook"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt=""></a></li>
+                                            <li class="social-twitter"> <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt=""></a></li>
+                                            <li class="social-instagram"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt=""></a></li>
+                                            <li class="social-linkedin"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a></li>
+                                        </ul>
+                                    </div>
+                                   
+<div class="row mt-60">
+    <div class="col-12">
+        <h3 class="section-title style-1 mb-30">Related products</h3>
+    </div>
+    <div class="col-12">
+        <div class="row related-products">
+            {% for related_product in related_products %}
+            <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
+                <div class="card h-100 product-cart-wrap small hover-up">
+                    <div class="product-img-action-wrap">
+                        <div class="product-img product-img-zoom">
+                            <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
+                                <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
+                            </a>
+                           
                         </div>
+                        <div class="product-badges product-badges-position product-badges-mrg">
+                            {% if best_offer %}
+                                <span>{{ best_offer.percentage }}
+                            {%endif%}        
+                        </div>
+                    </div>
+                    <div class="card-body product-content-wrap">
+                        <h2 class="card-title"><a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a></h2>
+                        <p class="card-text product-price">
+                            <span>₹{{ related_product.offer_price }}</span>
+                            {% if related_product.original_price %}
+                            <span class="old-price">₹{{ product.original_price }}</span>
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'add_wishlist' related_product.id %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fi-rs-heart"></i> Add to Wishlist
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="banner-img banner-big wow fadeIn f-none animated mt-50">
-                <img class="border-radius-10" src="{% static 'user/assets/imgs/banner/banner-4.png' %}" alt="">
-                <div class="banner-text">
-                    <h4 class="mb-15 mt-40">Repair Services</h4>
-                    <h2 class="fw-600 mb-20">We're an Apple <br>Authorised Service Provider</h2>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
+</div>
+</div>
+<div class="banner-img banner-big wow fadeIn f-none animated mt-50">
+    <img class="border-radius-10" src="{% static 'user/assets/imgs/banner/banner-4.png' %}" alt="">
+    <div class="banner-text">
+        <h4 class="mb-15 mt-40">Repair Services</h4>
+        <h2 class="fw-600 mb-20">We're an Apple <br>Authorised Service Provider</h2>
+    </div>
+</div>
+</div>
+</div>
+</div>
 </section>
-
-<script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS" crossorigin="anonymous"></script>
-<script>
-$(document).ready(function() {
-    let currentQuantity = 1;
-    let maxQuantity = 0;
-    let selectedSize = null;
-    let selectedSizeName = '';
-
-    updateUI();
-
-    // Handle size selection
-    $('.size-radio').on('change', function() {
-        if (this.checked) {
-            selectedSize = $(this).val();
-            selectedSizeName = $(this).data('size-name');
-            maxQuantity = parseInt($(this).data('quantity'));
-            currentQuantity = 1;
-
-            $('#selected-size-input').val(selectedSize);
-            $('#quantity-input').val(currentQuantity);
-
-            clearValidationMessages();
-            showValidationMessage('success', `Size ${selectedSizeName} selected successfully!`);
-
-            updateUI();
-        }
-    });
-
-    // Quantity input change
-    $('#qty-display').on('input', function() {
-        if (!selectedSize) {
-            showValidationMessage('warning', 'Please select a size first!');
-            $(this).val(currentQuantity);
-            return;
-        }
-
-        let value = parseInt($(this).val()) || 1;
-        value = Math.max(1, Math.min(value, maxQuantity));
-
-        if (value > maxQuantity) {
-            showValidationMessage('warning', `Max available quantity: ${maxQuantity}`);
-        } else if (value < 1) {
-            showValidationMessage('info', 'Minimum quantity is 1');
-        }
-
-        currentQuantity = value;
-        $('#qty-display').val(currentQuantity);
-        $('#quantity-input').val(currentQuantity);
-        updateUI();
-    });
-
-    // Quantity buttons
-    $('#qty-increase').on('click', function(e) {
-        e.preventDefault();
-        if (!selectedSize) return showValidationMessage('warning', 'Select a size first!');
-        if (currentQuantity < maxQuantity) {
-            currentQuantity++;
-            $('#qty-display, #quantity-input').val(currentQuantity);
-            updateUI();
-        } else {
-            showValidationMessage('warning', `Max quantity: ${maxQuantity}`);
-        }
-    });
-
-    $('#qty-decrease').on('click', function(e) {
-        e.preventDefault();
-        if (!selectedSize) return showValidationMessage('warning', 'Select a size first!');
-        if (currentQuantity > 1) {
-            currentQuantity--;
-            $('#qty-display, #quantity-input').val(currentQuantity);
-            updateUI();
-        } else {
-            showValidationMessage('info', 'Minimum quantity is 1');
-        }
-    });
-
-    $('#add-to-cart-form').on('submit', function(e) {
-        if (!selectedSize || currentQuantity < 1 || currentQuantity > maxQuantity) {
-            e.preventDefault();
-            showValidationMessage('error', 'Please select a valid size and quantity before adding to cart.');
-            scrollToSizes();
-            return false;
-        }
-
-        const btn = $('#add-to-cart-btn');
-        btn.prop('disabled', true)
-           .removeClass('success')
-           .addClass('loading');
-        btn.find('.btn-text').text('Adding to Cart...');
-        btn.find('.btn-icon i').removeClass('fi-rs-shopping-cart').addClass('fi-rs-loading');
-
-        showValidationMessage('info', 'Adding item to your cart...');
-        return true;
-    });
-
-    function updateUI() {
-        if (selectedSize) {
-            $('#selected-size-name').text(selectedSizeName);
-            $('#available-stock').text(maxQuantity);
-            $('#selected-size-info').show();
-        } else {
-            $('#selected-size-info').hide();
-        }
-
-        $('#qty-decrease').prop('disabled', currentQuantity <= 1).toggleClass('disabled', currentQuantity <= 1);
-        $('#qty-increase').prop('disabled', currentQuantity >= maxQuantity).toggleClass('disabled', currentQuantity >= maxQuantity);
-
-        const btn = $('#add-to-cart-btn');
-        if (!selectedSize) {
-            btn.prop('disabled', true)
-               .addClass('disabled')
-               .removeClass('success loading');
-            btn.find('.btn-text').text('Select Size First');
-            btn.find('.btn-icon i').removeClass('fi-rs-loading').addClass('fi-rs-shopping-cart');
-        } else {
-            btn.prop('disabled', false)
-               .removeClass('disabled')
-               .addClass('success');
-            btn.find('.btn-text').text(`Add ${currentQuantity} to Cart`);
-            btn.find('.btn-icon i').removeClass('fi-rs-loading').addClass('fi-rs-shopping-cart');
-        }
-    }
-
-    function showValidationMessage(type, message) {
-        const icons = {
-            success: 'fi-rs-check-circle',
-            error: 'fi-rs-cross-circle',
-            warning: 'fi-rs-exclamation-triangle',
-            info: 'fi-rs-info'
-        };
-
-        const alertClass = `alert-${type === 'error' ? 'danger' : type}`;
-        const messageHtml = `
-            <div class="validation-message alert ${alertClass} alert-dismissible fade show" role="alert">
-                <i class="${icons[type]} me-2"></i>
-                <span>${message}</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-
-        const container = $('#validation-messages');
-        container.append(messageHtml);
-
-        if (type !== 'error') {
-            setTimeout(() => {
-                container.find('.validation-message').last().fadeOut(300, function() {
-                    $(this).remove();
-                });
-            }, 4000);
-        }
-
-        $('html, body').animate({
-            scrollTop: container.offset().top - 100
-        }, 300);
-    }
-
-    function clearValidationMessages() {
-        $('#validation-messages').fadeOut(200, function() {
-            $(this).empty().show();
-        });
-    }
-
-    function scrollToSizes() {
-        $('html, body').animate({
-            scrollTop: $('.size-selection-section').offset().top - 100
-        }, 500);
-    }
-
-    $('.size-option:not(.out-of-stock)').hover(
-        function() { $(this).addClass('hover-effect'); },
-        function() { $(this).removeClass('hover-effect'); }
-    );
-
-    $('.size-option.out-of-stock').on('click', function() {
-        showValidationMessage('warning', 'This size is currently out of stock');
-    });
-});
-</script>
-
-
-<style>
-/* Validation Message Styling */
-.validation-message {
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    animation: slideInDown 0.3s ease-out;
-}
-
-@keyframes slideInDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Size Selection */
-.size-selection-section {
-    background: #f8f9fa;
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid #e9ecef;
-}
-
-.selection-header h6 {
-    font-weight: 600;
-    font-size: 16px;
-    color: #2c3e50;
-}
-
-.size-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.size-option-wrapper {
-    position: relative;
-}
-
-.size-radio {
-    display: none;
-}
-
-.size-option {
-    padding: 16px 20px;
-    border: 2px solid #dee2e6;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    min-width: 120px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-
-.size-option:hover:not(.out-of-stock),
-.size-option.hover-effect {
-    border-color:rgb(185, 214, 229);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 183, 126, 0.2);
-}
-
-.size-radio:checked + .size-option {
-    background: #9fd3c7; 
-    color: while;
-    border-color:rgb(91, 143, 118);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 183, 126, 0.3);
-}
-
-.size-option.out-of-stock {
-    background: #f8f9fa;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.size-name {
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.stock-status {
-    font-size: 12px;
-}
-
-.stock-status.in-stock { color: #28a745; }
-.stock-status.out-of-stock { color: #dc3545; }
-
-/* Quantity & Add to Cart */
-.quantity-cart-section {
-    background: white;
-    padding: 24px;
-    border: 1px solid #e9ecef;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.quantity-controls {
-    display: flex;
-    align-items: center;
-    border: 2px solid #dee2e6;
-    border-radius: 12px;
-    background: white;
-    overflow: hidden;
-}
-
-.qty-btn {
-    background: none;
-    border: none;
-    padding: 12px 16px;
-    cursor: pointer;
-    color: #6c757d;
-    font-size: 16px;
-    transition: all 0.2s ease;
-}
-
-.qty-btn:hover:not(:disabled) {
-    background: #3BB77E;
-    color: white;
-}
-
-.qty-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.qty-input {
-    border: none;
-    padding: 12px 16px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 16px;
-    width: 80px;
-    background: #f8f9fa;
-    color: #2c3e50;
-    outline: none;
-}
-
-.add-to-cart-btn {
-    width: 100%;
-    padding: 16px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 16px;
-    border: none;
-    text-transform: uppercase;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-}
-
-.add-to-cart-btn.success {
-    background: linear-gradient(135deg, #3BB77E, #28a745);
-    color: white;
-}
-
-.add-to-cart-btn.disabled {
-    background: #dee2e6;
-    color: #6c757d;
-    cursor: not-allowed;
-}
-
-.add-to-cart-btn.loading {
-    background: #ffc107;
-    color: #343a40;
-}
-</style>
-{% endblock %}
+</main>
+{% endblock content %}
