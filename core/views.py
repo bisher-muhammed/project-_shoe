@@ -264,7 +264,7 @@ def placeorder(request):
 
     if not cart_items.exists():
         messages.warning(request, "Your cart is empty.")
-        return redirect('product_list')
+        return redirect('home')
 
     total = calculate_cart_total(cart_items)
     grand_total = total
