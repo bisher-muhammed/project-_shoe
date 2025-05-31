@@ -151,139 +151,147 @@
                                     </div>
                                 </form>
 
-                        <script>
-                    $(document).ready(function () {
-                        var addToCartBtn = $('#add-to-cart-btn');
-                        var qtyVal = $('.qty-val');
-                        var quantityInput = $('#quantity-input');
-                        
-                        // Store stock quantities for each size
-                        var sizeStock = {};
-                        {% for size_info in sizes_with_quantities %}
-                        sizeStock['{{ size_info.size.id }}'] = {{ size_info.quantity }};
-                        {% endfor %}
+                                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-                        // Get available stock for selected size
-                        function getSelectedSizeStock() {
-                            var selectedSize = $('.size-checkbox:checked').val();
-                            return selectedSize ? sizeStock[selectedSize] : 0;
-                        }
+                                    <script>
+                                    $(document).ready(function () {
+                                        const addToCartBtn = $('#add-to-cart-btn');
+                                        const qtyVal = $('.qty-val');
+                                        const quantityInput = $('#quantity-input');
+                                        
+                                        // Store stock quantities for each size
+                                        const sizeStock = {};
+                                        {% for size_info in sizes_with_quantities %}
+                                        sizeStock['{{ size_info.size.id }}'] = {{ size_info.quantity }};
+                                        {% endfor %}
 
-                        // When size is selected
-                        $('.size-checkbox').on('change', function () {
-                            if ($(this).is(':checked')) {
-                                var availableStock = getSelectedSizeStock();
-                                if (availableStock > 0) {
-                                    updateQuantityAndButton(1);
-                                    addToCartBtn.prop('disabled', false)
-                                                .html('<i class="fi-rs-shopping-cart mr-5"></i>Add to Cart');
-                                    updateQuantityControls();
-                                }
-                            }
-                        });
+                                        // Get available stock for selected size
+                                        function getSelectedSizeStock() {
+                                            const selectedSize = $('.size-checkbox:checked').val();
+                                            return selectedSize ? sizeStock[selectedSize] : 0;
+                                        }
 
-                        // Quantity controls with validation
-                        $('.qty-up').on('click', function (e) {
-                            e.preventDefault();
-                            if ($('.size-checkbox:checked').length > 0) {
-                                var currentQty = parseInt(qtyVal.text());
-                                var availableStock = getSelectedSizeStock();
-                                
-                                if (currentQty < availableStock) {
-                                    updateQuantityAndButton(currentQty + 1);
-                                    updateQuantityControls();
-                                } else {
-                                    showStockAlert('Only ' + availableStock + ' items available in stock!');
-                                }
-                            }
-                        });
+                                        // When size is selected
+                                        $('.size-checkbox').on('change', function () {
+                                            if ($(this).is(':checked')) {
+                                                const availableStock = getSelectedSizeStock();
+                                                if (availableStock > 0) {
+                                                    updateQuantityAndButton(1);
+                                                    addToCartBtn.prop('disabled', false)
+                                                               .html('<i class="fi-rs-shopping-cart mr-5"></i>Add to Cart');
+                                                    updateQuantityControls();
+                                                }
+                                            }
+                                        });
 
-                        $('.qty-down').on('click', function (e) {
-                            e.preventDefault();
-                            if ($('.size-checkbox:checked').length > 0) {
-                                var currentQty = parseInt(qtyVal.text());
-                                if (currentQty > 1) {
-                                    updateQuantityAndButton(currentQty - 1);
-                                    updateQuantityControls();
-                                }
-                            }
-                        });
+                                        // Quantity controls with validation
+                                        $('.qty-up').on('click', function(e) {
+                                            e.preventDefault();
+                                            if ($('.size-checkbox:checked').length > 0) {
+                                                const currentQty = parseInt(qtyVal.text());
+                                                const availableStock = getSelectedSizeStock();
+                                                
+                                                if (currentQty < availableStock) {
+                                                    updateQuantityAndButton(currentQty + 1);
+                                                    updateQuantityControls();
+                                                } else {
+                                                    // Show stock limit message
+                                                    showStockAlert(`Only ${availableStock} items available in stock!`);
+                                                }
+                                            }
+                                        });
 
-                        // Update quantity controls appearance based on limits
-                        function updateQuantityControls() {
-                            var currentQty = parseInt(qtyVal.text());
-                            var availableStock = getSelectedSizeStock();
-                            
-                            // Update down button
-                            if (currentQty <= 1) {
-                                $('.qty-down').addClass('disabled').css('opacity', '0.5');
-                            } else {
-                                $('.qty-down').removeClass('disabled').css('opacity', '1');
-                            }
-                            
-                            // Update up button
-                            if (currentQty >= availableStock) {
-                                $('.qty-up').addClass('disabled').css('opacity', '0.5');
-                            } else {
-                                $('.qty-up').removeClass('disabled').css('opacity', '1');
-                            }
+                                        $('.qty-down').on('click', function(e) {
+                                            e.preventDefault();
+                                            if ($('.size-checkbox:checked').length > 0) {
+                                                const currentQty = parseInt(qtyVal.text());
+                                                if (currentQty > 1) {
+                                                    updateQuantityAndButton(currentQty - 1);
+                                                    updateQuantityControls();
+                                                }
+                                            }
+                                        });
 
-                            // Update add to cart button with stock info
-                            if (currentQty > 0 && currentQty <= availableStock) {
-                                addToCartBtn.html('<i class="fi-rs-shopping-cart mr-5"></i>Add ' + currentQty + ' to Cart');
-                            }
-                        }
+                                        // Update quantity controls appearance based on limits
+                                        function updateQuantityControls() {
+                                            const currentQty = parseInt(qtyVal.text());
+                                            const availableStock = getSelectedSizeStock();
+                                            
+                                            // Update down button
+                                            if (currentQty <= 1) {
+                                                $('.qty-down').addClass('disabled').css('opacity', '0.5');
+                                            } else {
+                                                $('.qty-down').removeClass('disabled').css('opacity', '1');
+                                            }
+                                            
+                                            // Update up button
+                                            if (currentQty >= availableStock) {
+                                                $('.qty-up').addClass('disabled').css('opacity', '0.5');
+                                            } else {
+                                                $('.qty-up').removeClass('disabled').css('opacity', '1');
+                                            }
+                                            
+                                            // Update add to cart button with stock info
+                                            if (currentQty > 0 && currentQty <= availableStock) {
+                                                addToCartBtn.html(`<i class="fi-rs-shopping-cart mr-5"></i>Add ${currentQty} to Cart`);
+                                            }
+                                        }
 
-                        function updateQuantityAndButton(quantity) {
-                            qtyVal.text(quantity);
-                            quantityInput.val(quantity);
-                        }
+                                        function updateQuantityAndButton(quantity) {
+                                            qtyVal.text(quantity);
+                                            quantityInput.val(quantity);
+                                        }
 
-                        // Show stock alert message
-                        function showStockAlert(message) {
-                            $('.stock-alert').remove();
-                            var alertHtml = ''
-                                + '<div class="alert alert-warning alert-dismissible fade show stock-alert" role="alert">'
-                                + '<i class="fi-rs-exclamation mr-2"></i>' + message
-                                + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>'
-                                + '</div>';
-                            $('.detail-extralink').before(alertHtml);
+                                        // Show stock alert message
+                                        function showStockAlert(message) {
+                                            // Remove existing alerts
+                                            $('.stock-alert').remove();
+                                            
+                                            // Create and show new alert
+                                            const alertHtml = `
+                                                <div class="alert alert-warning alert-dismissible fade show stock-alert" role="alert">
+                                                    <i class="fi-rs-exclamation mr-2"></i>${message}
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                </div>
+                                            `;
+                                            $('.detail-extralink').before(alertHtml);
+                                            
+                                            // Auto remove after 3 seconds
+                                            setTimeout(() => {
+                                                $('.stock-alert').fadeOut();
+                                            }, 3000);
+                                        }
 
-                            // Auto remove after 3 seconds
-                            setTimeout(function () {
-                                $('.stock-alert').fadeOut();
-                            }, 3000);
-                        }
+                                        // Form submission with enhanced validation
+                                        $('form').on('submit', function(e) {
+                                            if (!$('.size-checkbox:checked').length) {
+                                                e.preventDefault();
+                                                showStockAlert('Please select a size before adding to cart.');
+                                                return false;
+                                            }
+                                            
+                                            const currentQty = parseInt(quantityInput.val());
+                                            const availableStock = getSelectedSizeStock();
+                                            
+                                            if (currentQty > availableStock) {
+                                                e.preventDefault();
+                                                showStockAlert(`Cannot add ${currentQty} items. Only ${availableStock} items available in stock!`);
+                                                return false;
+                                            }
+                                            
+                                            if (currentQty < 1) {
+                                                e.preventDefault();
+                                                showStockAlert('Quantity must be at least 1.');
+                                                return false;
+                                            }
+                                        });
 
-                        // Form submission with enhanced validation
-                        $('form').on('submit', function (e) {
-                            if (!$('.size-checkbox:checked').length) {
-                                e.preventDefault();
-                                showStockAlert('Please select a size before adding to cart.');
-                                return false;
-                            }
+                                        // Initialize
+                                        updateQuantityAndButton(0);
+                                        updateQuantityControls();
+                                    });
+                                </script>
 
-                            var currentQty = parseInt(quantityInput.val());
-                            var availableStock = getSelectedSizeStock();
-
-                            if (currentQty > availableStock) {
-                                e.preventDefault();
-                                showStockAlert('Cannot add ' + currentQty + ' items. Only ' + availableStock + ' items available in stock!');
-                                return false;
-                            }
-
-                            if (currentQty < 1) {
-                                e.preventDefault();
-                                showStockAlert('Quantity must be at least 1.');
-                                return false;
-                            }
-                        });
-
-                        // Initialize
-                        updateQuantityAndButton(0);
-                        updateQuantityControls();
-                    });
-                </script>
 
 
                                 <!-- Product Meta Information -->
