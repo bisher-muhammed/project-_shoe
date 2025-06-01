@@ -37,14 +37,9 @@
                         <div class="col-md-6 col-sm-12 col-xs-12">
                             <div class="detail-info">
                                 <h2 class="title-detail">{{ product.product_name }}</h2>
-                                <div class="product-detail-rating">
                                     <div class="pro-details-brand">
-                                        <span> CATEGORY: <a href="shop-grid-right.html">{{ product.category }}</a></span>
+                                    <span> CATEGORY: {{ product.category }}</a></span>
                                     </div>
-                                    <div class="product-rate-cover text-end">
-                                        <div class="product-rate d-inline-block">
-                                            <div class="product-rating" style="width:90%"></div>
-                                </div>
                                 <div class="clearfix product-price-cover">
                                     <div class="product-price primary-color float-left">
                                         <span class="price-label">Price:</span>
@@ -74,95 +69,716 @@
                                         <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
                                     </ul>
                                 </div>
-                               <form method="post" action="{% url 'add_to_cart' product.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="quantity" id="quantity-input" value="1">
+ <!-- Enhanced Product Form - Django Template Version -->
 
-                                    <div class="mb-3">
-                                        <strong>Size: </strong>
-                                        <div class="btn-group" role="group">
-                                            {% for size_info in sizes_with_quantities %}
-                                                <input type="radio"
-                                                    class="btn-check size-checkbox"
-                                                    name="size"
-                                                    id="size-{{ size_info.size.id }}"
-                                                    value="{{ size_info.size.id }}"
-                                                    autocomplete="off"
-                                                    onclick="displayAddtoCartButton()"
-                                                    {% if size_info.quantity == 0 %}disabled{% endif %}>
+<style>
+:root {
+    --primary-color: #007bff;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --light-gray: #f8f9fa;
+    --border-radius: 12px;
+    --box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-                                                <label class="btn btn-outline-secondary"
-                                                    for="size-{{ size_info.size.id }}"
-                                                    style="color: {% if size_info.quantity == 0 %}red{% else %}inherit{% endif %}">
-                                                    {{ size_info.size.name }} — 
-                                                    {% if size_info.quantity == 0 %}
-                                                        Out of Stock
-                                                    {% else %}
-                                                        {{ size_info.quantity }} in stock
-                                                    {% endif %}
-                                                </label>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
+.product-form-container {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2rem;
+    transition: var(--transition);
+}
 
-                                    {% for message in messages %}
-                                        <p>{{ message }}</p>
-                                    {% endfor %}
+.product-form-container:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
 
-                                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+.size-selection {
+    margin-bottom: 1.5rem;
+}
 
-                                    <div class="detail-extralink">
-                                        <div class="detail-qty border radius">
-                                            <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
-                                            <span class="qty-val">1</span>
-                                            <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
-                                        </div>
+.size-selection label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.75rem;
+    display: block;
+}
 
-                                        <div class="product-extra-link2">
-                                            <button type="submit" class="button button-add-to-cart">Add to cart</button>
-                                        </div>
-                                    </div>
-                                </form>
+.size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
 
-                                <!-- Optional jQuery script for syncing quantity -->
-                                <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-                                        integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS"
-                                        crossorigin="anonymous"></script>
+.size-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+}
 
-                                <script>
-                                    $(document).ready(function () {
-                                        $('.size-checkbox').on('change', function () {
-                                            updateQuantity();
-                                        });
+.size-option input[type="radio"] {
+    display: none;
+}
 
-                                        function updateQuantity() {
-                                            const selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
-                                            $('.qty-val').text(selectedSize);
-                                            $('#quantity-input').val(selectedSize);
-                                        }
+.size-option .size-btn {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
 
-                                        updateQuantity();
-                                    });
-                                </script>
+.size-option .size-btn:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
 
-                                <!-- Product meta -->
-                                <ul class="product-meta font-xs color-grey mt-50">
-                                    <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
-                                    <li class="mb-5">Tags:
-                                        <a href="#" rel="tag">Cloth</a>,
-                                        <a href="#" rel="tag">MEN</a>,
-                                        <a href="#" rel="tag">SHOES</a>
-                                    </li>
-                                </ul>
+.size-option input[type="radio"]:checked + .size-btn {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg,rgb(121, 129, 138) 0%,rgb(139, 157, 176) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+}
 
-                                        
-                                        </div>
-                                            
-                                        </ul>
-                                    </div>
-                                    <!-- Detail Info -->
-                                </div>
-                            </div>
+.size-option input[type="radio"]:disabled + .size-btn {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+.size-option input[type="radio"]:disabled + .size-btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.size-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.stock-info {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.stock-available {
+    color: var(--success-color);
+}
+
+.stock-out {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.stock-low {
+    color: var(--warning-color);
+}
+
+.quantity-section {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 1px solid #e9ecef;
+    display: none;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.quantity-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.qty-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.qty-btn:hover:not(:disabled) {
+    background: var(--light-gray);
+}
+
+.qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.qty-display {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+    background: white;
+    border-left: 1px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+}
+
+.stock-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.stock-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.stock-dot.available {
+    background: var(--success-color);
+}
+
+.stock-dot.low {
+    background: var(--warning-color);
+}
+
+.stock-dot.out {
+    background: var(--danger-color);
+}
+
+.validation-message {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    display: none;
+    transition: var(--transition);
+}
+
+.validation-message.show {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+.validation-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.validation-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.add-to-cart-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.add-to-cart-btn {
+    background: rgba(40,167,69,0.3)
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.add-to-cart-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40,167,69,0.3);
+}
+
+.add-to-cart-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-form-container {
+        padding: 1rem;
+    }
+
+    .size-options {
+        flex-direction: column;
+    }
+
+    .size-option {
+        min-width: 100%;
+    }
+
+    .quantity-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+
+<div class="product-form-container">
+    <form method="post" action="{% url 'add_to_cart' product.id %}" id="productForm">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" id="quantity-input" value="0">
+
+        <!-- Size Selection -->
+        <div class="size-selection">
+            <label><i class="fi-rs-ruler"></i> Choose Size:</label>
+            <div class="size-options" id="sizeOptions">
+                {% for size_info in sizes_with_quantities %}
+                    <div class="size-option">
+                        <input type="radio" 
+                               class="size-checkbox" 
+                               name="size" 
+                               id="size-{{ size_info.size.id }}" 
+                               value="{{ size_info.size.id }}"
+                               data-stock="{{ size_info.quantity }}"
+                               {% if size_info.quantity == 0 %}disabled{% endif %}>
+                        
+                        <label class="size-btn" for="size-{{ size_info.size.id }}">
+                            <span class="size-name">{{ size_info.size.name }}</span>
+                            <span class="stock-info 
+                                {% if size_info.quantity == 0 %}stock-out
+                                {% elif size_info.quantity <= 3 %}stock-low
+                                {% else %}stock-available{% endif %}">
+                                {% if size_info.quantity == 0 %}
+                                    Out of Stock
+                                {% elif size_info.quantity <= 3 %}
+                                    Only {{ size_info.quantity }} left
+                                {% else %}
+                                    {{ size_info.quantity }} in stock
+                                {% endif %}
+                            </span>
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Validation Messages -->
+        <div class="validation-message" id="validationMessage"></div>
+
+        <!-- Django Messages -->
+        {% for message in messages %}
+            <div class="validation-message {{ message.tags }} show">
+                <i class="fi-rs-info"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Quantity Selection -->
+        <div class="quantity-section" id="quantitySection">
+            <div class="quantity-label"><i class="fi-rs-shopping-bag"></i> Quantity:</div>
+            <div class="quantity-controls">
+                <div class="qty-control">
+                    <button type="button" class="qty-btn" id="qty-down" disabled>
+                        <i class="fi-rs-angle-small-down"></i>
+                    </button>
+                    <span class="qty-display" id="qty-display">0</span>
+                    <button type="button" class="qty-btn" id="qty-up" disabled>
+                        <i class="fi-rs-angle-small-up"></i>
+                    </button>
+                </div>
+                <div class="stock-indicator" id="stockIndicator">
+                    <span class="stock-dot"></span>
+                    <span>Select a size to see availability</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add to Cart Section -->
+        <div class="add-to-cart-section">
+            <button type="submit" class="add-to-cart-btn" id="addToCartBtn" disabled>
+                <i class="fi-rs-shopping-cart"></i>
+                <span>Add to Cart</span>
+                <div class="loading-spinner" id="loadingSpinner"></div>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Product meta -->
+<ul class="product-meta font-xs color-grey mt-50">
+    <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
+    <li class="mb-5">Tags:
+        <a href="#" rel="tag">Cloth</a>,
+        <a href="#" rel="tag">MEN</a>,
+        <a href="#" rel="tag">SHOES</a>
+    </li>
+</ul>
+
+<!-- Enhanced jQuery Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" 
+        integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS" 
+        crossorigin="anonymous"></script>
+
+                    <script>
+                    $(document).ready(function() {
+                        let selectedStock = 0;
+                        let currentQuantity = 0;
+                        let maxQuantity = 10; // Maximum quantity per order
+                        
+                        // Size selection handler
+                        $('.size-checkbox').on('change', function() {
+                            if (this.checked) {
+                                selectedStock = parseInt($(this).data('stock'));
+                                updateQuantitySection();
+                                resetQuantity();
+                            }
+                        });
+
+                        // Quantity control handlers
+                        $('#qty-up').on('click', function() {
+                            const maxAllowed = Math.min(selectedStock, maxQuantity);
+                            if (currentQuantity < maxAllowed) {
+                                currentQuantity++;
+                                updateQuantityDisplay();
+                                validateQuantity();
+                            } else {
+                                if (selectedStock < maxQuantity) {
+                                    showErrorMessage(`Only ${selectedStock} items available in stock.`);
+                                } else {
+                                    showErrorMessage(`Maximum ${maxQuantity} items allowed per order.`);
+                                }
+                            }
+                        });
+
+                        $('#qty-down').on('click', function() {
+                            if (currentQuantity > 1) {
+                                currentQuantity--;
+                                updateQuantityDisplay();
+                                validateQuantity();
+                            }
+                        });
+
+                        // Direct quantity input (if you want to add an input field)
+                        $(document).on('input', '#qty-input', function() {
+                            const value = parseInt(this.value) || 0;
+                            const maxAllowed = Math.min(selectedStock, maxQuantity);
+                            
+                            if (value > maxAllowed) {
+                                this.value = maxAllowed;
+                                currentQuantity = maxAllowed;
+                                showErrorMessage(`Maximum ${maxAllowed} items allowed.`);
+                            } else if (value < 1) {
+                                this.value = 1;
+                                currentQuantity = 1;
+                            } else {
+                                currentQuantity = value;
+                            }
+                            
+                            updateQuantityDisplay();
+                            validateQuantity();
+                        });
+
+                        // Form validation and submission
+                        $('#productForm').on('submit', function(e) {
+                            if (!validateForm()) {
+                                e.preventDefault();
+                                return false;
+                            }
+                            
+                            showLoadingState();
+                            
+                            // Optional: Add additional client-side validation here
+                            const formData = new FormData(this);
+                            
+                            // You can uncomment this for AJAX submission
+                            /*
+                            e.preventDefault();
+                            
+                            $.ajax({
+                                url: $(this).attr('action'),
+                                method: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function(response) {
+                                    hideLoadingState();
+                                    showSuccessMessage('Product added to cart successfully!');
+                                    // Optional: Update cart count, redirect, etc.
+                                },
+                                error: function(xhr, status, error) {
+                                    hideLoadingState();
+                                    showErrorMessage('Failed to add product to cart. Please try again.');
+                                }
+                            });
+                            */
+                        });
+
+                        function updateQuantitySection() {
+                            const $quantitySection = $('#quantitySection');
+                            
+                            if (selectedStock > 0) {
+                                $quantitySection.show();
+                                updateStockIndicator();
+                                enableQuantityControls();
+                            } else {
+                                $quantitySection.hide();
+                                disableQuantityControls();
+                                showErrorMessage('Selected size is out of stock!');
+                            }
+                        }
+
+                        function updateStockIndicator() {
+                            const $stockIndicator = $('#stockIndicator');
+                            const $dot = $stockIndicator.find('.stock-dot');
+                            const $text = $stockIndicator.find('span:last-child');
+                            
+                            $dot.removeClass('available low out');
+                            
+                            if (selectedStock === 0) {
+                                $dot.addClass('out');
+                                $text.text('Out of stock');
+                            } else if (selectedStock <= 3) {
+                                $dot.addClass('low');
+                                $text.text(`Only ${selectedStock} left in stock`);
+                            } else {
+                                $dot.addClass('available');
+                                $text.text(`${selectedStock} available`);
+                            }
+                        }
+
+                        function resetQuantity() {
+                            currentQuantity = 1;
+                            updateQuantityDisplay();
+                        }
+
+                        function updateQuantityDisplay() {
+                            $('#qty-display').text(currentQuantity);
+                            $('#quantity-input').val(currentQuantity);
+                            
+                            // Update button states
+                            $('#qty-down').prop('disabled', currentQuantity <= 1);
+                            $('#qty-up').prop('disabled', currentQuantity >= Math.min(selectedStock, maxQuantity));
+                        }
+
+                        function enableQuantityControls() {
+                            $('#qty-up, #qty-down').prop('disabled', false);
+                            $('#addToCartBtn').prop('disabled', false);
+                            updateQuantityDisplay();
+                        }
+
+                        function disableQuantityControls() {
+                            $('#qty-up, #qty-down').prop('disabled', true);
+                            $('#addToCartBtn').prop('disabled', true);
+                        }
+
+                        function validateQuantity() {
+                            const maxAllowed = Math.min(selectedStock, maxQuantity);
+                            
+                            if (currentQuantity > maxAllowed) {
+                                currentQuantity = maxAllowed;
+                                updateQuantityDisplay();
+                                showErrorMessage(`Quantity adjusted to maximum available: ${maxAllowed}`);
+                            }
+                            
+                            if (currentQuantity < 1) {
+                                currentQuantity = 1;
+                                updateQuantityDisplay();
+                            }
+                        }
+
+                        function validateForm() {
+                            const selectedSize = $('.size-checkbox:checked').length;
+                            
+                            if (selectedSize === 0) {
+                                showErrorMessage('Please select a size before adding to cart.');
+                                scrollToError();
+                                return false;
+                            }
+                            
+                            if (currentQuantity === 0 || currentQuantity < 1) {
+                                showErrorMessage('Please select a valid quantity.');
+                                scrollToError();
+                                return false;
+                            }
+                            
+                            if (currentQuantity > selectedStock) {
+                                showErrorMessage(`Only ${selectedStock} items available in stock.`);
+                                scrollToError();
+                                return false;
+                            }
+                            
+                            if (currentQuantity > maxQuantity) {
+                                showErrorMessage(`Maximum ${maxQuantity} items allowed per order.`);
+                                scrollToError();
+                                return false;
+                            }
+                            
+                            return true;
+                        }
+
+                        function scrollToError() {
+                            $('html, body').animate({
+                                scrollTop: $('#validationMessage').offset().top - 100
+                            }, 500);
+                        }
+
+                        function showErrorMessage(message) {
+                            const $validationMessage = $('#validationMessage');
+                            $validationMessage
+                                .removeClass('success')
+                                .addClass('error show')
+                                .html(`<i class="fi-rs-cross-small"></i> ${message}`);
+                            
+                            setTimeout(() => {
+                                $validationMessage.removeClass('show');
+                            }, 8000);
+                        }
+
+                        function showSuccessMessage(message) {
+                            const $validationMessage = $('#validationMessage');
+                            $validationMessage
+                                .removeClass('error')
+                                .addClass('success show')
+                                .html(`<i class="fi-rs-check"></i> ${message}`);
+                            
+                            setTimeout(() => {
+                                $validationMessage.removeClass('show');
+                            }, 4000);
+                        }
+
+                        function showLoadingState() {
+                            const $btn = $('#addToCartBtn');
+                            const $spinner = $('#loadingSpinner');
+                            
+                            $btn.prop('disabled', true);
+                            $btn.find('span').text('Adding to Cart...');
+                            $spinner.show();
+                        }
+
+                        function hideLoadingState() {
+                            const $btn = $('#addToCartBtn');
+                            const $spinner = $('#loadingSpinner');
+                            
+                            $btn.prop('disabled', currentQuantity === 0);
+                            $btn.find('span').text('Add to Cart');
+                            $spinner.hide();
+                        }
+
+                        function resetForm() {
+                            $('.size-checkbox').prop('checked', false);
+                            $('#quantitySection').hide();
+                            currentQuantity = 0;
+                            selectedStock = 0;
+                            updateQuantityDisplay();
+                            disableQuantityControls();
+                        }
+
+                        // Keyboard navigation support
+                        $(document).on('keydown', function(e) {
+                            if ($('#quantitySection').is(':visible')) {
+                                if (e.key === 'ArrowUp' || e.key === '+') {
+                                    e.preventDefault();
+                                    $('#qty-up').click();
+                                } else if (e.key === 'ArrowDown' || e.key === '-') {
+                                    e.preventDefault();
+                                    $('#qty-down').click();
+                                }
+                            }
+                        });
+
+                        // Touch support for mobile
+                        let touchStartY = 0;
+                        $('#qty-display').on('touchstart', function(e) {
+                            touchStartY = e.originalEvent.touches[0].clientY;
+                        });
+
+                        $('#qty-display').on('touchend', function(e) {
+                            const touchEndY = e.originalEvent.changedTouches[0].clientY;
+                            const diff = touchStartY - touchEndY;
+                            
+                            if (Math.abs(diff) > 30) { // Minimum swipe distance
+                                if (diff > 0) {
+                                    $('#qty-up').click();
+                                } else {
+                                    $('#qty-down').click();
+                                }
+                            }
+                        });
+
+                        // Initialize
+                        updateQuantityDisplay();
+                        disableQuantityControls();
+                        
+                        // Auto-hide messages after page load
+                        setTimeout(() => {
+                            $('.validation-message.show').removeClass('show');
+                        }, 5000);
+                    });
+                    </script>
+                </div>
+                </ul>
+                </div>
+                <!-- Detail Info -->
+            </div>
+        </div>
                             <div class="row">
                                 <div class="col-lg-10 m-auto entry-main-content">
                                     <h2 class="section-title style-1 mb-30">Description</h2>
@@ -172,13 +788,6 @@
                                     </div>
                                 </div>
                             </div>
-                                        <ul class="product-more-infor mt-30">
-                                            <li><span>Type Of Packing</span> Bottle</li>
-                                            <li><span>Color</span> Green, Pink, Powder Blue, Purple</li>
-                                            <li><span>Quantity Per Case</span> 100ml</li>
-                                            <li><span>Ethyl Alcohol</span> 70%</li>
-                                            <li><span>Piece In One</span> Carton</li>
-                                        </ul>
                                         <hr class="wp-block-separator is-style-dots">
                                         <p>Laconic overheard dear woodchuck wow this outrageously taut beaver hey hello far meadowlark imitatively egregiously hugged that yikes minimally unanimous pouted flirtatiously as beaver beheld above forward
                                             energetic across this jeepers beneficently cockily less a the raucously that magic upheld far so the this where crud then below after jeez enchanting drunkenly more much wow callously irrespective limpet.</p>
@@ -191,104 +800,6 @@
                                             in much less well jeering for the thanks blindly sentimental whimpered less across objectively fanciful grimaced wildly some wow and rose jeepers outgrew lugubrious luridly irrationally attractively
                                             dachshund.
                                         </p>
-                                    </div>
-                                    <h3 class="section-title style-1 mb-30">Additional info</h3>
-                                    <table class="font-md mb-30">
-                                        <tbody>
-                                            <tr class="stand-up">
-                                                <th>Stand Up</th>
-                                                <td>
-                                                    <p>35″L x 24″W x 37-45″H(front to back wheel)</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="folded-wo-wheels">
-                                                <th>Folded (w/o wheels)</th>
-                                                <td>
-                                                    <p>32.5″L x 18.5″W x 16.5″H</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="folded-w-wheels">
-                                                <th>Folded (w/ wheels)</th>
-                                                <td>
-                                                    <p>32.5″L x 24″W x 18.5″H</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="door-pass-through">
-                                                <th>Door Pass Through</th>
-                                                <td>
-                                                    <p>24</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="frame">
-                                                <th>Frame</th>
-                                                <td>
-                                                    <p>Aluminum</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="weight-wo-wheels">
-                                                <th>Weight (w/o wheels)</th>
-                                                <td>
-                                                    <p>20 LBS</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="weight-capacity">
-                                                <th>Weight Capacity</th>
-                                                <td>
-                                                    <p>60 LBS</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="width">
-                                                <th>Width</th>
-                                                <td>
-                                                    <p>24″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="handle-height-ground-to-handle">
-                                                <th>Handle height (ground to handle)</th>
-                                                <td>
-                                                    <p>37-45″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="wheels">
-                                                <th>Wheels</th>
-                                                <td>
-                                                    <p>12″ air / wide track slick tread</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="seat-back-height">
-                                                <th>Seat back height</th>
-                                                <td>
-                                                    <p>21.5″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="head-room-inside-canopy">
-                                                <th>Head room (inside canopy)</th>
-                                                <td>
-                                                    <p>25″</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="pa_color">
-                                                <th>Color</th>
-                                                <td>
-                                                    <p>Black, Blue, Red, White</p>
-                                                </td>
-                                            </tr>
-                                            <tr class="pa_size">
-                                                <th>Size</th>
-                                                <td>
-                                                    <p>M, S</p>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="social-icons single-share">
-                                        <ul class="text-grey-5 d-inline-block">
-                                            <li><strong class="mr-10">Share this:</strong></li>
-                                            <li class="social-facebook"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg'%}" alt=""></a></li>
-                                            <li class="social-twitter"> <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg'%}" alt=""></a></li>
-                                            <li class="social-instagram"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg'%}" alt=""></a></li>
-                                            <li class="social-linkedin"><a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg'%}" alt=""></a></li>
-                                        </ul>
                                     </div>
                                    
 <div class="row mt-60">

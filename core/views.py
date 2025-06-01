@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.cache import cache_page
+from .utils import send_order_confirmation_email
 
 from django.db.models import Sum
 
@@ -15,7 +16,6 @@ from adminapp.models import Product, Coupon
 from core.models import *
 from user.models import Wishlist
 from .models import *
-from .utils import send_order_confirmation_email
 from user.views import *
 
 
@@ -448,22 +448,27 @@ def cash_on_delivery(request, order_id):
 def order_confirmed(request, order_id):
     order = get_object_or_404(Order, id=order_id, is_ordered=True)
     order_products = ProductOrder.objects.filter(user=request.user, order=order)
+
     send_order_confirmation_email(order)
-    
 
     total_amount = 0
+    selected_coupon_code = request.session.get('selected_coupon_code', '')
+    updated_wallet_balance = Decimal(request.session.get('updated_wallet_balance', '0.00'))
 
     for order_product in order_products:
         order_product.total = order_product.quantity * order_product.product_price
         total_amount += order_product.total
-        selected_coupon_code = request.session.get('selected_coupon_code', '')
-        updated_wallet_balance = Decimal(request.session.get('updated_wallet_balance', '0.00'))
 
-
-    # Determine whether a coupon has been applied
     coupon_applied = bool(selected_coupon_code)
+
+    # Update product sizes
     order.reduce_product_size_quantity()
-    # del request.session['updated_wallet_balance']
+
+    # Optional: clean up session
+    for key in ['some_key_to_clear', 'selected_coupon_code', 'updated_wallet_balance']:
+        if key in request.session:
+            del request.session[key]
+    request.session.save()
 
     context = {
         'order_products': order_products,
@@ -471,14 +476,9 @@ def order_confirmed(request, order_id):
         'address': order.address,
         'total_amount': total_amount,
         'selected_coupon_code': selected_coupon_code,
-        'coupon_applied': coupon_applied,  # Add this to indicate whether a coupon has been applied
+        'coupon_applied': coupon_applied,
         'updated_wallet_balance': updated_wallet_balance,
     }
-    
-    if 'some_key_to_clear' in request.session:
-        del request.session['some_key_to_clear']
-        request.session.save()
-        
 
     return render(request, 'CART/order_confirmed.html', context)
 def coupon_list(request):
