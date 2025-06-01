@@ -459,7 +459,7 @@ def product_details(request, product_id):
         'related_products': related_products,
     }
 
-    return render(request, 'accounts/product_details.html', context)
+    return render(request, 'accounts/product_detials.html', context)
 
 
 
