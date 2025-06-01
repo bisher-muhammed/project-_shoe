@@ -74,89 +74,87 @@
                                         <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
                                     </ul>
                                 </div>
-                                <form method="post" action="{% url 'add_to_cart' product.id %}">
-                                <input type="hidden" name="quantity" id="quantity-input" value="1">
-
+                               <form method="post" action="{% url 'add_to_cart' product.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" id="quantity-input" value="1">
 
                                     <div class="mb-3">
                                         <strong>Size: </strong>
                                         <div class="btn-group" role="group">
-                                            {% for size in product.sizes.all %}
-                                                <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size.name }}" value="{{ size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
-                                                <label class="btn btn-outline-secondary" for="size-{{ size.name }}">
-                                                    {{ size.name }}
+                                            {% for size_info in sizes_with_quantities %}
+                                                <input type="radio"
+                                                    class="btn-check size-checkbox"
+                                                    name="size"
+                                                    id="size-{{ size_info.size.id }}"
+                                                    value="{{ size_info.size.id }}"
+                                                    autocomplete="off"
+                                                    onclick="displayAddtoCartButton()"
+                                                    {% if size_info.quantity == 0 %}disabled{% endif %}>
+
+                                                <label class="btn btn-outline-secondary"
+                                                    for="size-{{ size_info.size.id }}"
+                                                    style="color: {% if size_info.quantity == 0 %}red{% else %}inherit{% endif %}">
+                                                    {{ size_info.size.name }} — 
+                                                    {% if size_info.quantity == 0 %}
+                                                        Out of Stock
+                                                    {% else %}
+                                                        {{ size_info.quantity }} in stock
+                                                    {% endif %}
                                                 </label>
                                             {% endfor %}
                                         </div>
                                     </div>
-                                       
-                                
+
                                     {% for message in messages %}
                                         <p>{{ message }}</p>
                                     {% endfor %}
-                                
+
                                     <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-                                
+
                                     <div class="detail-extralink">
                                         <div class="detail-qty border radius">
                                             <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
                                             <span class="qty-val">1</span>
                                             <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
                                         </div>
-                                
-                                        {% csrf_token %}
+
                                         <div class="product-extra-link2">
                                             <button type="submit" class="button button-add-to-cart">Add to cart</button>
                                         </div>
                                     </div>
                                 </form>
-                                
-                                
-                                
-                                {% comment %} <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS" crossorigin="anonymous"></script>
+
+                                <!-- Optional jQuery script for syncing quantity -->
+                                <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+                                        integrity="sha384-UG8ao2jwOWB7/oDdObZc6ItJmwUkR/PfMyt9Qs5AwX7PsnYn1CRKCTWyncPTWvaS"
+                                        crossorigin="anonymous"></script>
+
                                 <script>
-                                            $(document).ready(function () {
-                                                // When size is selected
-                                                $('.size-checkbox').on('change', function () {
-                                                    updateQuantity();
-                                                });
+                                    $(document).ready(function () {
+                                        $('.size-checkbox').on('change', function () {
+                                            updateQuantity();
+                                        });
 
-                                                // When form is submitted
-                                                $('form').on('submit', function () {
-                                                    updateQuantity(); // Ensure the quantity is up to date
-                                                });
+                                        function updateQuantity() {
+                                            const selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
+                                            $('.qty-val').text(selectedSize);
+                                            $('#quantity-input').val(selectedSize);
+                                        }
 
-                                                // Update both visible and hidden quantity
-                                                function updateQuantity() {
-                                                    var selectedSize = $('.size-checkbox:checked').length > 0 ? 1 : 0;
+                                        updateQuantity();
+                                    });
+                                </script>
 
-                                                    // Update visible span
-                                                    $('.qty-val').text(selectedSize);
+                                <!-- Product meta -->
+                                <ul class="product-meta font-xs color-grey mt-50">
+                                    <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
+                                    <li class="mb-5">Tags:
+                                        <a href="#" rel="tag">Cloth</a>,
+                                        <a href="#" rel="tag">MEN</a>,
+                                        <a href="#" rel="tag">SHOES</a>
+                                    </li>
+                                </ul>
 
-                                                    // Update hidden input
-                                                    $('#quantity-input').val(selectedSize);
-                                                }
-
-                                                // Run once at the beginning
-                                                updateQuantity();
-                                            });
-                                        </script> {% endcomment %}
-
-                                        <ul class="product-meta font-xs color-grey mt-50">
-                                            <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
-                                            <li class="mb-5">Tags: <a href="#" rel="tag">Cloth</a>, <a href="#" rel="tag">MEN</a>, <a href="#" rel="tag">SHOES</a></li>
-                                            {% for size_info in sizes_with_quantities %}
-                                                <div class="form-check form-check-inline">
-                                                    <input type="radio" class="btn-check size-checkbox" name="size" id="size-{{ size_info.size.id }}" value="{{ size_info.size.id }}" autocomplete="off" onclick="displayAddtoCartButton()">
-                                                    <label for="size-{{ size_info.size.name }}">
-                                                        <p style="color: {% if size_info.quantity == 0 %}red{% else %}inherit{% endif %}">
-                                                            {{ size_info.size.name }} Quantity: {% if size_info.quantity == 0 %}Out of Stock{% else %}{{ size_info.quantity }}{% endif %}
-                                                        </p>
-                                                    </label>
-                                                </div>
-                                            {% endfor %}
-                                        </ul>
-                                                                                    
                                         
                                         </div>
                                             
