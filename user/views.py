@@ -431,40 +431,35 @@ def logout_view(request):
 
 
 @login_required(login_url="login_view")
-def product_detials(request, product_id):
-    try:
-        product = Product.objects.get(pk=product_id)
-    except Product.DoesNotExist:
-        # Handle the case where the product doesn't exist
-        return render(request, 'accounts/home.html')
+def product_details(request, product_id):
+    # Use get_object_or_404 for cleaner error handling
+    product = get_object_or_404(Product, pk=product_id)
 
-    # Get quantities for each size associated with the product
+    # Fetch all ProductSize entries for this product with related Size
+    product_sizes = ProductSize.objects.filter(product=product).select_related('size')
+
+    # Build size and quantity info
     sizes_with_quantities = []
-    for size in product.sizes.all():
-        product_sizes = product.productsizes.filter(size=size)
+    for ps in product_sizes:
+        sizes_with_quantities.append({
+            'size': ps.size,
+            'quantity': ps.quantity
+        })
 
-        if product_sizes.exists():
-            # If there are instances for the given size, sum the quantities
-            quantity = product_sizes.aggregate(Sum('quantity'))['quantity__sum']
-        else:
-            # If there are no instances, set quantity to 0
-            quantity = 0
+    # Optional: sort sizes alphabetically
+    sizes_with_quantities.sort(key=lambda x: x['size'].name)
 
-        sizes_with_quantities.append({'size': size, 'quantity': quantity})
-
-    # Placeholder for selected_size_id (replace it with the actual logic to get the selected size ID)
-    selected_size_id = None  # Update this line with the logic to get the selected size ID
-
+    # Related products (excluding this one)
     related_products = Product.objects.filter(brand=product.brand).exclude(id=product.id)[:4]
 
     context = {
         'product': product,
         'sizes_with_quantities': sizes_with_quantities,
-        'selected_size_id': selected_size_id,
+        'selected_size_id': None,  # You can update this later
         'related_products': related_products,
     }
-    return render(request, 'accounts/product_detials.html', context)
 
+    return render(request, 'accounts/product_details.html', context)
 
 
 

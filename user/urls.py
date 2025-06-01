@@ -19,7 +19,7 @@ urlpatterns = [
 
 
 
-    path('product_detials/<int:product_id>/',views.product_detials, name='product_detials'),
+    path('product_detials/<int:product_id>/',views.product_details, name='product_detials'),
     path('resend_otp/',views.resend_otp, name='resend_otp'),
     path('add_address',views.add_address, name='add_address'),
     path('dashboard/',views.view_profile, name='view_profile'),

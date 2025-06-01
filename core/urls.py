@@ -1,6 +1,6 @@
 from django.urls import path
 from.import views
-from user.views import product_detials
+
 
  # Corrected import statement
 
