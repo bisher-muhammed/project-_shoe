@@ -158,56 +158,68 @@
                                 
       
         
-        <div class="row product-grid-4 g-3">
-            {% for product in products %}
-                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                    <div class="product-cart-wrap shadow-sm rounded bg-white p-3 h-100 position-relative">
-                        <div class="product-img-action-wrap mb-2">
-                            <div class="product-img product-img-zoom position-relative overflow-hidden rounded">
-                                <a href="{% url 'product_detials' product.id %}">
-                                    <img class="default-img img-fluid transition" src="{{ product.product_img1.url }}" alt="not found" style="height: 250px; width: 100%; object-fit: cover;">
-                                    <img class="hover-img img-fluid position-absolute top-0 start-0 w-100 h-100 transition" src="{{ product.product_img1.url }}" alt="not found" style="object-fit: cover; opacity: 0; transition: opacity 0.3s;">
-                                </a>
-                                <span class="badge bg-danger position-absolute top-0 start-0 m-2 text-white">Hot</span>
-
-                            </div>
-                        </div>
-                        <div class="product-content-wrap">
-                            <h6 class="mb-1">
-                                <a href="{% url 'product_detials' product.id %}" class="text-dark text-decoration-none fw-bold">{{ product.product_name }}</a>
-                            </h6>
-                            <div class="small text-muted mb-1">
-                                {% with best_offer=product.get_best_offer %}
-                                    {% if best_offer %}
-                                        <span class="text-success fw-semibold">{{ best_offer.percentage }}% Off</span>
-                                    {% else %}
-                                        <span class="text-secondary">No Offer</span>
-                                    {% endif %}
-                                {% endwith %}
-                            </div>
-                            <div class="product-price mb-2">
-                                {% with best_offer=product.get_best_offer %}
-                                    {% if best_offer %}
-                                        <div class="text-danger fw-bold">₹{{ product.offer_price }}</div>
-                                    {% else %}
-                                        <div class="text-primary fw-bold">₹{{ product.offer_price }}</div>
-                                    {% endif %}
-                                {% endwith %}
-                                <div class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</div>
-
-                                
-                            </div>
-
-                                                      <a href="{% url 'add_wishlist' product_id=product.id %}" class="btn btn-outline-danger btn-sm w-100">
-  <i class="far fa-heart me-1"></i> Add to Wishlist
-</a>
-                            
-                            
-                        </div>
+    <div class="row product-grid-4 g-3">
+    {% for product in products %}
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+            <div class="product-cart-wrap shadow-sm rounded bg-white p-3 h-100 position-relative">
+                <div class="product-img-action-wrap mb-2">
+                    <div class="product-img product-img-zoom position-relative overflow-hidden rounded">
+                        <a href="{% url 'product_detials' product.id %}">
+                            <img class="default-img img-fluid transition" src="{{ product.product_img1.url }}" alt="not found" style="height: 250px; width: 100%; object-fit: cover;">
+                            <img class="hover-img img-fluid position-absolute top-0 start-0 w-100 h-100 transition" src="{{ product.product_img1.url }}" alt="not found" style="object-fit: cover; opacity: 0; transition: opacity 0.3s;">
+                        </a>
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2 text-white">Hot</span>
                     </div>
                 </div>
-            {% endfor %}
+                <div class="product-content-wrap">
+                    <h6 class="mb-1">
+                        <a href="{% url 'product_detials' product.id %}" class="text-dark text-decoration-none fw-bold">{{ product.product_name }}</a>
+                    </h6>
+                    <div class="small text-muted mb-1">
+                        {% with best_offer=product.get_best_offer %}
+                            {% if best_offer %}
+                                <span class="text-success fw-semibold">{{ best_offer.percentage }}% Off</span>
+                            {% else %}
+                                <span class="text-secondary">No Offer</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="product-price mb-2">
+                        {% with best_offer=product.get_best_offer %}
+                            {% if best_offer %}
+                                <div class="text-danger fw-bold">₹{{ product.offer_price }}</div>
+                            {% else %}
+                                <div class="text-primary fw-bold">₹{{ product.offer_price }}</div>
+                            {% endif %}
+                        {% endwith %}
+                        <div class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</div>
+                    </div>
+
+                    <!-- Wishlist Button Logic - Using Same Working Pattern -->
+                    {% if user.is_authenticated %}
+                        {% with user.wishlist as wishlist %}
+                            {% if wishlist and product in wishlist.products.all %}
+                                <span class="btn btn-success disabled" style="pointer-events: none;">
+                                    <i class="fas fa-heart"></i> Added to Wishlist
+                                </span>
+                            {% else %}
+                                <button class="btn btn-outline-danger add-to-wishlist-btn" 
+                                        data-product-id="{{ product.id }}" 
+                                        type="button">
+                                    <i class="far fa-heart"></i> Add to Wishlist
+                                </button>
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <a href="{% url 'login_view' %}" class="btn btn-outline-danger">
+                            <i class="far fa-heart"></i> Login to Add to Wishlist
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
+    {% endfor %}
+</div>
         
         <!-- Banner.1 Full Width -->
         {% for banner in banners %}

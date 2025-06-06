@@ -78,20 +78,31 @@ def add_to_cart(request, product_id):
     messages.success(request, "Product added to the cart.")
     return redirect('cart_list')
 
+
+
+
 @login_required(login_url="login_view")
 def cart_list(request):
-    if request.user.is_authenticated:
-        cart = Cart.objects.filter(user=request.user, active=True).first()
-    else:
-        cart = None
+    search_query = request.GET.get('q', '')
+    cart = Cart.objects.filter(user=request.user, active=True).first()
+    cart_items = cart.cartitem_set.all().order_by('-created_at') if cart else []
 
-    cart_items = cart.cartitem_set.all() if cart else []
+    if search_query:
+        cart_items = cart_items.filter(
+            Q(product__product_name__icontains=search_query)
+            
+        )
 
+    # Annotate each cart item with available quantity
     for cart_item in cart_items:
         product_size = ProductSize.objects.filter(product=cart_item.product, size=cart_item.size).first()
         cart_item.available_quantity = product_size.quantity if product_size else 0
 
-    return render(request, 'CART/cart_list.html', {'cart_items': cart_items})
+    return render(request, 'CART/cart_list.html', {
+        'cart_items': cart_items,
+        'search_query': search_query
+    })
+
 
 
 

@@ -801,6 +801,7 @@
                                             dachshund.
                                         </p>
                                     </div>
+                                    
                                    
 <div class="row mt-60">
     <div class="col-12">
@@ -808,38 +809,57 @@
     </div>
     <div class="col-12">
         <div class="row related-products">
-            {% for related_product in related_products %}
-            <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
-                <div class="card h-100 product-cart-wrap small hover-up">
-                    <div class="product-img-action-wrap">
-                        <div class="product-img product-img-zoom">
-                            <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
-                                <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
-                            </a>
-                           
-                        </div>
-                        <div class="product-badges product-badges-position product-badges-mrg">
-                            {% if best_offer %}
-                                <span>{{ best_offer.percentage }}
-                            {%endif%}        
-                        </div>
-                    </div>
-                    <div class="card-body product-content-wrap">
-                        <h2 class="card-title"><a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a></h2>
-                        <p class="card-text product-price">
-                            <span>₹{{ related_product.offer_price }}</span>
-                            {% if related_product.original_price %}
-                            <span class="old-price">₹{{ product.original_price }}</span>
-                            {% endif %}
-                        </p>
-                        <a href="{% url 'add_wishlist' related_product.id %}" class="btn btn-outline-danger btn-sm">
-                            <i class="fi-rs-heart"></i> Add to Wishlist
-                        </a>
-                    </div>
+    {% for related_product in related_products %}
+    <div class="col-lg-3 col-md-4 col-12 col-sm-6 mb-4">
+        <div class="card h-100 product-cart-wrap small hover-up">
+            <div class="product-img-action-wrap">
+                <div class="product-img product-img-zoom">
+                    <a href="{% url 'product_detials' related_product.id %}" tabindex="0">
+                        <img class="card-img-top img-fluid" src="{{ related_product.product_img1.url }}" alt="{{ related_product.product_name }}" style="height: 300px; object-fit: cover;">
+                    </a>
+                </div>
+                <div class="product-badges product-badges-position product-badges-mrg">
+                    {% if best_offer %}
+                        <span>{{ best_offer.percentage }}</span>
+                    {% endif %}
                 </div>
             </div>
-            {% endfor %}
+
+            <div class="card-body product-content-wrap">
+                <h2 class="card-title">
+                    <a href="{% url 'product_detials' related_product.id %}" tabindex="0">{{ related_product.product_name }}</a>
+                </h2>
+                <p class="card-text product-price">
+                    <span>₹{{ related_product.offer_price }}</span>
+                    {% if related_product.original_price %}
+                        <span class="old-price">₹{{ related_product.original_price }}</span>
+                    {% endif %}
+                </p>
+
+                {% if user.is_authenticated %}
+                    {% with user.wishlist as wishlist %}
+                        {% if wishlist and related_product in wishlist.products.all %}
+                            <span class="btn btn-success disabled" style="pointer-events: none;">
+                                <i class="fas fa-heart"></i> Added to Wishlist
+                            </span>
+                        {% else %}
+                            <button class="btn btn-outline-danger add-to-wishlist-btn" 
+                                    data-product-id="{{ related_product.id }}" 
+                                    type="button">
+                                <i class="far fa-heart"></i> Add to Wishlist
+                            </button>
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <a href="{% url 'login_view' %}" class="btn btn-outline-danger">
+                        <i class="far fa-heart"></i> Login to Add to Wishlist
+                    </a>
+                {% endif %}
+            </div>
         </div>
+    </div>
+    {% endfor %}
+</div>
     </div>
 </div>
 </div>

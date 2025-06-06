@@ -23,10 +23,11 @@
 
     <!-- Bootstrap 5.3.3 CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+    
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'user/assets/css/main.css' %}">
+    
 
     <!-- External Libraries (Optional but compatible with Bootstrap 5) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css" integrity="sha384-Gu3KVV2H9d+yA4QDpVB7VcOyhJlAVrcXd0thEjr4KznfaFPLe0xQJyonVxONa4ZC" crossorigin="anonymous">
@@ -40,47 +41,322 @@
 </head>
 
 <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding-bottom: 0;
+        }
 
-    /* Global Reset */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+        .main-content {
+            min-height: 70vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
 
-/* Set base font style and smoothing */
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #212529;
-    background-color:	rgb(255, 255, 255)
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
+        .main-footer {
+            position: relative;
+            background: #2d5a4d;
+            color: #ffffff;
+            overflow: hidden;
+        }
 
-/* Remove default list styles */
-ul, ol {
-    list-style: none;
-}
+        .wave-decoration {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: #f8f9fa;
+            clip-path: ellipse(100% 100% at 50% 0%);
+        }
 
-/* Remove link underlines and set color */
-a {
-    text-decoration: none;
-    color: inherit;
-}
+        .newsletter {
+            position: relative;
+            z-index: 2;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
 
+        .newsletter h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
 
+        .newsletter p {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
+        .newsletter-form {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            gap: 0;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
 
+        .newsletter-form input {
+            flex: 1;
+            padding: 18px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+        }
 
-</style>
+        .newsletter-form input::placeholder {
+            color: #666;
+        }
 
+        .newsletter-form button {
+            padding: 18px 35px;
+            background: #f4a261;
+            color: white;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
+        .newsletter-form button:hover {
+            background: #e76f51;
+            transform: translateY(-1px);
+        }
 
+        .footer-mid {
+            padding: 60px 0;
+            background: #234a3e;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr;
+            gap: 50px;
+            align-items: start;
+        }
+
+        .footer-section h5 {
+            color: #f4a261;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logo img {
+            max-width: 150px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 25px;
+        }
+
+        .contact-info {
+            list-style: none;
+        }
+
+        .contact-info li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .contact-info i {
+            color: #f4a261;
+            width: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .footer-list {
+            list-style: none;
+        }
+
+        .footer-list li {
+            margin-bottom: 12px;
+        }
+
+        .footer-list a {
+            color: #cccccc;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            padding: 5px 0;
+        }
+
+        .footer-list a:hover {
+            color: #f4a261;
+            transform: translateX(5px);
+        }
+
+        .footer-list i {
+            width: 16px;
+            color: #f4a261;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .payment-method {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ffffff;
+            border: 1px solid rgba(244,162,97,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            background: rgba(244,162,97,0.2);
+            border-color: #f4a261;
+            transform: translateY(-2px);
+        }
+
+        .security-badges {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .security-badges i {
+            color: #f4a261;
+        }
+
+        .footer-bottom {
+            background: #1a3529;
+            padding: 25px 0;
+            border-top: 1px solid rgba(244,162,97,0.2);
+        }
+
+        .footer-bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        .text-brand {
+            color: #f4a261;
+            font-weight: 600;
+        }
+
+        .text-danger {
+            color: #e74c3c;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+            }
+            
+            .newsletter h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+                border-radius: 12px;
+            }
+            
+            .newsletter-form input,
+            .newsletter-form button {
+                border-radius: 0;
+            }
+            
+            .newsletter-form input {
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .newsletter-form button {
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .payment-methods {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .contact-info li {
+                justify-content: center;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .newsletter {
+                padding: 60px 0 40px;
+            }
+            
+            .newsletter h2 {
+                font-size: 1.5rem;
+            }
+            
+            .footer-mid {
+                padding: 40px 0;
+            }
+        }
+    </style>
 <body>
     <div class="body-overlay-1"></div>
 <!-- Header -->
@@ -205,11 +481,9 @@ a {
                                     <a href="#">Pages <i class="fi-rs-angle-down"></i></a>
                                     <ul class="sub-menu">
                                         <li><a href="{% url 'about' %}">About Us</a></li>
-                                        <li><a href="{% url 'contact' %}">Contact</a></li>
                                         <li><a href="{% url 'view_profile' %}">My Account</a></li>
                                     </ul>
                                 </li>
-                                <li><a href="{% url 'contact' %}">Contact</a></li>
                             </ul>
                     </div>
                 </div>
@@ -274,7 +548,6 @@ a {
             <a href="#">Pages</a>
             <ul class="dropdown">
                 <li><a href="{% url 'about' %}">About Us</a></li>
-                <li><a href="{% url 'contact' %}">Contact</a></li>
                 <li><a href="{% url 'view_profile' %}">My Account</a></li>
             </ul>
         </li>
@@ -304,141 +577,168 @@ a {
     {%block content%}
     {% endblock content %}
 
-    <footer class="main">
-        <!-- Newsletter Section -->
-        <section class="newsletter p-30 text-white wow fadeIn animated">
+    <!-- FOOTER HTML -->
+ <!-- FOOTER HTML -->
+    <footer class="main-footer">
+        <!-- Wave decoration -->
+        <div class="wave-decoration"></div>
+
+        <!-- Newsletter -->
+        <section class="newsletter">
             <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-7 mb-md-3 mb-lg-0">
-                        <div class="d-flex align-items-center">
-                            <img class="icon-email" src="{% static 'user/assets/imgs/theme/icons/icon-email.svg' %}" alt="Newsletter">
-                            <h4 class="font-size-20 mb-0 ml-3">Sign up to Newsletter</h4>
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <form class="form-subcriber d-flex">
-                            <input type="email" class="form-control bg-white font-small" placeholder="Enter your email">
-                            <button class="btn bg-dark text-white" type="submit">Subscribe</button>
-                        </form>
-                    </div>
-                </div>
+                <h2>Stay Updated with ShoeSpace</h2>
+                <p>Get the latest updates on new arrivals, exclusive offers</p>
             </div>
         </section>
-    
-        <!-- Footer Content -->
-        <section class="section-padding footer-mid">
-            <div class="container pt-15 pb-20">
-                <div class="row">
-                    <!-- About Section -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="widget-about font-md mb-md-5 mb-lg-0">
-                            <div class="logo logo-width-1">
-                                <a href="{% url 'home' %}">
-                                    <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="Logo">
-                                </a>
-                            </div>
-                            <h5 class="mt-20 mb-10 fw-600 text-grey-4">Contact</h5>
-                            <p><strong>Address:</strong> brotoTYPE MARADU KOCHI</p>
-                            <p><strong>Phone:</strong> +91 98471 12068</p>
-                            <p><strong>Hours:</strong> 10:00 - 18:00, Mon - Sat</p>
-    
-                            <h5 class="mb-10 mt-30 fw-600 text-grey-4">Follow Us</h5>
-                            <div class="mobile-social-icon mb-sm-5 mb-md-0">
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-facebook.svg' %}" alt="Facebook"></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-twitter.svg' %}" alt="Twitter"></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-instagram.svg' %}" alt="Instagram"></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-pinterest.svg' %}" alt="Pinterest"></a>
-                                <a href="#"><img src="{% static 'user/assets/imgs/theme/icons/icon-youtube.svg' %}" alt="YouTube"></a>
-                            </div>
+
+        <!-- Main Footer Content -->
+        <section class="footer-mid">
+            <div class="container">
+                <div class="footer-grid">
+                    <!-- About + Contact -->
+                    <div class="footer-section">
+                        <div class="logo">
+                            <a href="{% url 'home' %}">
+                                <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="ShoeSpace Logo">
+                            </a>
                         </div>
-                    </div>
-    
-                    <!-- About Links -->
-                    <div class="col-lg-2 col-md-3">
-                        <h5 class="widget-title">About</h5>
-                        <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Delivery Information</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms &amp; Conditions</a></li>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Support Center</a></li>
+                        <h5><i class="fas fa-address-card"></i> Contact Information</h5>
+                        <ul class="contact-info">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Address:</strong> brotoTYPE MARADU KOCHI</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone"></i>
+                                <span><strong>Phone:</strong> +91 98471 12068</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-clock"></i>
+                                <span><strong>Hours:</strong> 10:00 - 18:00, Mon - Sat</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span><strong>Email:</strong> info@shoespace.site</span>
+                            </li>
                         </ul>
                     </div>
-    
-                    <!-- My Account Links -->
-                    <div class="col-lg-2 col-md-3">
-                        <h5 class="widget-title">My Account</h5>
+
+                    <!-- My Account -->
+                    <div class="footer-section">
+                        <h5>My Account</h5>
                         <ul class="footer-list">
-                        {% if user.is_authenticated %}
-                                <li><i class=""></i><a href="{% url 'logout_view' %}">Logout</a></li>
+                            {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
                             {% else %}
-                                <li><i class="fi-rs-user"></i><a href="{% url 'login_view' %}">SignIn</a></li>
-                                
+                            <li><a href="{% url 'login_view' %}"><i class="fas fa-user"></i>Sign In</a></li>
                             {% endif %}
-                            <li><a href="{% url 'cart_list' %}">View Cart</a></li>
-                            <li><a href="{% url 'wishlist' %}">My Wishlist</a></li>
-                            <li><a href="{% url 'add_address' %}">Add Address</a></li>
-                            <li><a href="{% url 'order_list' %}">Orders</a></li>
-                            <li><a href="{% url 'view_profile' %}">Dashboard</a></li>
+                            <li><a href="{% url 'cart_list' %}"><i class="fas fa-shopping-cart"></i>View Cart</a></li>
+                            <li><a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i>My Wishlist</a></li>
+                            <li><a href="{% url 'addresses' %}"><i class="fas fa-map-marker-alt"></i>My Addresses</a></li>
+                            <li><a href="{% url 'order_list' %}"><i class="fas fa-box"></i>My Orders</a></li>
+                            <li><a href="{% url 'view_profile' %}"><i class="fas fa-user-cog"></i>Dashboard</a></li>
                         </ul>
                     </div>
-    
-                    <!-- App Download & Payments -->
-                    <div class="col-lg-4">
-                        <div class="row">
-                            <div class="col-md-8 col-lg-12">
-                                <h5 class="widget-title">Download Our App</h5>
-                                <div class="download-app">
-                                    <a href="#"><img class="active" src="{% static 'user/assets/imgs/theme/app-store.jpg' %}" alt="App Store"></a>
-                                    <a href="#"><img src="{% static 'user/assets/imgs/theme/google-play.jpg' %}" alt="Google Play"></a>
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-lg-12 mt-md-3 mt-lg-0">
-                                <p class="mb-20">Secured Payment Gateways</p>
-                                <img src="{% static 'user/assets/imgs/theme/payment-method.png' %}" alt="Payment Methods">
-                            </div>
+
+                    <!-- Quick Links + Categories -->
+                    <div class="footer-section">
+                        <h5>Quick Links</h5>
+                        <ul class="footer-list">
+                            <li><a href="{% url 'shop_lists' %}"><i class="fas fa-store"></i>Shop</a></li>
+                            <li><a href="{% url 'home' %}"><i class="fas fa-home"></i>Home</a></li>
+                            <li><a href="#top"><i class="fas fa-arrow-up"></i>Back to Top</a></li>
+                        </ul>
+                        <h5 style="margin-top: 30px;">Categories</h5>
+                        <ul class="footer-list">
+                            <li><a href="{% url 'shop_lists' %}?category=men"><i class="fas fa-male"></i>Men's Shoes</a></li>
+                            <li><a href="{% url 'shop_lists' %}?category=women"><i class="fas fa-female"></i>Women's Shoes</a></li>
+                            <li><a href="{% url 'shop_lists' %}?category=sports"><i class="fas fa-running"></i>Sports</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="footer-section">
+                        <h5><i class="fas fa-credit-card"></i> Secured Payment</h5>
+                        <p style="color: #cccccc; margin-bottom: 20px; font-size: 0.95rem;">Your transactions are protected with industry-standard security</p>
+                        <div class="payment-methods">
+                            <div class="payment-method">VISA</div>
+                            <div class="payment-method">MasterCard</div>
+                            <div class="payment-method">PayPal</div>
+                            <div class="payment-method">Google Pay</div>
+                            <div class="payment-method">Razorpay</div>
+                            <div class="payment-method">UPI</div>
+                        </div>
+                        <div class="security-badges">
+                            <i class="fas fa-lock"></i> SSL Secured |
+                            <i class="fas fa-shield-alt"></i> 100% Safe & Secure
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-    
+
         <!-- Footer Bottom -->
-        <div class="container pb-20">
-            <div class="row">
-                <div class="col-12 mb-20">
-                    <hr class="footer-bottom">
-                </div>
-                <div class="col-lg-6">
-                    <p class="float-md-left font-sm text-muted mb-0">&copy; 2025, <strong class="text-brand">YourSiteName</strong>. All rights reserved.</p>
-                </div>
-                <div class="col-lg-6">
-                    <p class="text-lg-end text-start font-sm text-muted mb-0">
-                        Designed by <a href="https://alithemes.com" target="_blank">Alithemes.com</a>.
-                    </p>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 <span class="text-brand">ShoeSpace</span>. All rights reserved.</p>
+                    <p>Made with <i class="fas fa-heart text-danger"></i> in Kerala, India</p>
                 </div>
             </div>
         </div>
     </footer>
-    
-    <!-- Preloader Start -->
-    <div id="preloader-active">
-        <div class="preloader d-flex align-items-center justify-content-center">
-            <div class="preloader-inner position-relative">
-                <div class="text-center">
-                    <h5 class="mb-10">Now Loading</h5>
-                    <div class="loader">
-                        <div class="bar bar1"></div>
-                        <div class="bar bar2"></div>
-                        <div class="bar bar3"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    <script>
+        // Newsletter form submit
+        document.querySelector('.newsletter-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input[type="email"]').value;
+            if (email) {
+                // Add success animation
+                const button = this.querySelector('button');
+                const originalText = button.textContent;
+                button.textContent = '✓ Subscribed!';
+                button.style.background = '#27ae60';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#f4a261';
+                    this.querySelector('input[type="email"]').value = '';
+                }, 2000);
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Add hover animations to payment methods
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            method.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Highlight active footer link
+        document.querySelectorAll('.footer-list a').forEach(link => {
+            if (link.href === window.location.href) {
+                link.style.color = '#f4a261';
+                link.style.fontWeight = '600';
+            }
+        });
+    </script>
     <!-- Vendor JS-->
 <!-- Vendor JS--> 
+    
     <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/modernizr-3.6.0.min.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/jquery-3.6.0.min.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/jquery-migrate-3.3.0.min.js' %}"></script>
@@ -459,10 +759,12 @@ a {
     <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.vticker-min.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.theia.sticky.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.elevatezoom.js' %}"></script>
+    
+
     <!-- Template  JS -->
     <script type="text/JavaScript" src="{% static 'user/assets/js/main.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/shop.js' %}"></script>
-
+    <script type="text/JavaScript" src="{% static 'user/assets/js/wishlist.js' %}"></script>
 
 
 

@@ -37,45 +37,53 @@
                                         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                                             {{ message }}
                                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                              <span aria-hidden="true">&times;</span>
+                                            <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                     {% endfor %}
 
-                                    <div class="form-outline mb-4">
-                                        <input type="text" id="username" name="username" class="form-control form-control-lg"
-                                            value="{{ username_value }}" required maxlength="20" pattern="[A-Za-z0-9]+"
-                                            title="Username must be alphanumeric and under 20 characters." />
-                                        <label class="form-label" for="username">Your Name</label>
+                                    <div class="mb-3 row">
+                                        <label for="username" class="col-sm-3 col-form-label">Username</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" name="username" id="username" class="form-control"
+                                                value="{{ username_value }}" required maxlength="20" pattern="[A-Za-z0-9]+"
+                                                title="Username must be alphanumeric and under 20 characters." />
+                                        </div>
                                     </div>
 
-                                    <div class="form-outline mb-4">
-                                        <input type="email" id="email" name="email" class="form-control form-control-lg"
-                                            value="{{ email_value }}" required />
-                                        <label class="form-label" for="email">Your Email</label>
+                                    <div class="mb-3 row">
+                                        <label for="email" class="col-sm-3 col-form-label">Email</label>
+                                        <div class="col-sm-9">
+                                            <input type="email" name="email" id="email" class="form-control"
+                                                value="{{ email_value }}" required />
+                                        </div>
                                     </div>
 
-                                    <div class="form-outline mb-4">
-                                        <input type="password" id="password" name="password" class="form-control form-control-lg"
-                                            required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}"
-                                            title="Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character." />
-                                        <label class="form-label" for="password">Password</label>
+                                    <div class="mb-3 row">
+                                        <label for="password" class="col-sm-3 col-form-label">Password</label>
+                                        <div class="col-sm-9">
+                                            <input type="password" name="password" id="password" class="form-control"
+                                                required pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}"
+                                                title="Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character." />
+                                        </div>
                                     </div>
 
-                                    <div class="form-outline mb-4">
-                                        <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-lg"
-                                            required />
-                                        <label class="form-label" for="confirm_password">Repeat your password</label>
+                                    <div class="mb-3 row">
+                                        <label for="confirm_password" class="col-sm-3 col-form-label"> CPassword</label>
+                                        <div class="col-sm-9">
+                                            <input type="password" name="confirm_password" id="confirm_password" class="form-control" required />
+                                        </div>
                                     </div>
 
-                                    <div class="d-flex justify-content-center">
-                                        <button type="submit" class="btn btn-primary btn-block btn-lg">Register</button>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary btn-lg">Register</button>
                                     </div>
 
-                                    <p class="text-center text-muted mt-5 mb-0">
+                                    <p class="text-center text-muted mt-4">
                                         Already have an account? <a href="{% url 'login_view' %}" class="fw-bold text-body"><u>Login here</u></a>
                                     </p>
                                 </form>
+
                             </div>
                         </div>
                     </div>

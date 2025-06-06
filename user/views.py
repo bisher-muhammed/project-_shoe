@@ -3,6 +3,8 @@ from django.shortcuts import render
 from django.db.models import Sum, DecimalField
 from django.http import HttpResponseServerError
 from django.db import IntegrityError
+from django.views.decorators.http import require_GET
+from django.http import JsonResponse
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -19,7 +21,7 @@ from adminapp .models import Banner
 from django.contrib import messages
 from django.db.models import Q
 from adminapp.models import Product, Color,Size
-from.models import UserProfile,AddressUS, Wallet
+from.models import UserProfile,AddressUS, Wallet, Wishlist
 from core.models import ProductOrder,Order
 from django.db.models import Sum
 from adminapp.models import Category
@@ -61,7 +63,10 @@ def home(request):
     if search_query:
         products = products.filter(
             Q(product_name__icontains=search_query) |
-            Q(product_description__icontains=search_query)
+            Q(product_description__icontains=search_query)|
+            Q(category__category_name__icontains=search_query) |
+            Q(brand__brand_name__icontains=search_query)
+            
         )
 
     # Calculate days difference for each banner
@@ -353,31 +358,47 @@ from django.contrib.auth import authenticate, login
 def confirm_password(request):
     if request.user.is_authenticated:
         return redirect("home")
+
     if request.method == "POST":
         password = request.POST.get("password1")
         confirm_password = request.POST.get("password2")
 
-        print(password)
-        if password == confirm_password:
-            email = request.session.get("email")
-            print(email)
-            user = User.objects.get(email=email)
-            print(user)
-            user.set_password(password)  # to change the password
-            user.save()
-            print("set")
-
-            authenticated_user = authenticate(
-                request, username=user.username, password=password
-            )
-            if authenticated_user:
-                login(request, authenticated_user)
-
-            messages.success(request, "Password reset successful")
-            return redirect("login_view")
-        else:
+        if password != confirm_password:
             messages.warning(request, "Passwords do not match")
             return redirect("confirm_password")
+
+        if len(password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, "accounts/confirm_password.html")
+
+        password_pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$'
+        if not re.match(password_pattern, password):
+            messages.error(
+                request,
+                "Password must contain uppercase, lowercase, number, and special character."
+            )
+            return render(request, "accounts/confirm_password.html")
+
+        email = request.session.get("email")
+        if not email:
+            messages.error(request, "Session expired or invalid email.")
+            return redirect("signup_view")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            return redirect("signup_view")
+
+        user.set_password(password)
+        user.save()
+
+        authenticated_user = authenticate(request, username=user.username, password=password)
+        if authenticated_user:
+            login(request, authenticated_user)
+
+        messages.success(request, "Password reset successful.")
+        return redirect("login_view")
 
     return render(request, "accounts/confirm_password.html")
 
@@ -463,42 +484,79 @@ def product_details(request, product_id):
 
 
 
-
-
-
-
+from mimetypes import guess_type
+import os
+from django.templatetags.static import static
 @login_required(login_url="login_view")
 def view_profile(request):
+    user_profile = None
+    image_url = None
+    allowed_mimetypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+
     try:
-        # Assuming the user profile is related to the logged-in user
         user_profile = request.user.profile
     except UserProfile.DoesNotExist:
+        pass
 
-        user_profile = None
+    if user_profile and user_profile.image:
+        image_path = user_profile.image.path
+        if os.path.exists(image_path):
+            mime_type, _ = guess_type(image_path)
+            if mime_type in allowed_mimetypes:
+                image_url = user_profile.image.url
+            else:
+                image_url = static('user/assets/imgs/my_images/user-icon-big.png')
+        else:
+            image_url = static('user/assets/imgs/my_images/user-icon-big.png')
+    else:
+        image_url = static('user/assets/imgs/my_images/user-icon-big.png')
 
     context = {
         'user_profile': user_profile,
+        'image_url': image_url,
     }
-
     return render(request, 'accounts/dashboard.html', context)
-
 
 @login_required(login_url="login_view")
 def change_image_view(request):
     try:
-        # Assuming the user profile is related to the logged-in user
         user_profile = request.user.profile
     except UserProfile.DoesNotExist:
-        # If the profile does not exist, create a new one
         user_profile = UserProfile.objects.create(user=request.user)
 
-    if request.method == 'POST' and 'new_image' in request.FILES:
-        new_image = request.FILES['new_image']
-        user_profile.image = new_image
-        user_profile.save()
-        return redirect('view_profile')  # Redirect to the profile view after changing the image
+    if request.method == 'POST':
+        if 'new_image' not in request.FILES:
+            messages.error(request, "Please select an image to upload.")
+        else:
+            new_image = request.FILES['new_image']
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+            max_size = 2 * 1024 * 1024  # 2MB
 
-    return render(request, 'accounts/dashboard.html', {'user_profile': user_profile})
+            if new_image.content_type not in allowed_types:
+                messages.error(request, "Only JPG, PNG, or WEBP images are allowed.")
+            elif new_image.size > max_size:
+                messages.error(request, "Image size must be less than 2MB.")
+            else:
+                user_profile.image = new_image
+                user_profile.save()
+                messages.success(request, "Profile image updated successfully.")
+                return redirect('view_profile')
+
+    # Set image_url for template fallback if image missing
+    if user_profile and user_profile.image:
+        image_path = user_profile.image.path
+        if os.path.exists(image_path):
+            image_url = user_profile.image.url
+        else:
+            image_url = static('user/assets/imgs/my_images/user-icon-big.png')
+    else:
+        image_url = static('user/assets/imgs/my_images/user-icon-big.png')
+
+    context = {
+        'user_profile': user_profile,
+        'image_url': image_url,
+    }
+    return render(request, 'accounts/dashboard.html', context)
 
 
 
@@ -622,25 +680,60 @@ def delete_address(request, address_id):
 
 @login_required(login_url="login_view")
 def order_list(request):
-    # Assuming you want to fetch all orders for the logged-in user
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    search_query = request.GET.get('search', '').strip()
+    start_date_str = request.GET.get('start_date', '')
+    end_date_str = request.GET.get('end_date', '')
 
-    # Set the number of orders you want to display per page
+    orders = Order.objects.filter(user=request.user)
+
+    # Filter by search query
+    if search_query:
+        orders = orders.filter(
+            Q(order_number__icontains=search_query) 
+             # assuming this is the reverse relation
+        ).distinct()
+
+    # Validate and apply date filters
+    error_message = None
+    current_date = timezone.now().date()
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else None
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+
+        if start_date and start_date > current_date:
+            error_message = "Start date cannot be in the future."
+        elif end_date and end_date > current_date:
+            error_message = "End date cannot be in the future."
+        elif start_date and end_date and start_date > end_date:
+            error_message = "Start date must be earlier than end date."
+        elif start_date:
+            orders = orders.filter(created_at__date__gte=start_date)
+        elif end_date:
+            orders = orders.filter(created_at__date__lte=end_date)
+
+    except ValueError:
+        error_message = "Invalid date format. Use YYYY-MM-DD."
+
+    # Order by latest created
+    orders = orders.order_by('-created_at')
+
+    # Pagination
     orders_per_page = 10
     paginator = Paginator(orders, orders_per_page)
-
     page = request.GET.get('page')
     try:
         orders = paginator.page(page)
     except PageNotAnInteger:
-        # If page is not an integer, deliver the first page
         orders = paginator.page(1)
     except EmptyPage:
-        # If page is out of range (e.g., 9999), deliver the last page
         orders = paginator.page(paginator.num_pages)
 
     context = {
         'orders': orders,
+        'search_query': search_query,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'error_message': error_message,
     }
 
     return render(request, 'accounts/order_list.html', context)
@@ -694,62 +787,105 @@ def return_order(request, order_id):
    
 @login_required(login_url="login_view")
 def add_wishlist(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
+    try:
+        product = get_object_or_404(Product, pk=product_id)
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+        
+        # Check if product is already in wishlist
+        if wishlist.products.filter(pk=product_id).exists():
+            message = 'Product is already in your wishlist.'
+            already_in_wishlist = True
+        else:
+            wishlist.products.add(product)
+            message = 'Product added to wishlist successfully.'
+            already_in_wishlist = False
 
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    user_profile.wishlist.add(product)
+        # Check if it's an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'already_in_wishlist': already_in_wishlist,
+                'in_wishlist': True
+            })
+        else:
+            messages.success(request, message)
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('home')
 
-    next_url = request.GET.get('next')
-    if next_url:
-        return redirect(next_url)
-    return redirect('home')  # fallback if no `next` param
+    except Exception as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred while adding to wishlist.'
+            })
+        else:
+            messages.error(request, 'An error occurred while adding to wishlist.')
+            return redirect('home')
+            
+    except Exception as e:
+        error_message = 'An error occurred while adding to wishlist.'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': error_message,
+                'error': str(e)
+            }, status=500)
+        else:
+            messages.error(request, error_message)
+            return redirect('home')
+        
 
-
-
+        
 @login_required(login_url="login_view")
 def wishlist_view(request):
-    # Get the user's profile and wishlist items
-    user_profile = UserProfile.objects.get(user=request.user)
-    wishlist_items = user_profile.wishlist.all()
+    wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+    wishlist_items = wishlist.products.all().order_by('-id')
+
+    search_query = request.GET.get('q')
+    if search_query:
+        wishlist_items = wishlist_items.filter(
+            Q(product_name__icontains=search_query) 
+        )
 
     if request.method == 'POST':
-        # Assuming there's a form or some trigger to complete the order
-        # You might need to adjust this based on your actual implementation
-        # For example, you might have a dedicated view or endpoint for completing orders
-
         orders = Order.objects.filter(user=request.user, is_ordered=True)
 
         for order in orders:
-            for item in wishlist_items:
-                # Assuming you have a relationship between products in the wishlist
-                # and products in the order (e.g., matching by product id)
-                if item.product.id == order.product.id:
-                    # Delete the product from the wishlist
-                    item.delete()
+            for product in wishlist_items:
+                if product.id == order.product.id:
+                    wishlist.products.remove(product)
 
-        messages.success(request, "Order completed successfully! Wishlist updated.")
+        messages.success(request, "Order completed. Wishlist updated.")
         return redirect('wishlist_view')
 
-    # Render the wishlist template with the wishlist items
-    return render(request, 'accounts/wishlist.html', {'wishlist_items': wishlist_items})
+    return render(request, 'accounts/wishlist.html', {
+        'wishlist_items': wishlist_items,
+        'search_query': search_query
+    })
 
 
 
-    
+
+
+
 @login_required(login_url="login_view")
 def delete_wishlist_item(request, product_id):
-    user_profile = get_object_or_404(UserProfile, user=request.user)
-    wishlist_item = get_object_or_404(user_profile.wishlist, pk=product_id)
+    wishlist = get_object_or_404(Wishlist, user=request.user)
+    product = get_object_or_404(Product, pk=product_id)
 
-    # Check if the wishlist item belongs to the current user
-    if request.user == user_profile.user:
-        # Remove the product from the wishlist
-        user_profile.wishlist.remove(wishlist_item)
+    if wishlist.products.filter(pk=product_id).exists():
+        wishlist.products.remove(product)
         messages.success(request, "Item removed from wishlist.")
-        return redirect('wishlist')
     else:
-        messages.error(request, "Wishlist item does not belong to the current user.")
-        return redirect('home')
+        messages.warning(request, "Item was not found in your wishlist.")
+
+    return redirect('wishlist')
+
+
 
 
 @login_required(login_url="login_view")
@@ -874,6 +1010,7 @@ def shop_lists(request):
             Q(product_name__icontains=search_query) |
             Q(product_description__icontains=search_query)
         )
+        
 
 
     min_price = float(request.GET.get('min_price', 0))

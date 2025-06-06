@@ -2,66 +2,87 @@
 {% load static %}
 {% block content %}
 
-
 <section class="content-main">
+    <!-- Page Header -->
     <div class="content-header d-flex justify-content-between align-items-center mb-4">
         <h2 class="content-title card-title">Categories</h2>
     </div>
 
+    <!-- Flash Messages -->
+    {% for message in messages %}
+        <div class="alert alert-info text-center" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <!-- Main Card -->
     <div class="card shadow-sm rounded-3">
         <div class="card-body p-4">
-            <div class="row">
-                <!-- Left Form Section -->
+            <div class="row g-4">
+                
+                <!-- Left: Add Category Form -->
                 <div class="col-md-4">
                     <h5 class="mb-3">Add New Category</h5>
-
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+
+                        <!-- Category Name -->
                         <div class="mb-3">
                             <label for="category_name" class="form-label">Category Name</label>
                             <input type="text"
-                                   placeholder="Enter category name"
                                    class="form-control form-control-lg shadow-sm"
                                    id="category_name"
                                    name="category_name"
+                                   placeholder="Enter category name"
                                    value="{{ form_data.category_name|default_if_none:'' }}"
-                                   required />
+                                   required>
                         </div>
 
+                        <!-- Description -->
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea placeholder="Enter category description"
-                                      class="form-control form-control-lg shadow-sm"
-                                      name="description"
+                            <textarea class="form-control form-control-lg shadow-sm"
                                       id="description"
-                                      rows="4">{{ form_data.description|default_if_none:'' }}</textarea>
+                                      name="description"
+                                      rows="4"
+                                      placeholder="Enter category description">{{ form_data.description|default_if_none:'' }}</textarea>
                         </div>
 
+                        <!-- Image Upload -->
                         <div class="mb-3">
                             <label for="category_image" class="form-label">Category Image</label>
                             <input type="file"
-                                   name="category_image"
                                    class="form-control form-control-lg shadow-sm"
                                    id="category_image"
-                                   accept="image/*" />
+                                   name="category_image"
+                                   accept="image/*">
                         </div>
 
+                        <!-- Form Buttons -->
                         <div class="d-flex gap-2 mt-4">
-                            <button class="btn btn-primary btn-lg shadow-sm" type="submit">Add Category</button>
-                            <button class="btn btn-secondary btn-lg shadow-sm" type="reset">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">Add Category</button>
+                            <button type="reset" class="btn btn-secondary btn-lg shadow-sm">Cancel</button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Right Table Section -->
+                <!-- Right: Category Table Section -->
                 <div class="col-md-8">
-                    <h5 class="mb-4">Categories List</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Categories List ({{ total_categories }})</h5>
+
+                        <!-- Search Form -->
+                        <form method="get" class="d-flex" role="search">
+                            <input type="text"
+                                   name="q"
+                                   class="form-control me-2"
+                                   placeholder="Search category..."
+                                   value="{{ query }}">
+                            <button class="btn btn-outline-primary" type="submit">Search</button>
+                        </form>
+                    </div>
+
+                    <!-- Category Table -->
                     <div class="table-responsive">
                         <table class="table table-hover table-striped table-borderless">
                             <thead>
@@ -83,7 +104,7 @@
                                                 <img src="{{ category.category_image.url }}"
                                                      alt="{{ category.category_name }} Image"
                                                      class="rounded-circle"
-                                                     style="max-width: 80px; max-height: 80px; object-fit: cover;" />
+                                                     style="max-width: 80px; max-height: 80px; object-fit: cover;">
                                             {% else %}
                                                 <span class="text-muted">No Image</span>
                                             {% endif %}
@@ -97,19 +118,15 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a class="btn btn-outline-primary btn-sm"
-                                                   href="{% url 'edit_category' category.id %}">
+                                                <a href="{% url 'edit_category' category.id %}" class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-pencil"></i> Edit
                                                 </a>
-
                                                 {% if category.is_blocked %}
-                                                    <a class="btn btn-outline-success btn-sm"
-                                                       href="{% url 'unblock_category' category.id %}">
+                                                    <a href="{% url 'unblock_category' category.id %}" class="btn btn-outline-success btn-sm">
                                                         <i class="bi bi-unlock"></i> Unblock
                                                     </a>
                                                 {% else %}
-                                                    <a class="btn btn-outline-danger btn-sm"
-                                                       href="{% url 'block_category' category.id %}">
+                                                    <a href="{% url 'block_category' category.id %}" class="btn btn-outline-danger btn-sm">
                                                         <i class="bi bi-lock"></i> Block
                                                     </a>
                                                 {% endif %}
@@ -124,99 +141,12 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> <!-- /.col-md-8 -->
 
-            </div>
-        </div>
-    </div>
+            </div> <!-- /.row -->
+        </div> <!-- /.card-body -->
+    </div> <!-- /.card -->
+
 </section>
 
 {% endblock content %}
-
-<style>
-    .content-main {
-        padding: 30px;
-    }
-
-    .content-header {
-        margin-bottom: 20px;
-    }
-
-    .content-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: #333;
-    }
-
-    .form-control {
-        border-radius: 0.375rem;
-        font-size: 1rem;
-    }
-
-    .form-control-lg {
-        font-size: 1.125rem;
-        padding: 0.75rem;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #f1f3f5;
-    }
-
-    .btn {
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border: 1px solid #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border: 1px solid #0056b3;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        border: 1px solid #dc3545;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
-        border: 1px solid #c82333;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border: 1px solid #28a745;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border: 1px solid #218838;
-    }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        border: 1px solid #6c757d;
-    }
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        border: 1px solid #5a6268;
-    }
-
-    .btn-sm {
-        font-size: 0.875rem;
-    }
-
-    .shadow-sm {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-
-    .rounded-circle {
-        border-radius: 50%;
-    }
-</style>

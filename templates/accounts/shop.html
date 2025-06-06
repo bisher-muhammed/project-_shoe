@@ -55,42 +55,80 @@
 
     <!-- Product Cards -->
     <div class="col-lg-9">
-      <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for product in products %}
-        <div class="col">
-          <div class="card h-100 shadow-sm rounded-4 product-card border-0">
-            <a href="{% url 'product_detials' product.id %}">
-              <img src="{{ product.product_img1.url }}" class="card-img-top rounded-top-4" alt="{{ product.product_name }}" style="height: 250px; object-fit: cover;">
-            </a>
-            <div class="card-body">
-              <h6 class="fw-bold">{{ product.product_name }}</h6>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <p class="text-muted m-0">₹{{ product.offer_price }}</p>
-                <a href="{% url 'add_wishlist' product.id %}?next={{ request.path }}"
-                   class="btn btn-light btn-sm border wishlist-btn"
-                   title="Add to Wishlist">
-                  <i class="far fa-heart text-danger"></i>
-                </a>
-              </div>
-              <a href="{% url 'product_detials' product.id %}" class="btn btn-sm btn-primary w-100">Shop Now</a>
-            </div>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+    <div class="col">
+      <div class="card h-100 shadow-sm rounded-4 product-card border-0">
+        <a href="{% url 'product_detials' product.id %}">
+          <img src="{{ product.product_img1.url }}" class="card-img-top rounded-top-4" alt="{{ product.product_name }}" style="height: 250px; object-fit: cover;">
+        </a>
+        <div class="card-body">
+          <h6 class="fw-bold">{{ product.product_name }}</h6>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <p class="text-muted m-0">₹{{ product.offer_price }}</p>
+            
+            <!-- Updated Wishlist Button with Hover Text -->
+            {% if user.is_authenticated %}
+              {% with user.wishlist as wishlist %}
+                {% if wishlist and product in wishlist.products.all %}
+                  <div class="position-relative wishlist-container">
+                    <span class="btn btn-light btn-sm border wishlist-btn bg-success text-white" 
+                          style="pointer-events: none;" 
+                          title="Added to Wishlist">
+                      <i class="fas fa-heart"></i>
+                    </span>
+                    <!-- Hover tooltip -->
+                    <div class="wishlist-tooltip position-absolute bg-dark text-white px-2 py-1 rounded small" 
+                         style="bottom: 100%; left: 50%; transform: translateX(-50%); 
+                                margin-bottom: 5px; opacity: 0; visibility: hidden; 
+                                transition: all 0.3s ease; white-space: nowrap; z-index: 1000;">
+                      Item added to wishlist
+                      <!-- Tooltip arrow -->
+                      <div class="tooltip-arrow position-absolute" 
+                           style="top: 100%; left: 50%; transform: translateX(-50%); 
+                                  width: 0; height: 0; 
+                                  border-left: 5px solid transparent; 
+                                  border-right: 5px solid transparent; 
+                                  border-top: 5px solid #000;"></div>
+                    </div>
+                  </div>
+                {% else %}
+                  <button class="btn btn-light btn-sm border wishlist-btn add-to-wishlist-btn" 
+                          data-product-id="{{ product.id }}" 
+                          type="button"
+                          title="Add to Wishlist">
+                    <i class="far fa-heart text-danger"></i>
+                  </button>
+                {% endif %}
+              {% endwith %}
+            {% else %}
+              <a href="{% url 'login_view' %}" 
+                 class="btn btn-light btn-sm border wishlist-btn"
+                 title="Login to Add to Wishlist">
+                <i class="far fa-heart text-danger"></i>
+              </a>
+            {% endif %}
           </div>
+          <a href="{% url 'product_detials' product.id %}" class="btn btn-sm btn-primary w-100">Shop Now</a>
         </div>
-        {% endfor %}
       </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 
-      <!-- Pagination -->
-      {% if products.paginator.num_pages > 1 %}
-      <nav class="mt-4 d-flex justify-content-center">
-        <ul class="pagination pagination-sm">
-          {% for page_num in products.paginator.page_range %}
-            <li class="page-item {% if products.number == page_num %}active{% endif %}">
-              <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
-      {% endif %}
+<!-- Pagination -->
+{% if products.paginator.num_pages > 1 %}
+<nav class="mt-4 d-flex justify-content-center">
+  <ul class="pagination pagination-sm">
+    {% for page_num in products.paginator.page_range %}
+      <li class="page-item {% if products.number == page_num %}active{% endif %}">
+        <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
     </div>
   </div>
 
@@ -141,6 +179,11 @@
     background-color: #ffe6ea;
     border-color: #ffccd5;
   }
+
+  .wishlist-container:hover .wishlist-tooltip {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 
   .card-body h6 {
     font-size: 1rem;

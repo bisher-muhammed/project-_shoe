@@ -1,7 +1,7 @@
 from django.contrib import admin
 from. models import *
 from core.models import Cart,CartItem
-from user.models import AddressUS,Wallet
+from user.models import AddressUS,Wallet,Wishlist
 from core.models import ProductOrder,Order,Payment
 import re
 
@@ -23,6 +23,7 @@ admin.site.register(Wallet)
 admin.site.register(Banner)
 admin.site.register(Offer)
 admin.site.register(ProductSize)
+admin.site.register(Wishlist)
 
 
 

@@ -105,23 +105,41 @@
                                             <h5 class="mb-0">User Profile</h5>
                                         </div>
                                         <div class="card-body">
-                                            <form method="post" enctype="multipart/form-data" action="{% url 'change_image_view' %}">
-                                                {% csrf_token %}
-                                                <div class="row">
-                                                    <div class="col-md-4">
-                                                        {% with user_profile.image.url as img_url %}
-                                                            <img src="{{ img_url|default:'/static/user/assets/imgs/my images/user-icon-big.png' }}" alt="Profile Image" class="img-fluid rounded-circle" style="max-width: 100%; height: auto;">
-                                                        {% endwith %}
-                                                        <br>
-                                                        <input class="form-control mt-2" type="file" name="new_image">
-                                                        <button type="submit" class="btn btn-primary mt-1 py-1 shadow">Change Image</button>
-                                                    </div>
-                                                    <div class="col-md-8">
-                                                        <p><strong>Username:</strong> {{ user.username }}</p>
-                                                        <p><strong>Email:</strong> {{ user.email }}</p>
-                                                    </div>
-                                                </div>
-                                            </form>
+                                           <form method="post" enctype="multipart/form-data" action="{% url 'change_image_view' %}">
+    {% csrf_token %}
+
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+                <div class="alert 
+                    {% if message.tags %}
+                        alert-{{ message.tags }}
+                    {% else %}
+                        alert-info
+                    {% endif %}
+                    " role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+                <div class="row">
+                <div class="col-md-4">
+                    <img src="{{ image_url }}" alt="Profile Image" class="img-fluid rounded-circle" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+            <br>
+            <input class="form-control mt-2" type="file" name="new_image" accept="image/*">
+            <button type="submit" class="btn btn-primary mt-1 py-1 shadow">Change Image</button>
+        </div>
+        <div class="col-md-8">
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+    </div>
+</form>
+
                                         </div>
                                     </div>
                                 </div>

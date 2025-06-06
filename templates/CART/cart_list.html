@@ -11,6 +11,14 @@
       <div class="alert alert-info text-center">{{ message }}</div>
     {% endfor %}
 
+
+    <form method="get" action="{% url 'cart_list' %}" class="d-flex align-items-center mb-3">
+    <input type="text" name="q" class="form-control me-2" placeholder="Search cart..." value="{{ search_query }}">
+    <button type="submit" class="btn btn-outline-primary">
+        <i class="fas fa-search"></i>
+    </button>
+</form>
+
     <div class="table-responsive mb-4">
       <table class="table table-bordered table-hover text-center align-middle">
         <thead class="table-light">

@@ -21,7 +21,7 @@ class AddressUS(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='media/user', blank=True, null=True, default='user-icon-big.png')
+    image = models.ImageField(upload_to='media/user', blank=True, null=True)
     address = models.ForeignKey(AddressUS, on_delete=models.SET_NULL, null=True,blank=True )
     wishlist = models.ManyToManyField(Product, related_name='wishlist_items')
     status = models.CharField(max_length=10,default='New')

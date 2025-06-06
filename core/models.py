@@ -39,6 +39,7 @@ class CartItem(models.Model):
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
     order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, blank=True, swappable=True)
     product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)  #
 
     def total_price(self):
         return self.quantity * self.product.offer_price

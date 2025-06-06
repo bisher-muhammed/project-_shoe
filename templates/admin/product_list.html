@@ -65,10 +65,16 @@
             </div>
         </form>
 
-        {% if error %}
-            <div class="alert alert-danger mt-3">{{ error }}</div>
-        {% endif %}
+       
     </div>
+
+
+     {% for message in messages %}
+        <div class="alert alert-info text-center" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+
 
     <div class="px-4 px-md-5">
     <div class="d-flex flex-wrap gap-4 justify-content-start">

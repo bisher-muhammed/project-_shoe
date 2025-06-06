@@ -4,6 +4,28 @@
 {% block content %}
 <section class="content-main">
     <div class="card-body px-2 px-md-4">
+
+        {% for message in messages %}
+        <div class="alert alert-info text-center" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+
+        <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by Order #, Product, Email, Username">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+        </div>
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+        </form>
+        
         <!-- Orders Table -->
         <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -37,15 +59,17 @@
                                 {% endif %}
                             </td>
 
-
                             <!-- Order Status -->
                             <td>
                                 <span class="badge rounded-pill 
-                                    {% if order.status == 'Pending' %} bg-warning 
-                                    {% elif order.status == 'Received' %} bg-success 
-                                    {% else %} bg-danger 
+                                    {% if order.status == 'pending' %} bg-warning 
+                                    {% elif order.status == 'New' %} bg-info
+                                    {% elif order.status == 'Delivered' %} bg-success 
+                                    {% elif order.status == 'Cancelled' %} bg-danger
+                                    {% elif order.status == 'Returned' %} bg-secondary
+                                    {% else %} bg-primary 
                                     {% endif %}">
-                                    {{ order.status }}
+                                    {{ order.get_status_display }}
                                 </span>
                             </td>
 
@@ -55,35 +79,48 @@
                             <!-- Items Summary -->
                             <td>
                                 {% for product_order in order.productorder_set.all %}
-                                    <div>{{ product_order.quantity }} × {{ product_order.product.product_name }}</div>
+                                    <div class="small">{{ product_order.quantity }} × {{ product_order.product.product_name }}</div>
                                 {% endfor %}
                             </td>
 
                             <!-- Actions -->
                             <td>
                                 <div class="d-flex flex-column">
-                                    <a href="{% url 'admin_order_view' order.id %}" class="btn btn-outline-primary btn-sm">Details</a>
+                                    <a href="{% url 'admin_order_view' order.id %}" class="btn btn-outline-primary btn-sm mb-2">
+                                        Details
+                                    </a>
 
+                                    <!-- Test if basic dropdown works -->
                                     <div class="dropdown">
-                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle mt-3 px-4" type="button" data-bs-toggle="dropdown">
-                                            Update Status
+                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                                type="button" 
+                                                id="dropdownMenuButton{{ order.id }}"
+                                                data-toggle="dropdown" 
+                                                aria-haspopup="true"
+                                                aria-expanded="false">
+                                            Actions
                                         </button>
 
-                                        <div class="dropdown-menu p-3" style="min-width: 250px;">
-                                            <form method="post" action="{% url 'update_order_status' order_id=order.id %}">
-                                                {% csrf_token %}
-                                                <div class="mb-2">
-                                                    <label for="status-select-{{ order.id }}" class="form-label">Status</label>
-                                                    <select name="new_status" id="status-select-{{ order.id }}" class="form-select form-select-sm">
-                                                        {% for status, status_display in order.STATUS %}
-                                                            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
-                                                                {{ status_display }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary btn-sm w-100">Update</button>
-                                            </form>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ order.id }}">
+                                            <a class="dropdown-item" href="{% url 'admin_order_view' order.id %}">View Details</a>
+                                            <div class="dropdown-divider"></div>
+                                            <h6 class="dropdown-header">Update Status</h6>
+                                            <div class="px-3 py-2">
+                                                <form action="{% url 'update_order_status' order_id=order.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+                                                        <label for="status-select-{{ order.id }}" class="small">Change Status:</label>
+                                                        <select id="status-select-{{ order.id }}" name="new_status" class="form-control form-control-sm">
+                                                            {% for status, status_display in order.STATUS %}
+                                                                <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+                                                                    {{ status_display }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-sm btn-block mt-2">Update</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -91,7 +128,10 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No orders found.</td>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <br>No orders found.
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -101,31 +141,147 @@
         <!-- Pagination -->
         {% if orders.has_other_pages %}
             <div class="d-flex justify-content-center mt-4">
-                <ul class="pagination">
-                    {% if orders.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1">&laquo;&laquo;</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.previous_page_number }}">&laquo;</a>
-                        </li>
-                    {% endif %}
+                <nav aria-label="Orders pagination">
+                    <ul class="pagination">
+                        {% if orders.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
 
-                    <li class="page-item active">
-                        <span class="page-link">{{ orders.number }}</span>
-                    </li>
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">
+                                {{ orders.number }} of {{ orders.paginator.num_pages }}
+                            </span>
+                        </li>
 
-                    {% if orders.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.next_page_number }}">&raquo;</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.paginator.num_pages }}">&raquo;&raquo;</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                        {% if orders.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             </div>
         {% endif %}
     </div>
 </section>
+
+<!-- Basic Debug Test -->
+<script>
+// Test if basic JavaScript works
+console.log('Basic JavaScript is working');
+
+// Test jQuery
+if (typeof jQuery !== 'undefined') {
+    console.log('jQuery is loaded, version:', jQuery.fn.jquery);
+} else {
+    console.log('ERROR: jQuery is NOT loaded');
+}
+
+// Test Bootstrap
+if (typeof jQuery !== 'undefined' && typeof jQuery.fn.dropdown !== 'undefined') {
+    console.log('Bootstrap dropdown is available');
+} else {
+    console.log('ERROR: Bootstrap dropdown is NOT available');
+}
+
+// Test without jQuery first
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
+    
+    // Add click listeners to dropdown buttons
+    var dropdownButtons = document.querySelectorAll('.dropdown-toggle');
+    console.log('Found dropdown buttons:', dropdownButtons.length);
+    
+    dropdownButtons.forEach(function(button, index) {
+        console.log('Adding listener to button', index);
+        button.addEventListener('click', function(e) {
+            console.log('Button clicked:', this.id);
+            
+            // Manual dropdown toggle
+            var dropdownMenu = this.nextElementSibling;
+            if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                if (dropdownMenu.style.display === 'block') {
+                    dropdownMenu.style.display = 'none';
+                    console.log('Dropdown closed');
+                } else {
+                    dropdownMenu.style.display = 'block';
+                    console.log('Dropdown opened');
+                }
+            }
+        });
+    });
+});
+</script>
+
+<!-- Custom CSS for better styling -->
+<style>
+.dropdown-menu {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-header {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+}
+
+/* Bootstrap 4 Compatible Styles */
+.gap-2 > * + * {
+    margin-top: 0.5rem;
+}
+
+/* Ensure dropdown appears above other elements */
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Loading state styles */
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .dropdown-menu {
+        min-width: 250px !important;
+    }
+}
+</style>
 {% endblock content %}
