@@ -187,3 +187,4 @@ DEFAULT_FROM_EMAIL = EMAIL_FROM
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db' 
 
+SITE_DOMAIN = 'https://shoespace.site'
