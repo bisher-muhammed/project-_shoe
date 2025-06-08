@@ -1,7 +1,9 @@
 from django.urls import path, include
+from user.views.auth_views import home
 
 urlpatterns = [
     # Modular includes
+    path('', home, name='home'),
     path('auth/', include('user.urls.auth_urls')),
     path('dashboard/', include('user.urls.profile_urls')),
     path('address/', include('user.urls.address_urls')),
