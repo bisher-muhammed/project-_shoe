@@ -313,7 +313,8 @@
 }
 </style>
 <!-- Razorpay Scripts -->
-<script src="https://checkout.razorpay.com/v1/checkout.js" integrity="sha384-Dbg5vN8ffJZ269H0MKTBwhObsnjvw7TTcU9AqXBB+TpEWs3B+EH90xUiQg8pr6gD" crossorigin="anonymous"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const codBtn = document.getElementById('cash-on-delivery-btn');
@@ -337,13 +338,13 @@
         "key": "rzp_test_HJ4Pt1x015HzyE",
         "amount": Math.round({{ order.order_total|floatformat:2 }} * 100),
         "currency": "INR",
-        "name": "Sofa",
+        "name": "Shoespace",
         "description": "Purchase",
         "image": "https://example.com/your_logo",
         "order_id": "{{ payment.id }}",
         "handler": function (response) {
             if (response.razorpay_payment_id) {
-                window.location.href = '/core/confirm_razorpay_payment/{{ order.id }}/';
+                window.location.href = '/core/payments/confirm_razorpay_payment/{{ order.id }}/';
             } else {
                 alert("Payment failed or canceled!");
             }

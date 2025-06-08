@@ -1,192 +1,29 @@
-import json
-import datetime
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseBadRequest, JsonResponse
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.http import require_http_methods, require_POST
-from django.views.decorators.cache import cache_page
-from .utils import send_order_confirmation_email
+from decimal import Decimal
+from datetime import date
 
-from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import cache_control, never_cache, cache_page
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Q
 
 from adminapp.models import Product, Coupon
 from core.models import *
-from user.models import Wishlist
-from .models import *
-from user.views import *
+from user.models import Wishlist,UserProfile,Wallet
+from core.views.cart_views import calculate_cart_total
+import razorpay
 
-
-@login_required(login_url="login_view")
-def add_to_cart(request, product_id):
-    if request.method != 'POST':
-        return HttpResponseBadRequest("Invalid request method.")
-
-    product = get_object_or_404(Product, pk=product_id)
-
-    selected_size_id = request.POST.get('size')
-    if not selected_size_id:
-        messages.error(request, "Please select a size before adding to cart.")
-        return redirect('product_detials', product_id=product_id)
-
-    selected_size = get_object_or_404(Size, pk=selected_size_id)
-
-    try:
-        quantity = int(request.POST.get('quantity', 1))
-        if quantity < 1:
-            raise ValueError
-    except ValueError:
-        messages.error(request, "Invalid quantity selected.")
-        return redirect('product_detials', product_id=product_id)
-
-    product_size = ProductSize.objects.filter(product=product, size=selected_size).first()
-    if not product_size:
-        messages.error(request, "Selected size is not available for the product.")
-        return redirect('product_detials', product_id=product_id)
-
-    if product_size.quantity < quantity:
-        messages.error(request, f"Only {product_size.quantity} item(s) available for the selected size.")
-        return redirect('product_detials', product_id=product_id)
-
-    cart, _ = Cart.objects.get_or_create(user=request.user, active=True)
-
-    with transaction.atomic():
-        cart_item, created = CartItem.objects.get_or_create(
-            user=request.user,
-            cart=cart,
-            product=product,
-            size=selected_size,
-            defaults={'quantity': 0}
-        )
-
-        # If already exists, increase quantity
-        cart_item.quantity += quantity
-        cart_item.product_size = product_size
-        cart_item.price = cart_item.quantity * cart_item.product.offer_price
-        cart_item.save()
-
-        # If previously ordered, deduct quantity
-        order = Order.objects.filter(cart=cart, is_ordered=True).order_by('-created_at').first()
-        if order:
-            product_size.quantity -= quantity
-            product_size.save()
-
-        cart.update_total()
-
-    messages.success(request, "Product added to the cart.")
-    return redirect('cart_list')
-
-
-
-
-@login_required(login_url="login_view")
-def cart_list(request):
-    search_query = request.GET.get('q', '')
-    cart = Cart.objects.filter(user=request.user, active=True).first()
-    cart_items = cart.cartitem_set.all().order_by('-created_at') if cart else []
-
-    if search_query:
-        cart_items = cart_items.filter(
-            Q(product__product_name__icontains=search_query)
-            
-        )
-
-    # Annotate each cart item with available quantity
-    for cart_item in cart_items:
-        product_size = ProductSize.objects.filter(product=cart_item.product, size=cart_item.size).first()
-        cart_item.available_quantity = product_size.quantity if product_size else 0
-
-    return render(request, 'CART/cart_list.html', {
-        'cart_items': cart_items,
-        'search_query': search_query
-    })
+from core.utils import send_order_confirmation_email
 
 
 
 
 
-@login_required(login_url="login_view")
-def clear_cart(request):
-    # Get the user's active cart
-    cart = Cart.objects.filter(user=request.user, active=True).first()
 
-    if cart:
-        # Clear all cart items
-        cart.cartitem_set.all().delete()
-        # Update the cart total
-        cart.update_total()
-        messages.success(request, "Cart cleared successfully!")
-    else:
-        messages.warning(request, "No active cart found.")
-
-    return redirect('cart_list')
-
-@login_required(login_url="login_view")
-def product_list(request):
-    products = Product.objects.all()
-    print(products)
-    return render(request, 'admin/product_list.html', {'products': products})
-
-@login_required(login_url="login_view")
-def remove_cart(request, cart_item_id):
-    try:
-        cart_item = CartItem.objects.get(pk=cart_item_id)
-    except CartItem.DoesNotExist:
-        messages.error(request, "Cart item does not exist")
-        return redirect('cart_list')
-
-    cart = get_object_or_404(Cart, user=request.user, active=True)
-
-    # Remove the cart item from the user's cart
-    if cart_item.cart == cart:
-        cart_item.delete()
-        return redirect('cart_list')
-    else:
-        messages.error(request, "Cart item does not belong to the current user")
-        return redirect('home')
-
-def calculate_subtotal(cart_item):
-    
-    subtotal = cart_item.quantity * cart_item.product.offer_price
-    return subtotal
-
-def cart_update(request, cart_item_id):
-    cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
-    
-    # action = request.POST.get('action')
-    print("action workedrequest.POST.get('action')")
-    data = json.loads(request.body.decode('utf-8'))
-    action = data.get('action')
-    print(action)
-    
-    
-    
-
-    
-    if action == 'increase':
-         cart_item.quantity += 1
-    elif action == 'decrease' and cart_item.quantity > 1:
-        cart_item.quantity -= 1
-
-    cart_item.save()
-
-    data = {
-        'quantity': cart_item.quantity,
-        'subtotal': calculate_subtotal(cart_item),
-    }
-    return JsonResponse(data)
-
-
-def calculate_cart_total(cart_items):
-    total = 0
-    for cart_item in cart_items:
-        total += cart_item.product.offer_price * cart_item.quantity
-    return total
-
-
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 @login_required(login_url="login_view")
 def checkout(request):
     user = request.user
@@ -265,6 +102,9 @@ def checkout(request):
 
     return render(request, 'CART/checkout.html', context)
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 @login_required(login_url="login_view")
 def placeorder(request):
     if not request.user.is_authenticated:
@@ -349,7 +189,8 @@ def placeorder(request):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
 @require_http_methods(["GET", "POST"])
 def payments(request, order_id):
     current_user = request.user
@@ -454,55 +295,6 @@ def cash_on_delivery(request, order_id):
     return redirect('order_confirmed', order_id=order_id)
 
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@cache_page(0)
-def order_confirmed(request, order_id):
-    order = get_object_or_404(Order, id=order_id, is_ordered=True)
-    order_products = ProductOrder.objects.filter(user=request.user, order=order)
-
-    send_order_confirmation_email(order)
-
-    total_amount = 0
-    selected_coupon_code = request.session.get('selected_coupon_code', '')
-    updated_wallet_balance = Decimal(request.session.get('updated_wallet_balance', '0.00'))
-
-    for order_product in order_products:
-        order_product.total = order_product.quantity * order_product.product_price
-        total_amount += order_product.total
-
-    coupon_applied = bool(selected_coupon_code)
-
-    # Update product sizes
-    order.reduce_product_size_quantity()
-
-    # Optional: clean up session
-    for key in ['some_key_to_clear', 'selected_coupon_code', 'updated_wallet_balance']:
-        if key in request.session:
-            del request.session[key]
-    request.session.save()
-
-    context = {
-        'order_products': order_products,
-        'order': order,
-        'address': order.address,
-        'total_amount': total_amount,
-        'selected_coupon_code': selected_coupon_code,
-        'coupon_applied': coupon_applied,
-        'updated_wallet_balance': updated_wallet_balance,
-    }
-
-    return render(request, 'CART/order_confirmed.html', context)
-def coupon_list(request):
-
-    coupon_list = Coupon.objects.filter(is_blocked=True)
-   
-
-    return render(request, 'admin/coupon_management.html', {'coupon_list': coupon_list,})
-
-
-
-
-
 @transaction.atomic
 def confirm_razorpay_payment(request, order_id):
     current_user = request.user
@@ -546,6 +338,54 @@ def confirm_razorpay_payment(request, order_id):
 
     # Redirect to 'order_confirmed' with necessary parameters
     return redirect('order_confirmed', order_id=order_id)
+
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@cache_page(0)
+def order_confirmed(request, order_id):
+    order = get_object_or_404(Order, id=order_id, is_ordered=True)
+    order_products = ProductOrder.objects.filter(user=request.user, order=order)
+
+    send_order_confirmation_email(order)
+
+    total_amount = 0
+    selected_coupon_code = request.session.get('selected_coupon_code', '')
+    updated_wallet_balance = Decimal(request.session.get('updated_wallet_balance', '0.00'))
+
+    for order_product in order_products:
+        order_product.total = order_product.quantity * order_product.product_price
+        total_amount += order_product.total
+
+    coupon_applied = bool(selected_coupon_code)
+
+    # Update product sizes
+    order.reduce_product_size_quantity()
+
+    # Optional: clean up session
+    for key in ['some_key_to_clear', 'selected_coupon_code', 'updated_wallet_balance']:
+        if key in request.session:
+            del request.session[key]
+    request.session.save()
+
+    context = {
+        'order_products': order_products,
+        'order': order,
+        'address': order.address,
+        'total_amount': total_amount,
+        'selected_coupon_code': selected_coupon_code,
+        'coupon_applied': coupon_applied,
+        'updated_wallet_balance': updated_wallet_balance,
+    }
+
+    return render(request, 'CART/order_confirmed.html', context)
+
+
+
+
+
+
+
 
 
 
@@ -620,30 +460,3 @@ def wallet_pay(request, order_id):
 
     # ✅ Redirect to confirmation
     return redirect('order_confirmed', order_id=order_id)
-
-
-@login_required(login_url="login_view")
-def add_to_cart_from_wishlist(request, product_id, quantity=1):
-    product = get_object_or_404(Product, id=product_id)
-
-    # Get or create the user's active cart
-    cart, created = Cart.objects.get_or_create(user=request.user, active=True)
-
-    # Check if the product is already in the cart
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={'user': request.user})
-
-    if not created:
-        # If the product is already in the cart, update the quantity
-        cart_item.quantity += quantity
-    else:
-        # If the product is not in the cart, create a new cart item with the given quantity
-        cart_item.quantity = quantity
-
-    cart_item.price = cart_item.quantity * cart_item.product.offer_price
-    cart_item.save()
-
-    cart.update_total()
-
-    messages.success(request, f"{product.product_name} added to your cart!")
-
-    return redirect('wishlist')  

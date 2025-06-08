@@ -85,4 +85,16 @@
     </div>
   </section>
 </main>
+
+<script>
+    // Only run this script on the login page
+    document.addEventListener("DOMContentLoaded", function () {
+        // Prevent back button after logout by pushing a dummy state
+        history.pushState(null, null, location.href);
+        window.addEventListener("popstate", function () {
+            // Redirect to login if user presses back
+            location.href = "{% url 'login_view' %}";
+        });
+    });
+</script>
 {% endblock content %}

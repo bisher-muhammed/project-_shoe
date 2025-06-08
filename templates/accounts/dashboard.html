@@ -2,6 +2,259 @@
 {% load static %}
 {% block content %}
 
+<style>
+/* Enhanced smooth animations and transitions */
+.dashboard-menu .nav-link {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-menu .nav-link:hover {
+    background: linear-gradient(135deg,rgb(87, 102, 124) 0%,rgb(71, 81, 93) 100%);
+    color: black;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.dashboard-menu .nav-link.active {
+    background: linear-gradient(135deg,rgb(28, 152, 160) 0%,rgb(53, 128, 133) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(33, 145, 159, 0.4);
+}
+
+.card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background: linear-gradient(135deg,rgb(70, 112, 77) 0%,rgb(44, 84, 82) 100%) !important;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.profile-image-container {
+    position: relative;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.profile-image-container:hover {
+    transform: scale(1.05);
+}
+
+.profile-image {
+    border: 4px solid #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.file-upload-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+.file-upload-input {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-upload-label {
+    background: linear-gradient(135deg,rgb(56, 151, 129) 0%,rgb(42, 119, 120) 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.file-upload-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg,rgb(33, 34, 36) 0%,rgb(8, 8, 8) 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline-info {
+    border: 2px solid #667eea;
+    color:rgb(65, 80, 92);
+    border-radius: 20px;
+    padding: 8px 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-outline-info:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+    animation: slideInDown 0.5s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-info-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.user-info-item {
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.user-info-item:last-child {
+    border-bottom: none;
+}
+
+.user-info-label {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.user-info-value {
+    color: #444;
+    font-size: 16px;
+}
+
+.address-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    border-left: 4px solid #667eea;
+}
+
+.mobile-header-wrapper-style {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.mobile-search input {
+    border-radius: 25px;
+    border: none;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.mobile-search input:focus {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    transform: scale(1.02);
+}
+
+.social-icon {
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.social-icon:hover {
+    transform: translateY(-3px) scale(1.1);
+}
+
+.dashboard-content {
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    .col-md-4 {
+        margin-bottom: 20px;
+    }
+    
+    .dashboard-menu {
+        margin-bottom: 30px;
+    }
+}
+</style>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
 <div class="mobile-header-active mobile-header-wrapper-style">
     <div class="mobile-header-wrapper-inner">
         <!-- Header Top -->
@@ -44,11 +297,11 @@
             <!-- Social Icons -->
             <div class="mobile-social-icon">
                 <h5 class="mb-15 text-grey-4">Follow Us</h5>
-                <a href="#"><img src="{% static 'core/assets/imgs/theme/icons/icon-facebook.svg' %}" alt=""></a>
-                <a href="#"><img src="{% static 'core/assets/imgs/theme/icons/icon-twitter.svg' %}" alt=""></a>
-                <a href="#"><img src="{% static 'core/assets/imgs/theme/icons/icon-instagram.svg' %}" alt=""></a>
-                <a href="#"><img src="{% static 'core/assets/imgs/theme/icons/icon-pinterest.svg' %}" alt=""></a>
-                <a href="#"><img src="{% static 'core/assets/imgs/theme/icons/icon-youtube.svg' %}" alt=""></a>
+                <a href="#" class="social-icon"><img src="{% static 'core/assets/imgs/theme/icons/icon-facebook.svg' %}" alt=""></a>
+                <a href="#" class="social-icon"><img src="{% static 'core/assets/imgs/theme/icons/icon-twitter.svg' %}" alt=""></a>
+                <a href="#" class="social-icon"><img src="{% static 'core/assets/imgs/theme/icons/icon-instagram.svg' %}" alt=""></a>
+                <a href="#" class="social-icon"><img src="{% static 'core/assets/imgs/theme/icons/icon-pinterest.svg' %}" alt=""></a>
+                <a href="#" class="social-icon"><img src="{% static 'core/assets/imgs/theme/icons/icon-youtube.svg' %}" alt=""></a>
             </div>
         </div>
     </div>
@@ -70,98 +323,148 @@
                             <div class="dashboard-menu">
                                 <ul class="nav flex-column" role="tablist">
                                     <li class="nav-item">
-                                        <a class="nav-link" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="false">
+                                        <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">
                                             <i class="fi-rs-settings-sliders mr-10"></i>Dashboard
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="nav-link" id="address-tab" href="{% url 'order_list' %}" role="tab">Orders</a>
-                                    </li>
-                                    <li>
-                                        <a class="nav-link" id="address-tab" href="{% url 'addresses'%}" role="tab">My Address</a>
-                                    </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'wallet' %}">
-                                            <i class="fi-rs-sign-out mr-10"></i>Wallet
+                                        <a class="nav-link" id="orders-tab" href="{% url 'order_list' %}" role="tab">
+                                            <i class="fi-rs-shopping-bag mr-10"></i>Orders
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" id="address-tab" href="{% url 'wishlist'%}" role="tab">Wishlist</a>
+                                        <a class="nav-link" id="address-tab" href="{% url 'addresses'%}" role="tab">
+                                            <i class="fi-rs-marker mr-10"></i>My Address
+                                        </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{% url 'logout_view' %}"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
+                                        <a class="nav-link" href="{% url 'wallet' %}">
+                                            <i class="fi-rs-credit-card mr-10"></i>Wallet
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="wishlist-tab" href="{% url 'wishlist'%}" role="tab">
+                                            <i class="fi-rs-heart mr-10"></i>Wishlist
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'logout_view' %}">
+                                            <i class="fi-rs-sign-out mr-10"></i>Logout
+                                        </a>
                                     </li>
                                 </ul>
                             </div>
                         </div>
 
                         <!-- Dashboard Content -->
-                        <div class="col-sm-8">
+                        <div class="col-md-8">
                             <div class="tab-content dashboard-content">
                                 <!-- User Profile -->
                                 <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                                     <div class="card shadow-sm border-radius-10">
-                                        <div class="card-header bg-secondary text-white">
-                                            <h5 class="mb-0">User Profile</h5>
+                                        <div class="card-header">
+                                            <h5 class="mb-0 text-white">
+                                                <i class="fi-rs-user mr-10"></i>User Profile
+                                            </h5>
                                         </div>
                                         <div class="card-body">
-                                           <form method="post" enctype="multipart/form-data" action="{% url 'change_image_view' %}">
-    {% csrf_token %}
+                                            <form method="post" enctype="multipart/form-data" action="{% url 'change_image_view' %}" id="profileForm">
+                                                {% csrf_token %}
 
-    {% if messages %}
-        <div class="mb-3">
-            {% for message in messages %}
-                <div class="alert 
-                    {% if message.tags %}
-                        alert-{{ message.tags }}
-                    {% else %}
-                        alert-info
-                    {% endif %}
-                    " role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+                                                {% if messages %}
+                                                    <div class="mb-3">
+                                                        {% for message in messages %}
+                                                            <div class="alert 
+                                                                {% if message.tags %}
+                                                                    alert-{{ message.tags }}
+                                                                {% else %}
+                                                                    alert-info
+                                                                {% endif %}
+                                                                " role="alert">
+                                                                {{ message }}
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
 
-                <div class="row">
-                <div class="col-md-4">
-                    <img src="{{ image_url }}" alt="Profile Image" class="img-fluid rounded-circle" style="max-width: 100%; height: auto;">
-                </div>
-            </div>
-            <br>
-            <input class="form-control mt-2" type="file" name="new_image" accept="image/*">
-            <button type="submit" class="btn btn-primary mt-1 py-1 shadow">Change Image</button>
-        </div>
-        <div class="col-md-8">
-            <p><strong>Username:</strong> {{ user.username }}</p>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-        </div>
-    </div>
-</form>
-
+                                                <div class="row">
+                                                    <div class="col-md-4 text-center">
+                                                        <div class="profile-image-container">
+                                                            <img src="{{ image_url }}" alt="Profile Image" 
+                                                                 class="img-fluid rounded-circle profile-image" 
+                                                                 style="max-width: 150px; height: 150px; object-fit: cover;">
+                                                        </div>
+                                                        <div class="file-upload-wrapper">
+                                                            <input class="file-upload-input" type="file" name="new_image" 
+                                                                   accept="image/*" id="imageInput">
+                                                            <label for="imageInput" class="file-upload-label">
+                                                                <i class="fi-rs-camera mr-5"></i>Choose Image
+                                                            </label>
+                                                        </div>
+                                                        <br>
+                                                        <button type="submit" class="btn btn-primary mt-2">
+                                                            <i class="fi-rs-check mr-5"></i>Update Image
+                                                        </button>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <div class="user-info-section">
+                                                            <div class="user-info-item">
+                                                                <div class="user-info-label">
+                                                                    <i class="fi-rs-user mr-5"></i>Username
+                                                                </div>
+                                                                <div class="user-info-value">{{ user.username }}</div>
+                                                            </div>
+                                                            <div class="user-info-item">
+                                                                <div class="user-info-label">
+                                                                    <i class="fi-rs-envelope mr-5"></i>Email Address
+                                                                </div>
+                                                                <div class="user-info-value">{{ user.email }}</div>
+                                                            </div>
+                                                            <div class="user-info-item">
+                                                                <div class="user-info-label">
+                                                                    <i class="fi-rs-calendar mr-5"></i>Member Since
+                                                                </div>
+                                                                <div class="user-info-value">{{ user.date_joined|date:"F d, Y" }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Orders Tab -->
 
                                 <!-- My Address Tab -->
                                 <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
                                     <div class="row">
                                         <div class="col-lg-12">
                                             {% for address in addresses %}
-                                                <div class="card mb-3 shadow-sm border-radius-10">
-                                                    <div class="card-header bg-info text-white">
-                                                        <h5 class="mb-0">Address</h5>
+                                                <div class="card mb-3 shadow-sm border-radius-10 address-card">
+                                                    <div class="card-header">
+                                                        <h5 class="mb-0 text-white">
+                                                            <i class="fi-rs-marker mr-10"></i>Delivery Address
+                                                        </h5>
                                                     </div>
                                                     <div class="card-body">
-                                                        <address>
-                                                            {{ address.first_name }} {{ address.last_name }}<br>
+                                                        <address class="mb-3">
+                                                            <strong>{{ address.first_name }} {{ address.last_name }}</strong><br>
                                                             {{ address.address }}<br>
                                                             {{ address.city }}, {{ address.state }} {{ address.zipcode }}
                                                         </address>
-                                                        <a href="#" class="btn btn-small btn-outline-info">Edit</a>
+                                                        <a href="#" class="btn btn-outline-info">
+                                                            <i class="fi-rs-edit mr-5"></i>Edit Address
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            {% empty %}
+                                                <div class="card mb-3 shadow-sm border-radius-10">
+                                                    <div class="card-body text-center py-5">
+                                                        <i class="fi-rs-marker" style="font-size: 48px; color: #ccc;"></i>
+                                                        <h5 class="mt-3 text-muted">No addresses found</h5>
+                                                        <p class="text-muted">Add your first delivery address to get started.</p>
+                                                        <a href="#" class="btn btn-primary">
+                                                            <i class="fi-rs-plus mr-5"></i>Add Address
+                                                        </a>
                                                     </div>
                                                 </div>
                                             {% endfor %}
@@ -177,4 +480,72 @@
     </section>
 </main>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay on form submission
+    const form = document.getElementById('profileForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    
+    if (form) {
+        form.addEventListener('submit', function() {
+            loadingOverlay.style.display = 'flex';
+        });
+    }
+    
+    // Preview image on file select
+    const imageInput = document.getElementById('imageInput');
+    const profileImage = document.querySelector('.profile-image');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileImage.src = e.target.result;
+                    profileImage.style.animation = 'fadeInUp 0.5s ease';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Smooth scroll for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Add active class to current menu item
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.dashboard-menu .nav-link').forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.animation = 'slideInDown 0.5s ease reverse';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 500);
+        });
+    }, 5000);
+});
+</script>
+
 {% endblock content %}
+
+
