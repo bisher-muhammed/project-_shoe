@@ -191,7 +191,6 @@ def admin_product_list(request):
     brands = Brand.objects.filter(is_active=True)
     categories = Category.objects.filter(is_blocked=True) 
     
-
     search_query = request.GET.get('search', '').strip()
     category_id = request.GET.get('category')
     brand_id = request.GET.get('brand')
@@ -237,13 +236,16 @@ def admin_product_list(request):
     if end_date_obj:
         products = products.filter(created_at__date__lte=end_date_obj)
 
-    # Apply search (after brand/category/date filters)
+    # Apply search
     if search_query:
         products = products.filter(
             Q(product_name__icontains=search_query) |
             Q(brand__brand_name__icontains=search_query) |
             Q(category__category_name__icontains=search_query)
         )
+
+    # ✅ Order by most recently updated or created
+    products = products.order_by('-created_at')
 
     # Display validation message if any
     if error:
@@ -263,6 +265,7 @@ def admin_product_list(request):
     }
 
     return render(request, 'admin/product_list.html', context)
+
 
 
 
@@ -372,7 +375,7 @@ def edit_product(request, product_id):
                         else:
                             error_message = f"Please enter a valid quantity for size {size.name}."
                             raise ValueError("Invalid quantity input")
-
+                messages.success(request, "Product updated successfully.")
                 return redirect('admin_product_list')  # Adjust this to match your actual product list URL name
 
             except (Category.DoesNotExist, Brand.DoesNotExist):

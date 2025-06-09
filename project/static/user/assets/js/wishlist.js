@@ -25,7 +25,7 @@ $(document).ready(function() {
         
         // AJAX request to add to wishlist
         $.ajax({
-            url: `/add_wishlist/${productId}/`,
+            url: `/wishlist/add_wishlist/${productId}/`,
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
