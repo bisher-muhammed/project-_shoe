@@ -7,7 +7,7 @@
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:20:36 GMT -->
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}My Page{% endblock %}</title>
+    <title>{% block title %}shoeshop{% endblock %}</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +20,9 @@
 
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg' %}">
+
+     <script type="text/javascript" src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
+     <script type="text/javascript" src="{% static 'user/assets/js/checkout.js' %}"></script>
 
 
 
@@ -458,11 +461,6 @@
         <div class="container">
             <div class="header-wrap header-space-between position-relative">
                 <!-- Logo (Mobile) -->
-                <div class="logo logo-width-1 d-block d-lg-none">
-                    <a href="{% url 'home' %}">
-                        <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo">
-                    </a>
-                </div>
 
                 <!-- Navigation Menu -->
                 <div class="header-nav d-none d-lg-flex">
@@ -519,11 +517,6 @@
 <div class="mobile-header-active mobile-header-wrapper-style">
     <div class="mobile-header-wrapper-inner">
         <div class="mobile-header-top">
-            <div class="mobile-header-logo">
-                <a href="{% url 'home' %}">
-                    <img src="{% static 'user/assets/imgs/my_images/logo.jpg' %}" alt="logo">
-                </a>
-            </div>
             <div class="mobile-menu-close close-style-wrap close-style-position-inherit">
                 <button class="close-style search-close">
                     <i class="icon-top"></i>
@@ -581,7 +574,7 @@
         <!-- Newsletter -->
         <section class="newsletter">
             <div class="container">
-                <h2>Stay Updated with ShoeSpace</h2>
+                <h2>Stay Updated with shoeshop.</h2>
                 <p>Get the latest updates on new arrivals, exclusive offers</p>
             </div>
         </section>
@@ -592,7 +585,7 @@
                 <div class="footer-grid">
                     <!-- About + Contact -->
                     <div class="footer-section">
-                        
+
                         <h5><i class="fas fa-address-card"></i> Contact Information</h5>
                         <ul class="contact-info">
                             <li>
@@ -609,7 +602,7 @@
                             </li>
                             <li>
                                 <i class="fas fa-envelope"></i>
-                                <span><strong>Email:</strong> info@shoespace.site</span>
+                                <span><strong>Email:</strong> bisherp2@gmail.com</span>
                             </li>
                         </ul>
                     </div>
@@ -672,7 +665,7 @@
         <div class="footer-bottom">
             <div class="container">
                 <div class="footer-bottom-content">
-                    <p>&copy; 2025 <span class="text-brand">ShoeSpace</span>. All rights reserved.</p>
+                    <p>&copy; 2025 <span class="text-brand">shoeshop.</span>. All rights reserved.</p>
                     <p>Made with <i class="fas fa-heart text-danger"></i> in Kerala, India</p>
                 </div>
             </div>
@@ -757,11 +750,5 @@
     <script type="text/JavaScript" src="{% static 'user/assets/js/main.js' %}"></script>
     <script type="text/JavaScript" src="{% static 'user/assets/js/shop.js' %}"></script>
     <script type="text/javascript" src="{% static 'user/assets/js/wishlist.js' %}?v=999"></script>
-
-
-
-
-
-   
 </body>
 </html>
