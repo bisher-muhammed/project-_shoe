@@ -139,7 +139,7 @@ a:hover {
 ::-moz-selection {
   background: #088178;
   /* WebKit/Blink Browsers */
-  color: #fff;
+  color : #fff;
 }
 ::selection {
   background: #088178;

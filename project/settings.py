@@ -145,13 +145,25 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"
-STATICFILES_DIRS = [
-    "project/static",
-]
+
 import os
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+
+# This is where collectstatic will put files (used in production)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# These are your custom static folders during development
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'project/static'),
+]
+
+
+
+
 TIME_ZONE = 'Asia/Kolkata'
 USE_TZ = True
 
