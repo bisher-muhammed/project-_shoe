@@ -28,10 +28,20 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['13.60.72.157', 'shoeshop.fun', 'www.shoeshop.fun']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://13.60.72.157',
+    'https://13.60.72.157',
+    'http://shoeshop.fun',
+    'https://shoeshop.fun',
+    'http://www.shoeshop.fun',
+    'https://www.shoeshop.fun',
+]
 
 
-# Application definition
+
+# Application definitionshoeshop.fun
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -47,15 +57,17 @@ INSTALLED_APPS = [
     'core',
     'matplotlib',
     'image_cropping',
-    'dj_database_url'
-     
-   
+    'dj_database_url',
+    'csp'
 
-   
+
+
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,6 +76,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -107,10 +120,9 @@ DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=False  
+        ssl_require=not config('DEBUG', cast=bool)
     )
 }
-
 
 
 
@@ -194,9 +206,58 @@ EMAIL_FROM=config('EMAIL_FROM')
 EMAIL_HOST_USER=config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT=587
-DEFAULT_FROM_EMAIL = EMAIL_FROM  
+DEFAULT_FROM_EMAIL = EMAIL_FROM
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db' 
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 3600
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
-SITE_DOMAIN = 'https://shoespace.site'
+
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ("'self'",),
+
+        "script-src": (
+            "'self'",
+            "'unsafe-inline'",  # Needed for Razorpay's inline scripts
+            "https://checkout.razorpay.com",
+        ),
+        "script-src-elem": (
+            "'self'",
+            "'unsafe-inline'",  # Allow inline <script> blocks for Razorpay
+            "https://checkout.razorpay.com",
+        ),
+
+        "style-src": (
+            "'self'",
+            "'unsafe-inline'",  # Needed for inline styles or style attrs
+        ),
+        "style-src-elem": (
+            "'self'",
+            "'unsafe-inline'",
+        ),
+
+        "font-src": (
+            "'self'",
+        ),
+
+        "img-src": (
+            "'self'",
+            "data:",  # Allow images embedded as base64 data URIs
+        ),
+    }
+}
+
+
+
+
+
+
+SITE_DOMAIN = 'https://shoeshop.fun'
+
