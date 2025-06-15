@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = ['13.60.72.157', 'shoeshop.fun', 'www.shoeshop.fun']
+ALLOWED_HOSTS = ['13.60.72.157', 'shoeshop.fun', 'www.shoeshop.fun','127.0.0.1']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://13.60.72.157',

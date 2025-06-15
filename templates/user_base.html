@@ -7,34 +7,26 @@
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-frontend/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:20:36 GMT -->
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}shoeshop{% endblock %}</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="Find stylish and comfortable footwear at shoeshop. Explore our range of men's, women's, and sports shoes.">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ meta_title|default:"shoeshop" }}</title>
+    <meta name="description" content="{{ meta_description|default:"Find stylish and comfortable footwear at shoeshop." }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
-    <!-- SEO & Social Sharing -->
-    <meta property="og:title" content="Shop Stylish Shoes at shoeshop">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://shoeshop.fun">
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="{{ meta_title|default:"shoeshop" }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:image" content="{% static 'user/assets/imgs/banner/shoe-banner.jpg' %}">
+    <meta property="og:type" content="website">
 
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg' %}">
 
-     <script type="text/javascript" src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
-
-
-    <!-- Custom CSS -->
+    <!-- CSS and Scripts -->
     <link rel="stylesheet" href="{% static 'user/assets/css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'user/assets/css/animate.css' %}">
-    
-
-    <link rel="stylesheet" href="{% static 'user/assets/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'user/assets/css/magnific-popup.css' %}">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-    
+    <script src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
 </head>
+
+
 
 <style>
         * {
