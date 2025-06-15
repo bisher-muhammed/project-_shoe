@@ -311,42 +311,6 @@
 
     
     
-                {% comment %} <!-- Product Section -->
-                <div class="col-lg-9 col-md-12">
-                    <div class="tab-content wow fadeIn animated" id="myTabContent-1">
-                        <div class="tab-pane fade show active" id="tab-one-1" role="tabpanel" aria-labelledby="tab-one-1">
-                            <div class="row">
-                                
-                                            <div class="col-12">
-                                                <div class="row related-products">
-                                                    {% for product in monthly_best_sellers %}
-                                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                                                        <div class="card h-100">
-                                                            <img class="card-img-top img-fluid" src="{{ product.product_img1.url }}" alt="{{ product.product_name }}" style="height: 200px; object-fit: cover;">
-                                                            <div class="card-body">
-                                                                <h5 class="card-title">{{ product.product_name }}</h5>
-                                                                <p class="card-text">{{ product.category }}</p>
-                                                                <p class="card-text rating-result" title="{{ product.rating_percentage }}">
-                                                                    <span>{{ product.rating_percentage }}</span>
-                                                                </p>
-                                                                <p class="card-text product-price">
-                                                                    <span>₹{{ product.offer_price }}</span>
-                                                                    {% if product.orginal_price %}
-                                                                        <span class="orginal_price">₹{{ product.orginal_price }}</span>
-                                                                    {% endif %}
-                                                                </p>
-                                                                <a href="{% url 'add_wishlist' product.id %}" class="btn btn-outline-danger btn-sm">
-                                                                    <i class="fi-rs-heart"></i> Add to Wishlist
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {% endfor %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>  {% endcomment %}
                   
 
 
@@ -397,26 +361,7 @@
                                                 </div>
                                             </div>
                                 
-                                            <!-- Hot Releases -->
-                                            {% comment %} <div class="col-12 col-md-6 col-lg-4">
-                                                <h4 class="section-title style-1 mb-4 wow fadeInUp animated">🚀 Hot Releases</h4>
-                                                <div class="d-flex flex-column align-items-center gap-4">
-                                                    {% for product in hot_releases %}
-                                                    <div class="bg-light border rounded shadow-sm p-3 w-100" style="max-width: 320px;">
-                                                        <a href="{% url 'shop_lists' %}">
-                                                            <img src="{{ product.product_img1.url }}" alt="{{ product.product_name }}" class="img-fluid rounded mb-2" style="width: 100px; height: 100px; object-fit: cover;">
-                                                        </a>
-                                                        <h6 class="fw-semibold text-truncate">
-                                                            <a href="{% url 'shop_lists' %}" class="text-dark text-decoration-none">{{ product.product_name }}</a>
-                                                        </h6>
-                                                        <div class="product-price d-flex justify-content-center gap-2">
-                                                            <span class="text-primary fw-bold">₹{{ product.offer_price }}</span>
-                                                            <span class="text-muted text-decoration-line-through small">₹{{ product.old_price }}</span>
-                                                        </div>
-                                                    </div>
-                                                    {% endfor %}
-                                                </div>
-                                            </div> {% endcomment %}
+                                           
                                 
                                         </div>
                                     </div>

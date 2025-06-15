@@ -9,24 +9,20 @@
     <meta charset="utf-8">
     <title>{% block title %}shoeshop{% endblock %}</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="">
+    <meta name="description" content="Find stylish and comfortable footwear at shoeshop. Explore our range of men's, women's, and sports shoes.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- SEO & Social Sharing -->
-    <meta property="og:title" content="">
-    <meta property="og:type" content="">
-    <meta property="og:url" content="">
-    <meta property="og:image" content="">
+    <meta property="og:title" content="Shop Stylish Shoes at shoeshop">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shoeshop.fun">
+    <meta property="og:image" content="{% static 'user/assets/imgs/banner/shoe-banner.jpg' %}">
 
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'user/assets/imgs/theme/favicon.svg' %}">
 
      <script type="text/javascript" src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
-     <script type="text/javascript" src="{% static 'user/assets/js/checkout.js' %}"></script>
 
-
-
-    
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'user/assets/css/main.css' %}">
@@ -35,11 +31,6 @@
 
     <link rel="stylesheet" href="{% static 'user/assets/css/all.min.css' %}">
     <link rel="stylesheet" href="{% static 'user/assets/css/magnific-popup.css' %}">
-    
-
-
-    
-
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     
@@ -672,83 +663,40 @@
         </div>
     </footer>
 
-    <script>
-        // Newsletter form submit
-        document.querySelector('.newsletter-form')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = this.querySelector('input[type="email"]').value;
-            if (email) {
-                // Add success animation
-                const button = this.querySelector('button');
-                const originalText = button.textContent;
-                button.textContent = '✓ Subscribed!';
-                button.style.background = '#27ae60';
-                
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.style.background = '#f4a261';
-                    this.querySelector('input[type="email"]').value = '';
-                }, 2000);
-            }
-        });
-
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) target.scrollIntoView({ behavior: 'smooth' });
-            });
-        });
-
-        // Add hover animations to payment methods
-        document.querySelectorAll('.payment-method').forEach(method => {
-            method.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px) scale(1.02)';
-            });
-            
-            method.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-
-        // Highlight active footer link
-        document.querySelectorAll('.footer-list a').forEach(link => {
-            if (link.href === window.location.href) {
-                link.style.color = '#f4a261';
-                link.style.fontWeight = '600';
-            }
-        });
-    </script>
+    
     <!-- Vendor JS-->
 <!-- Vendor JS--> 
     
-    <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/modernizr-3.6.0.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/jquery-3.6.0.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/jquery-migrate-3.3.0.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/slick.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.syotimer.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/wow.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery-ui.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/perfect-scrollbar.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/magnific-popup.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/select2.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/waypoints.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/counterup.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.countdown.min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/images-loaded.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/isotope.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/scrollup.js'%}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.vticker-min.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.theia.sticky.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/plugins/jquery.elevatezoom.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/bootstrap.bundle.min.js' %}"></script>
-    
+<!-- Vendor JS -->
+<script src="{% static 'user/assets/js/vendor/modernizr-3.6.0.min.js' %}"></script>
+<script src="{% static 'user/assets/js/vendor/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'user/assets/js/vendor/jquery-migrate-3.3.0.min.js' %}"></script>
+<script src="{% static 'user/assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
 
-    <!-- Template  JS -->
-    <script type="text/JavaScript" src="{% static 'user/assets/js/main.js' %}"></script>
-    <script type="text/JavaScript" src="{% static 'user/assets/js/shop.js' %}"></script>
-    <script type="text/javascript" src="{% static 'user/assets/js/wishlist.js' %}?v=999"></script>
+<!-- Plugins -->
+<script src="{% static 'user/assets/js/plugins/slick.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery.syotimer.min.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/wow.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery-ui.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/perfect-scrollbar.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/magnific-popup.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/select2.min.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/waypoints.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/counterup.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery.countdown.min.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/images-loaded.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/isotope.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/scrollup.js'%}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery.vticker-min.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery.theia.sticky.js' %}"></script>
+<script src="{% static 'user/assets/js/plugins/jquery.elevatezoom.js' %}"></script>
+
+<!-- Template JS -->
+<script src="{% static 'user/assets/js/main.js' %}"></script>
+<script src="{% static 'user/assets/js/shop.js' %}"></script>
+<script src="{% static 'user/assets/js/wishlist.js' %}?v=999"></script>
+
+
+
 </body>
 </html>

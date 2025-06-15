@@ -1,202 +1,170 @@
 {% load static %}
 <!DOCTYPE HTML>
 <html lang="en">
-     
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/imgs/theme/favicon.svg' %}">
 
-    
-    <head>
-        <meta charset="utf-8">
-        <title> Dashboard</title>
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta property="og:title" content="">
-        <meta property="og:type" content="">
-        <meta property="og:url" content="">
-        <meta property="og:image" content="">
-        <!-- Favicon -->
-        <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/imgs/theme/favicon.svg' %}">
-        <!-- Template CSS -->
-        
-<!-- Main Stylesheet -->
-<link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'user/assets/css/animate.css' %}">
 
-<!-- CSS Libraries -->
-<link rel="stylesheet" href="{% static 'user/assets/css/animate.css' %}">
-<script type="text/javascript" src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
+    <!-- JS Libraries (Single jQuery and Bootstrap only) -->
+    <script src="{% static 'assets/js/vendors/jquery-3.6.0.min.js' %}"></script>
+</head>
 
+<body>
+    <div class="screen-overlay"></div>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <button class="btn btn-icon btn-aside-minimize">
+            <i class="text-muted material-icons md-menu_open"></i>
+        </button>
 
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item active">
+                    <a class="menu-link" href="{% url 'admin_home' %}">
+                        <i class="icon material-icons md-home"></i>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
 
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#">
+                        <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Products</span>
+                    </a>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a href="{% url 'admin_product_list' %}">Product List</a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="{% url 'offer_product' %}">Product Offers</a>
+                        </li>
+                    </ul>
+                </li>
 
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'admin_order' %}">
+                        <i class="icon material-icons md-shopping_cart"></i>
+                        <span class="text">Orders</span>
+                    </a>
+                </li>
 
-    </head>
-    
-    
-    <body>
-        <div class="screen-overlay"></div>
-        <aside class="navbar-aside" id="offcanvas_aside">
-                    <button class="btn btn-icon btn-aside-minimize"> <i class="text-muted material-icons md-menu_open"></i> </button>
-                </div>
-            </div>
-            <nav>
-                <ul class="menu-aside">
-                    <li class="menu-item active">
-                        <a class="menu-link" href="{% url 'admin_home' %}">
-                            <i class="icon material-icons md-home"></i>
-                            <span class="text">Dashboard</span>
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'admin_userlist' %}">
+                        <i class="icon material-icons md-store"></i>
+                        <span class="text">Users</span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'add_product' %}">
+                        <i class="icon material-icons md-add_box"></i>
+                        <span class="text">Add Product</span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'coupon_management' %}">
+                        <i class="icon material-icons md-card_giftcard"></i>
+                        <span class="text">Coupon Management</span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'admin_banner' %}">
+                        <i class="icon material-icons md-image"></i>
+                        <span class="text">Banner Management</span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'variance_management' %}">
+                        <i class="icon material-icons md-tune"></i>
+                        <span class="text">Variance Management</span>
+                    </a>
+                </li>
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="{% url 'admin_category' %}">
+                        <i class="icon material-icons md-monetization_on"></i>
+                        <span class="text">Category</span>
+                    </a>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a href="{% url 'category_offer' %}">Category Offer</a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="{% url 'admin_category' %}">Add Category</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link" href="{% url 'admin_brand' %}">
+                        <i class="icon material-icons md-stars"></i>
+                        <span class="text">Brands</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-wrap">
+        <header class="main-header navbar d-flex justify-content-between align-items-center">
+            <div class="col-nav d-flex align-items-center">
+                <button class="btn btn-icon btn-mobile me-3" data-trigger="#offcanvas_aside" aria-label="Open Menu">
+                    <i class="material-icons md-apps"></i>
+                </button>
+
+                <ul class="nav mb-0 d-flex align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon darkmode" href="#" aria-label="Toggle Dark Mode">
+                            <i class="material-icons md-nights_stay"></i>
                         </a>
                     </li>
-            
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="#">
-                            <i class="icon material-icons md-shopping_bag"></i>
-                            <span class="text">Products</span>
-                        </a>
-                        <ul class="submenu">
-                            <li class="submenu-item">
-                                <a href="{% url 'admin_product_list' %}">Product List</a>
-                            </li>
-                            <li class="submenu-item">
-                                <a href="{% url 'offer_product' %}">Product Offers</a>
-                            </li>
-                        </ul>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'admin_order' %}">
-                            <i class="icon material-icons md-shopping_cart"></i>
-                            <span class="text">Orders</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'admin_userlist' %}">
-                            <i class="icon material-icons md-store"></i>
-                            <span class="text">Users</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'add_product' %}">
-                            <i class="icon material-icons md-add_box"></i>
-                            <span class="text">Add Product</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'coupon_management' %}">
-                            <i class="icon material-icons md-card_giftcard"></i>
-                            <span class="text">Coupon Management</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'admin_banner' %}">
-                            <i class="icon material-icons md-image"></i>
-                            <span class="text">Banner Management</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'variance_management' %}">
-                            <i class="icon material-icons md-tune"></i>
-                            <span class="text">Variance Management</span>
-                        </a>
-                    </li>
-            
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="{% url 'admin_category' %}">
-                            <i class="icon material-icons md-monetization_on"></i>
-                            <span class="text">Category</span>
-                        </a>
-                        <ul class="submenu">
-                            <li class="submenu-item">
-                                <a href="{% url 'category_offer' %}">Category Offer</a>
-                            </li>
-                             <li class="submenu-item">
-                                <a href="{% url 'admin_category' %}">Add Category</a>
-                            </li>
-                        </ul>
-                    </li>
-            
-                    <li class="menu-item">
-                        <a class="menu-link" href="{% url 'admin_brand' %}">
-                            <i class="icon material-icons md-stars"></i>
-                            <span class="text">Brands</span>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger d-flex align-items-center gap-1" href="{% url 'admin_logout' %}">
+                            <i class="material-icons md-exit_to_app"></i> Logout
                         </a>
                     </li>
                 </ul>
-            </nav>
-            
-        </aside>
-        <main class="main-wrap">
-            <header class="main-header navbar d-flex justify-content-between align-items-center">
-            
-                <!-- Navigation and Mobile Menu Button -->
-                <div class="col-nav d-flex align-items-center">
-                    <button class="btn btn-icon btn-mobile me-3" data-trigger="#offcanvas_aside" aria-label="Open Menu">
-                        <i class="material-icons md-apps"></i>
-                    </button>
-            
-                    <ul class="nav mb-0 d-flex align-items-center">
-                        <!-- Dark Mode Toggle -->
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon darkmode" href="#" aria-label="Toggle Dark Mode">
-                                <i class="material-icons md-nights_stay"></i>
-                            </a>
-                        </li>
-            
-                        <!-- Logout Dropdown -->
-                                <li class="nav-item">
-                                <a class="nav-link text-danger d-flex align-items-center gap-1" href="{% url 'admin_logout' %}">
-                                    <i class="material-icons md-exit_to_app"></i> Logout
-                                </a>
-                            </li>
+            </div>
+        </header>
 
-                            </ul>
-                        </li>
-                    </ul>
+        {% block content %}{% endblock content %}
+
+        <footer class="main-footer font-xs">
+            <div class="row pb-30 pt-15">
+                <div class="col-sm-6">
+                    <span id="year"></span>
                 </div>
-            </header>
-            
-    
-            {% block content %}
-    
-            {% endblock content %}
-    
-            <footer class="main-footer font-xs">
-                <div class="row pb-30 pt-15">
-                    <div class="col-sm-6">
-                        <script>
-                            document.write(new Date().getFullYear())
-                        </script> 
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="text-sm-end">
-                           
-                        </div>
-                    </div>
-                </div>
-            </footer>
-        </main>
-<!-- Vendor Scripts -->
-<script src="{% static 'assets/js/vendors/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static 'assets/js/vendors/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'assets/js/vendors/select2.min.js' %}"></script>
-<script src="{% static 'assets/js/vendors/perfect-scrollbar.js' %}"></script>
-<script src="{% static 'assets/js/vendors/jquery.fullscreen.min.js' %}"></script>
-<script src="{% static 'assets/js/vendors/chart.js' %}"></script>
-<script type="text/javascript" src="{% static 'admin/js/popper.min.js' %}"></script>
+                <div class="col-sm-6 text-sm-end"></div>
+            </div>
+        </footer>
+    </main>
 
-<script type="text/JavaScript" src="{% static 'user/assets/js/bootstrap.bundle.min.js' %}"></script>
-<script type="text/JavaScript" src="{% static 'user/assets/js/vendor/jquery-3.6.0.min.js' %}"></script>
+    <!-- JS Libraries -->
+    <script src="{% static 'assets/js/vendors/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/vendors/select2.min.js' %}"></script>
+    <script src="{% static 'assets/js/vendors/perfect-scrollbar.js' %}"></script>
+    <script src="{% static 'assets/js/vendors/jquery.fullscreen.min.js' %}"></script>
+    <script src="{% static 'assets/js/vendors/chart.js' %}"></script>
+    <script src="{% static 'admin/js/popper.min.js' %}"></script>
 
+    <!-- Custom Scripts -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <script src="{% static 'assets/js/custom-chart.js' %}"></script>
 
-
-
-<!-- Custom Scripts -->
-<script src="{% static 'assets/js/main.js' %}"></script>
-<script src="{% static 'assets/js/custom-chart.js' %}"></script>
-
+    <script>
+        // Replaces document.write
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

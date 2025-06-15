@@ -11,13 +11,15 @@
       <div class="alert alert-info text-center">{{ message }}</div>
     {% endfor %}
 
-
     <form method="get" action="{% url 'cart_list' %}" class="d-flex align-items-center mb-3">
-    <input type="text" name="q" class="form-control me-2" placeholder="Search cart..." value="{{ search_query }}">
-    <button type="submit" class="btn btn-outline-primary">
+      {% csrf_token %}
+      <input type="text" name="q" class="form-control me-2" placeholder="Search cart..." value="{{ search_query }}">
+      <button type="submit" class="btn btn-outline-primary">
         <i class="fas fa-search"></i>
-    </button>
-</form>
+      </button>
+    </form>
+
+    <div id="cart-warning" class="alert alert-warning text-center d-none" role="alert"></div>
 
     <div class="table-responsive mb-4">
       <table class="table table-bordered table-hover text-center align-middle">
@@ -42,13 +44,13 @@
               </td>
               <td>
                 <div>
-                 <a href="{% url 'product_detials' cart_item.product.id %}">
-        <strong>{{ cart_item.product.product_name }}</strong>
-        <p class="text-muted small mb-0">Product details here...</p>
-      </a>
+                  <a href="{% url 'product_detials' cart_item.product.id %}">
+                    <strong>{{ cart_item.product.product_name }}</strong>
+                    <p class="text-muted small mb-0">Product details here...</p>
+                  </a>
                 </div>
               </td>
-              <td>{{cart_item.size}}</td>
+              <td>{{ cart_item.size }}</td>
               <td>₹{{ cart_item.product.offer_price }}</td>
               <td>
                 <div class="d-flex justify-content-center align-items-center gap-2">
@@ -69,12 +71,10 @@
               </td>
             </tr>
             <tr class="d-none">
-              <td colspan="6"><span id="max-{{ cart_item.id }}">{{ cart_item.available_quantity }}</span></td>
+              <td colspan="7"><span id="max-{{ cart_item.id }}">{{ cart_item.available_quantity }}</span></td>
             </tr>
           {% endfor %}
         </tbody>
-        <div id="cart-warning" class="alert alert-warning text-center d-none" role="alert"></div>
-
       </table>
     </div>
 
@@ -89,69 +89,80 @@
   </div>
 </main>
 
+<script type="text/javascript" src="{% static 'user/assets/js/jquery-3.6.4.min.js' %}"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const warningBox = document.getElementById("cart-warning");
+$(document).ready(function() {
+  const $warningBox = $('#cart-warning');
 
-    function showWarning(message) {
-      warningBox.textContent = message;
-      warningBox.classList.remove("d-none");
+  function showWarning(message) {
+    $warningBox.text(message).removeClass('d-none');
+    
+    setTimeout(function() {
+      $warningBox.addClass('d-none').text('');
+    }, 3000);  // Hide after 3 seconds
+  }
 
-      setTimeout(() => {
-        warningBox.classList.add("d-none");
-        warningBox.textContent = '';
-      }, 3000);  // Hide after 3 seconds
+  $('.qty-btn').on('click', function(e) {
+    e.preventDefault();
+    
+    const action = $(this).data('action');
+    const cartItemId = $(this).data('id');
+    
+    const $qtyElem = $('#qty-val-' + cartItemId);
+    const $subtotalElem = $('#subtotal-' + cartItemId);
+    const maxQty = parseInt($('#max-' + cartItemId).text());
+    const currentQty = parseInt($qtyElem.text());
+
+    if (action === 'decrease' && currentQty <= 1) {
+      return;
     }
 
-    document.querySelectorAll(".qty-btn").forEach(button => {
-      button.addEventListener("click", async (e) => {
-        const action = button.dataset.action;
-        const cartItemId = button.dataset.id;
+    if (action === 'increase' && currentQty >= maxQty) {
+      showWarning("You've reached the maximum stock available for this item.");
+      return;
+    }
 
-        const qtyElem = document.getElementById(`qty-val-${cartItemId}`);
-        const subtotalElem = document.getElementById(`subtotal-${cartItemId}`);
-        const maxQty = parseInt(document.getElementById(`max-${cartItemId}`).textContent);
-        const currentQty = parseInt(qtyElem.textContent);
+    // Disable button to prevent multiple clicks
+    $(this).prop('disabled', true);
 
-        if (action === "decrease") {
-          if (currentQty <= 1) return;
-        }
-
-        if (action === "increase" && currentQty >= maxQty) {
-          showWarning("You've reached the maximum stock available for this item.");
-          return;
-        }
-
-        try {
-          const response = await fetch(`/core/cart_update/${cartItemId}/`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCookie("csrftoken"),
-            },
-            body: JSON.stringify({ action }),
-          });
-
-          if (!response.ok) throw new Error("Network error");
-
-          const data = await response.json();
-          qtyElem.textContent = data.quantity;
-          subtotalElem.textContent = `₹${data.subtotal}`;
-        } catch (err) {
-          console.error("Error updating cart:", err);
-        }
-      });
+    $.ajax({
+      url: '/core/cart/cart_update/' + cartItemId + '/',
+      type: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      data: JSON.stringify({ action: action }),
+      success: function(data) {
+        $qtyElem.text(data.quantity);
+        $subtotalElem.text('₹' + data.subtotal);
+      },
+      error: function(xhr, status, error) {
+        console.error('Error updating cart:', error);
+        showWarning('Failed to update cart. Please try again.');
+      },
+      complete: function() {
+        // Re-enable button
+        $('.qty-btn[data-id="' + cartItemId + '"]').prop('disabled', false);
+      }
     });
-
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
-    }
   });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
 </script>
 
 {% endblock content %}
- 
-                                
-             
