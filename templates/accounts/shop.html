@@ -53,8 +53,8 @@
       </div>
     </div>
 
-    <!-- Product Cards -->
-    <div class="col-lg-9">
+<!-- Product Cards -->
+<div class="col-lg-9">
   <div class="row row-cols-1 row-cols-md-3 g-4">
     {% for product in products %}
     <div class="col">
@@ -66,8 +66,8 @@
           <h6 class="fw-bold">{{ product.product_name }}</h6>
           <div class="d-flex justify-content-between align-items-center mb-2">
             <p class="text-muted m-0">₹{{ product.offer_price }}</p>
-            
-            <!-- Updated Wishlist Button with Hover Text -->
+
+            <!-- Updated Wishlist Button with Image Icon and Tooltip -->
             {% if user.is_authenticated %}
               {% with user.wishlist as wishlist %}
                 {% if wishlist and product in wishlist.products.all %}
@@ -75,7 +75,7 @@
                     <span class="btn btn-light btn-sm border wishlist-btn bg-success text-white" 
                           style="pointer-events: none;" 
                           title="Added to Wishlist">
-                      <i class="fas fa-heart"></i>
+                      <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px;">
                     </span>
                     <!-- Hover tooltip -->
                     <div class="wishlist-tooltip position-absolute bg-dark text-white px-2 py-1 rounded small" 
@@ -97,7 +97,7 @@
                           data-product-id="{{ product.id }}" 
                           type="button"
                           title="Add to Wishlist">
-                    <i class="far fa-heart text-danger"></i>
+                    <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px;">
                   </button>
                 {% endif %}
               {% endwith %}
@@ -105,7 +105,7 @@
               <a href="{% url 'login_view' %}" 
                  class="btn btn-light btn-sm border wishlist-btn"
                  title="Login to Add to Wishlist">
-                <i class="far fa-heart text-danger"></i>
+                <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px;">
               </a>
             {% endif %}
           </div>
@@ -116,6 +116,7 @@
     {% endfor %}
   </div>
 </div>
+
 
 <!-- Pagination -->
 {% if products.paginator.num_pages > 1 %}

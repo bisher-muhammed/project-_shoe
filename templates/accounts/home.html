@@ -195,26 +195,31 @@
                         <div class="text-muted text-decoration-line-through small">₹{{ product.original_price }}</div>
                     </div>
 
-                    <!-- Wishlist Button Logic - Using Same Working Pattern -->
+                 <!-- Wishlist Button Logic - Using Same Working Pattern -->
                     {% if user.is_authenticated %}
                         {% with user.wishlist as wishlist %}
                             {% if wishlist and product in wishlist.products.all %}
                                 <span class="btn btn-success disabled" style="pointer-events: none;">
-                                    <i class="fas fa-heart"></i> Added to Wishlist
+                                    <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px; margin-right: 5px;">
+                                    Added to Wishlist
                                 </span>
                             {% else %}
                                 <button class="btn btn-outline-danger add-to-wishlist-btn" 
                                         data-product-id="{{ product.id }}" 
                                         type="button">
-                                    <i class="far fa-heart"></i> Add to Wishlist
+                                    <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px; margin-right: 5px;">
+                                    Add to Wishlist
                                 </button>
                             {% endif %}
                         {% endwith %}
                     {% else %}
                         <a href="{% url 'login_view' %}" class="btn btn-outline-danger">
-                            <i class="far fa-heart"></i> Login to Add to Wishlist
+                            <img class="svgInject" alt="Wishlist" src="{% static 'user/assets/imgs/theme/icons/icon-heart.svg' %}" style="height: 16px; width: 16px; margin-right: 5px;">
+                            Login to Add to Wishlist
                         </a>
                     {% endif %}
+
+
                 </div>
             </div>
         </div>

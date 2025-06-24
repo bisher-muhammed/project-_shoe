@@ -28,18 +28,24 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = ['13.60.72.157', 'shoeshop.fun', 'www.shoeshop.fun','127.0.0.1']
+ALLOWED_HOSTS = [
+    '13.60.72.157',
+    'shoespace.xyz',
+    'www.shoespace.xyz',
+    '127.0.0.1',
+    'localhost'
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://13.60.72.157',
     'https://13.60.72.157',
-    'http://shoeshop.fun',
-    'https://shoeshop.fun',
-    'http://www.shoeshop.fun',
-    'https://www.shoeshop.fun',
+    'http://shoespace.xyz',
+    'https://shoespace.xyz',
+    'http://www.shoespace.xyz',
+    'https://www.shoespace.xyz',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
 ]
-
-
 
 # Application definitionshoeshop.fun
 
@@ -222,38 +228,47 @@ SECURE_HSTS_PRELOAD = True
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
-
         "script-src": (
             "'self'",
-            "'unsafe-inline'",  # Needed for Razorpay's inline scripts
+            "'unsafe-inline'",
             "https://checkout.razorpay.com",
         ),
         "script-src-elem": (
             "'self'",
-            "'unsafe-inline'",  # Allow inline <script> blocks for Razorpay
+            "'unsafe-inline'",
             "https://checkout.razorpay.com",
         ),
-
         "style-src": (
             "'self'",
-            "'unsafe-inline'",  # Needed for inline styles or style attrs
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
         ),
         "style-src-elem": (
             "'self'",
             "'unsafe-inline'",
+            "https://fonts.googleapis.com",
         ),
-
         "font-src": (
             "'self'",
+            "https://fonts.gstatic.com",
         ),
-
         "img-src": (
             "'self'",
-            "data:",  # Allow images embedded as base64 data URIs
+            "data:",
+        ),
+        "frame-src": (
+            "'self'",
+            "https://api.razorpay.com",
+            "https://checkout.razorpay.com",
+        ),
+        "connect-src": (
+            "'self'",
+            "https://api.razorpay.com",
+            "https://lumberjack.razorpay.com",
+            "https://checkout.razorpay.com",
         ),
     }
 }
-
 
 
 
