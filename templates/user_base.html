@@ -557,110 +557,115 @@
 
     <!-- FOOTER HTML -->
  <!-- FOOTER HTML -->
-    <footer class="main-footer">
-        <!-- Wave decoration -->
-        <div class="wave-decoration"></div>
+<footer class="main-footer">
+    <!-- Wave decoration -->
+    <div class="wave-decoration"></div>
 
-        <!-- Newsletter -->
-        <section class="newsletter">
-            <div class="container">
-                <h2>Stay Updated with shoeshop.</h2>
-                <p>Get the latest updates on new arrivals, exclusive offers</p>
-            </div>
-        </section>
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <h2>Stay Updated with shoespace.</h2>
+            <p>Get the latest updates on new arrivals, exclusive offers</p>
+        </div>
+    </section>
 
-        <!-- Main Footer Content -->
-        <section class="footer-mid">
-            <div class="container">
-                <div class="footer-grid">
-                    <!-- About + Contact -->
-                    <div class="footer-section">
-
-                        <h5><i class="fas fa-address-card"></i> Contact Information</h5>
-                        <ul class="contact-info">
-                            <li>
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span><strong>Address:</strong> brotoTYPE MARADU KOCHI</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-phone"></i>
-                                <span><strong>Phone:</strong> +91 98471 12068</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-clock"></i>
-                                <span><strong>Hours:</strong> 10:00 - 18:00, Mon - Sat</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-envelope"></i>
-                                <span><strong>Email:</strong> bisherp2@gmail.com</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- My Account -->
-                    <div class="footer-section">
-                        <h5>My Account</h5>
-                        <ul class="footer-list">
-                            {% if user.is_authenticated %}
-                            <li><a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
-                            {% else %}
-                            <li><a href="{% url 'login_view' %}"><i class="fas fa-user"></i>Sign In</a></li>
-                            {% endif %}
-                            <li><a href="{% url 'cart_list' %}"><i class="fas fa-shopping-cart"></i>View Cart</a></li>
-                            <li><a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i>My Wishlist</a></li>
-                            <li><a href="{% url 'addresses' %}"><i class="fas fa-map-marker-alt"></i>My Addresses</a></li>
-                            <li><a href="{% url 'order_list' %}"><i class="fas fa-box"></i>My Orders</a></li>
-                            <li><a href="{% url 'view_profile' %}"><i class="fas fa-user-cog"></i>Dashboard</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Quick Links + Categories -->
-                    <div class="footer-section">
-                        <h5>Quick Links</h5>
-                        <ul class="footer-list">
-                            <li><a href="{% url 'shop_lists' %}"><i class="fas fa-store"></i>Shop</a></li>
-                            <li><a href="{% url 'home' %}"><i class="fas fa-home"></i>Home</a></li>
-                            <li><a href="#top"><i class="fas fa-arrow-up"></i>Back to Top</a></li>
-                        </ul>
-                        <h5 style="margin-top: 30px;">Categories</h5>
-                        <ul class="footer-list">
-                            <li><a href="{% url 'shop_lists' %}?category=men"><i class="fas fa-male"></i>Men's Shoes</a></li>
-                            <li><a href="{% url 'shop_lists' %}?category=women"><i class="fas fa-female"></i>Women's Shoes</a></li>
-                            <li><a href="{% url 'shop_lists' %}?category=sports"><i class="fas fa-running"></i>Sports</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Payment Methods -->
-                    <div class="footer-section">
-                        <h5><i class="fas fa-credit-card"></i> Secured Payment</h5>
-                        <p style="color: #cccccc; margin-bottom: 20px; font-size: 0.95rem;">Your transactions are protected with industry-standard security</p>
-                        <div class="payment-methods">
-                            <div class="payment-method">VISA</div>
-                            <div class="payment-method">MasterCard</div>
-                            <div class="payment-method">PayPal</div>
-                            <div class="payment-method">Google Pay</div>
-                            <div class="payment-method">Razorpay</div>
-                            <div class="payment-method">UPI</div>
-                        </div>
-                        <div class="security-badges">
-                            <i class="fas fa-lock"></i> SSL Secured |
-                            <i class="fas fa-shield-alt"></i> 100% Safe & Secure
-                        </div>
-                    </div>
+    <!-- Main Footer Content -->
+    <section class="footer-mid">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- About + Contact -->
+                <div class="footer-section">
+                    <h5><i class="fas fa-address-card"></i> Contact Information</h5>
+                    <ul class="contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span><strong>Address:</strong> brotoTYPE MARADU KOCHI</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span><strong>Phone:</strong> +91 98471 12068</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Hours:</strong> 10:00 - 18:00, Mon - Sat</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span><strong>Email:</strong> bisherp2@gmail.com</span>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </section>
 
-        <!-- Footer Bottom -->
-        <div class="footer-bottom">
-            <div class="container">
-                <div class="footer-bottom-content">
-                    <p>&copy; 2025 <span class="text-brand">shoeshop.</span>. All rights reserved.</p>
-                    <p>Made with <i class="fas fa-heart text-danger"></i> in Kerala, India</p>
+                <!-- My Account -->
+                <div class="footer-section">
+                    <h5>My Account</h5>
+                    <ul class="footer-list">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout_view' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login_view' %}"><i class="fas fa-user"></i> Sign In</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'cart_list' %}"><i class="fas fa-shopping-cart"></i> View Cart</a></li>
+                        <li><a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i> My Wishlist</a></li>
+                        <li><a href="{% url 'addresses' %}"><i class="fas fa-map-marker-alt"></i> My Addresses</a></li>
+                        <li><a href="{% url 'order_list' %}"><i class="fas fa-box"></i> My Orders</a></li>
+                        <li><a href="{% url 'view_profile' %}"><i class="fas fa-user-cog"></i> Dashboard</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Links + Categories -->
+                <div class="footer-section">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-list">
+                        <li><a href="{% url 'shop_lists' %}"><i class="fas fa-store"></i> Shop</a></li>
+                        <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="#top"><i class="fas fa-arrow-up"></i> Back to Top</a></li>
+                    </ul>
+                    <h5 style="margin-top: 30px;">Categories</h5>
+                    <ul class="footer-list">
+                        <li><a href="{% url 'shop_lists' %}?category=men"><i class="fas fa-male"></i> Men's Shoes</a></li>
+                        <li><a href="{% url 'shop_lists' %}?category=women"><i class="fas fa-female"></i> Women's Shoes</a></li>
+                        <li><a href="{% url 'shop_lists' %}?category=sports"><i class="fas fa-running"></i> Sports</a></li>
+                    </ul>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="footer-section">
+                    <h5><i class="fas fa-credit-card"></i> Secured Payment</h5>
+                    <p style="color: #cccccc; margin-bottom: 20px; font-size: 0.95rem;">
+                        Your transactions are protected with industry-standard security
+                    </p>
+                    <div class="payment-methods">
+                        <div class="payment-method">VISA</div>
+                        <div class="payment-method">MasterCard</div>
+                        <div class="payment-method">PayPal</div>
+                        <div class="payment-method">Google Pay</div>
+                        <div class="payment-method">Razorpay</div>
+                        <div class="payment-method">UPI</div>
+                    </div>
+                    <div class="security-badges">
+                        <i class="fas fa-lock"></i> SSL Secured |
+                        <i class="fas fa-shield-alt"></i> 100% Safe & Secure
+                    </div>
                 </div>
             </div>
         </div>
-    </footer>
+    </section>
+
+    <!-- Footer Bottom with Disclaimer -->
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="footer-bottom-content">
+                <!-- 🚨 Disclaimer -->
+                <p style="font-size: 0.9rem; color: #cccccc;">
+                    <strong>Disclaimer:</strong> This website is a personal project created for learning and educational purposes only. It is not intended for commercial or production use.
+                </p>
+                <p>&copy; 2025 <span class="text-brand">shoespace.</span> All rights reserved.</p>
+                <p>Made with <i class="fas fa-heart text-danger"></i> in Kerala, India</p>
+            </div>
+        </div>
+    </div>
+</footer>
 
     
     <!-- Vendor JS-->
