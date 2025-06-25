@@ -232,11 +232,13 @@ CONTENT_SECURITY_POLICY = {
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
+            "https://cdn.jsdelivr.net",  # ✅ Added for Chart.js
         ),
         "script-src-elem": (
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
+            "https://cdn.jsdelivr.net",  # ✅ Added for Chart.js
         ),
         "style-src": (
             "'self'",
@@ -269,6 +271,7 @@ CONTENT_SECURITY_POLICY = {
         ),
     }
 }
+
 
 
 
