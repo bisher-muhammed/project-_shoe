@@ -22,7 +22,7 @@
                 <form method="post" action="{% url 'delete_address' address.id %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" title="Delete" onclick="return confirm('Are you sure you want to delete this address?')" style="background: none; border: none; color: red;">
-                        <i class="fas fa-trash"></i>
+                        <i class="fi-rs-trash"></i>
 
                     </button>
 
