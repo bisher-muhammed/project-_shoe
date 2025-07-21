@@ -3,9 +3,27 @@ from django.views.decorators.cache import cache_control, never_cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 # Models - ensure these are imported from the correct app
 from adminapp.models import Product, ProductSize, Brand, Category
+
+
+
+# utils.py or at the top of views/shop_views.py
+def get_price_range(request):
+    min_price_param = request.GET.get('min_price', '0')
+    max_price_param = request.GET.get('max_price', '')
+
+    try:
+        min_price = float(min_price_param) if min_price_param else 0
+        max_price = float(max_price_param) if max_price_param else 1e20
+    except ValueError:
+        return None, None, "Invalid price values."
+
+    return min_price, max_price, None
+
 
 
 
@@ -56,50 +74,38 @@ def shop_lists(request):
     brands = Brand.objects.filter(is_active=True)
     categories = Category.objects.filter(is_blocked=True)
 
-    search_query=request.GET.get('search','')
+    # Search
+    search_query = request.GET.get('search', '')
     if search_query:
-
         products = products.filter(
             Q(product_name__icontains=search_query) |
             Q(product_description__icontains=search_query)
         )
-        
 
+    # Get safe price range
+    min_price, max_price, error = get_price_range(request)
+    if error:
+        messages.error(request, error)
+        return redirect('shop_lists')
 
-    min_price = float(request.GET.get('min_price', 0))
+    # Apply price filter
+    filtered_products = products.filter(offer_price__gte=min_price, offer_price__lte=max_price)
 
-    max_price_param = request.GET.get('max_price')
-    if max_price_param is not None:
-        max_price = float(max_price_param)
-    else:
-        max_price = 1e20
-
-    # Filter products based on the offer price range
-    filtered_products = Product.objects.filter(offer_price__gte=min_price, offer_price__lte=max_price)
-
-    
-
-     # Pagination logic
+    # Pagination
     page = request.GET.get('page', 1)
-    paginator = Paginator(products, 12)  # Show 12 products per page
+    paginator = Paginator(filtered_products, 12)
     try:
-        products = paginator.page(page)
+        filtered_products = paginator.page(page)
     except PageNotAnInteger:
-        products = paginator.page(1)
+        filtered_products = paginator.page(1)
     except EmptyPage:
-        products = paginator.page(paginator.num_pages)
-
-    
-
-
+        filtered_products = paginator.page(paginator.num_pages)
 
     context = {
         "products": filtered_products,
         "brands": brands,
         'categories': categories,
-        
     }
-
     return render(request, 'accounts/shop.html', context)
 
 
@@ -108,23 +114,17 @@ def shop_lists(request):
 @never_cache
 @login_required(login_url="login_view")
 def filter_products_by_category(request, category_name):
-    # Filter products based on the selected category
     category_products = Product.objects.filter(category__category_name=category_name, is_active=True)
 
-    # Get the selected price range
-    min_price = float(request.GET.get('min_price', 0))
-    max_price_param = request.GET.get('max_price')
+    min_price, max_price, error = get_price_range(request)
+    if error:
+        messages.error(request, error)
+        return redirect('shop_lists')
 
-    if max_price_param is not None:
-        max_price = float(max_price_param)
-    else:
-        # Use a large number instead of infinity
-        max_price = 1e20
-
-    # Filter products based on the offer price range
     filtered_products = category_products.filter(offer_price__gte=min_price, offer_price__lte=max_price)
 
     return render(request, 'accounts/shop.html', {'products': filtered_products})
+
 
 
 
@@ -132,20 +132,13 @@ def filter_products_by_category(request, category_name):
 @never_cache
 @login_required(login_url="login_view")
 def filter_products_by_brand(request, brand_name):
-    # Filter products based on the selected brand
     brand_products = Product.objects.filter(brand__brand_name=brand_name, is_active=True)
 
-    # Get the selected price range
-    min_price = float(request.GET.get('min_price', 0))
-    max_price_param = request.GET.get('max_price')
+    min_price, max_price, error = get_price_range(request)
+    if error:
+        messages.error(request, error)
+        return redirect('shop_lists')
 
-    if max_price_param is not None:
-        max_price = float(max_price_param)
-    else:
-        # Use a large number instead of infinity
-        max_price = 1e20
-
-    # Filter products based on the offer price range
     filtered_products = brand_products.filter(offer_price__gte=min_price, offer_price__lte=max_price)
 
     return render(request, 'accounts/shop.html', {'products': filtered_products})

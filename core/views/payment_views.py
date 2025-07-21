@@ -410,7 +410,11 @@ def wallet_pay(request, order_id):
 
     # Get or create user profile and wallet
     user_profile, _ = UserProfile.objects.get_or_create(user=current_user)
-    user_wallet, _ = Wallet.objects.get_or_create(user_profile=user_profile)
+    user_wallet, _ = Wallet.objects.get_or_create(
+    user_profile=user_profile,
+    defaults={'user': current_user, 'balance': 0}
+)
+    
 
     # Convert order.order_total to Decimal
     order_total_decimal = Decimal(str(order.order_total))
