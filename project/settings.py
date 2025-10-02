@@ -29,7 +29,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = [
-    '13.60.72.157',
+    '34.46.250.239',
     'shoespace.xyz',
     'www.shoespace.xyz',
     '127.0.0.1',
@@ -37,8 +37,8 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://13.60.72.157',
-    'https://13.60.72.157',
+    'http://34.46.250.239',
+    'https://34.46.250.239',
     'http://shoespace.xyz',
     'https://shoespace.xyz',
     'http://www.shoespace.xyz',
