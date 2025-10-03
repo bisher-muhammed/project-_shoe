@@ -2,12 +2,6 @@
 {% load static %}
 {% block content %}
 
-{% comment %}
-<head>
-    <!-- ... existing head content ... -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-</head>
-{% endcomment %}
 <style>
     .banner-card {
         display: flex;
@@ -27,18 +21,18 @@
     .form-container {
         margin-bottom: 20px; /* Adjust the margin as needed */
     }
-</style>
 
+    .invalid-banner {
+        border: 2px solid #cc0000;
+        padding: 5px;
+        margin-bottom: 5px;
+        background-color: #ffe6e6;
+    }
+</style>
 
 {% if messages %}
     {% for msg in messages %}
-        {% if msg.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
-            <div class="messages">
-                <div style="color: #cc0000;">
-                    {{ msg }}
-                </div>
-            </div>
-        {% elif msg.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+        {% if msg.level == DEFAULT_MESSAGE_LEVELS.WARNING or msg.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
             <div class="messages">
                 <div style="color: #cc0000;">
                     {{ msg }}
@@ -60,16 +54,18 @@
             <h2 class="content-title card-title">Banner</h2>
             <p>Banner management</p>
         </div>
-        <div>
-            
-        </div>
     </div>
-    <div class="card mb-4">
-        <header class="card-header">
-            <div class="row gx-3">
+
+    <!-- Show warning for invalid banners -->
+    {% for banner in banners %}
+        {% if banner.subtitle not in valid_banners %}
+            <div class="invalid-banner">
+                Banner "{{ banner.title }}" has invalid subtitle: "{{ banner.subtitle }}"
             </div>
-        </header> <!-- card-header end// -->
-        
+        {% endif %}
+    {% endfor %}
+
+    <div class="card mb-4">
         <div class="card-body">
             <div class="row gx-3">
                 {% for banner in banners %}
@@ -82,54 +78,60 @@
                                 <h5 class="card-title">Title: {{ banner.title }}</h5>
                                 <p class="card-text">Sub Title: {{ banner.subtitle }}</p>
                             </div>
-                             <td>
+                            <div class="card-footer">
                                 {% if banner.is_active %}
-                                <form method="post" action="{% url 'banner_blocked' banner_id=banner.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-danger btn-sm btn-rounded" type="submit">Unlist</button>
-                                </form>
+                                    <form method="post" action="{% url 'banner_blocked' banner_id=banner.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-danger btn-sm btn-rounded" type="submit">Unlist</button>
+                                    </form>
                                 {% else %}
-                                <form method="post" action="{% url 'banner_active' banner_id=banner.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-success btn-sm btn-rounded" type="submit" style="background-color: #83B08A;">List</button>
-                                </form>
-                                {%endif%} 
-                            </td> 
+                                    <form method="post" action="{% url 'banner_active' banner_id=banner.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-success btn-sm btn-rounded" style="background-color: #83B08A;" type="submit">List</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
+            </div>
 
-                <hr>
-                <br>
-        
-                <div class="col-12 form-container">
-                    <form method='post' enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="row">
-                            <aside class="col-md-4 col-lg-6">
-                                <div class="card mb-4">
+            <hr>
+
+            <!-- Add Banner Form -->
+            <div class="col-12 form-container">
+                <form method='post' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <aside class="col-md-4 col-lg-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <center><h5>Add Banner</h5></center>
                                     
-                                    <div class="card-body"><center><h5>Add Banner</h5></center>
-                                        <label class="form-label">Banner Image</label>
-                                        <input class="form-control" type="file" name="image">
-        
-                                        <label class="form-label">Title</label>
-                                        <input class="form-control" type="text" name="title">
-        
-                                        <label class="form-label">Sub Title</label>
-                                        <input class="form-control" type="text" name="sub_title">
+                                    <label class="form-label">Banner Image</label>
+                                    <input class="form-control" type="file" name="image" required>
 
-                                        
-                                    </div>
-                                    <button class="btn btn-primary" type="submit">Save</button>
+                                    <label class="form-label">Title</label>
+                                    <input class="form-control" type="text" name="title" required>
+
+                                    <label class="form-label">Sub Title (Banner Name)</label>
+                                    <select class="form-control" name="sub_title" required>
+                                        <option value="">-- Select Banner --</option>
+                                        {% for bname in valid_banners %}
+                                            <option value="{{ bname }}">{{ bname }}</option>
+                                        {% endfor %}
+                                    </select>
+
                                 </div>
-                            </aside>
-                        </div>
-                    </form>
-                </div>
+                                <button class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </aside>
+                    </div>
+                </form>
             </div>
         </div>
-    </div> <!-- row.// -->
-</section> <!-- content-main end// -->
+    </div>
+</section>
 
 {% endblock content %}
+

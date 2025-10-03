@@ -88,6 +88,7 @@ def unblock_coupon(request,coupon_id):
 
 
 
+VALID_BANNERS = ["banner.1", "banner2", "banner3"]
 
 
 
@@ -108,6 +109,8 @@ def admin_banner(request):
             # Validate required fields
             if not all([banner_image, title, subtitle]):
                 messages.error(request, "Please provide all the required fields.")
+            elif subtitle not in VALID_BANNERS:
+                messages.error(request, f"Invalid banner subtitle. Choose from: {', '.join(VALID_BANNERS)}")
             else:
                 # Validate image type and size
                 valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
@@ -127,8 +130,12 @@ def admin_banner(request):
                     banner.save()
                     messages.success(request, "Banner created successfully.")
 
-    context = {"banners": banners}
+    context = {
+        "banners": banners,
+        "valid_banners": VALID_BANNERS,  # pass to template for dropdown
+    }
     return render(request, "admin/admin_banner.html", context)
+
 
 
 
@@ -145,6 +152,8 @@ def edit_banner(request, banner_id):
         # Validate title and subtitle
         if not all([title, subtitle]):
             messages.error(request, "Please provide all the required fields.")
+        elif subtitle not in VALID_BANNERS:
+            messages.error(request, f"Invalid banner subtitle. Choose from: {', '.join(VALID_BANNERS)}")
         else:
             # Validate image if a new one is uploaded
             if banner_img:
@@ -159,10 +168,8 @@ def edit_banner(request, banner_id):
                     messages.error(request, "Image size must not exceed 2MB.")
                     return redirect('edit_banner', banner_id=banner.id)
 
-                # Update image
                 banner.banner_img = banner_img
 
-            # Update other fields
             banner.title = title
             banner.subtitle = subtitle
             banner.save()
@@ -170,8 +177,13 @@ def edit_banner(request, banner_id):
             messages.success(request, "Banner updated successfully.")
             return redirect("admin_banner")
 
-    context = {"banner": banner}
+    context = {
+        "banner": banner,
+        "valid_banners": VALID_BANNERS  # for dropdown in edit page
+    }
     return render(request, 'admin/edit_banner.html', context)
+
+
 
 
 
