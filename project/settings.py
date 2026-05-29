@@ -29,20 +29,12 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = [
-    '34.46.250.239',
-    'shoespace.xyz',
-    'www.shoespace.xyz',
+    '98.93.13.100',
     '127.0.0.1',
     'localhost'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://34.46.250.239',
-    'https://34.46.250.239',
-    'http://shoespace.xyz',
-    'https://shoespace.xyz',
-    'http://www.shoespace.xyz',
-    'https://www.shoespace.xyz',
     'http://localhost:8000',
     'http://127.0.0.1:8000'
 ]
@@ -273,9 +265,4 @@ CONTENT_SECURITY_POLICY = {
 }
 
 
-
-
-
-
-SITE_DOMAIN = 'https://shoeshop.fun'
 

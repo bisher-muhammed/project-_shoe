@@ -2,128 +2,283 @@
 {% load static %}
 {% block content %}
 
+<div class="container mt-5 mb-5">
 
-<div class="container mt-5">
-    <div class="card shadow-sm rounded-lg border-light">
-        <div class="card-header bg-dark">
-            <h5 class="mb-0 text-white">Your Orders</h5>
-        </div>
-
-<form method="get" class="mb-4" id="orderFilterForm">
-  <div class="row">
-    <div class="col-md-4">
-      <input type="text" name="search" class="form-control" placeholder="Search by Order ID or Product Name" value="{{ request.GET.search }}">
-    </div>
-    <div class="col-md-3">
-      <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
-    </div>
-    <div class="col-md-3">
-      <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Filter</button>
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h4 class="fw-semibold mb-0">My Orders</h4>
+      <p class="text-muted small mb-0">Track, manage, and review your purchase history</p>
     </div>
   </div>
-  <div class="row mt-2">
-    <div class="col-12">
-      <small class="text-muted">
-        {% if request.GET.search or request.GET.start_date or request.GET.end_date %}
-          Active filters: 
-          {% if request.GET.search %}<span class="badge bg-info">Search: {{ request.GET.search }}</span>{% endif %}
-          {% if request.GET.start_date %}<span class="badge bg-info">From: {{ request.GET.start_date }}</span>{% endif %}
-          {% if request.GET.end_date %}<span class="badge bg-info">To: {{ request.GET.end_date }}</span>{% endif %}
-          <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-danger ms-2">Clear All</a>
+
+  <!-- Filter Card -->
+  <div class="card border shadow-none mb-3" style="border-color:#e5e7eb !important; border-radius:12px;">
+    <div class="card-body p-3">
+      <form method="get" id="orderFilterForm" autocomplete="off">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label small text-muted fw-medium mb-1"
+                   style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Search</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-transparent border-end-0">
+                <i class="fi-rs-search text-muted" style="font-size:13px;"></i>
+              </span>
+              <input type="text" name="search" class="form-control border-start-0 ps-0"
+                     placeholder="Order ID or product name…"
+                     value="{{ search_query }}" style="font-size:13px;">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small text-muted fw-medium mb-1"
+                   style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">From</label>
+            <input type="date" name="start_date" class="form-control form-control-sm"
+                   value="{{ start_date }}" max="{{ today|date:'Y-m-d' }}" style="font-size:13px;">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small text-muted fw-medium mb-1"
+                   style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">To</label>
+            <input type="date" name="end_date" class="form-control form-control-sm"
+                   value="{{ end_date }}" max="{{ today|date:'Y-m-d' }}" style="font-size:13px;">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-dark btn-sm w-100" style="font-size:13px;">
+              <i class="fi-rs-filter me-1"></i> Filter
+            </button>
+          </div>
+          <div class="col-md-1">
+            <a href="{% url 'order_list' %}" class="btn btn-outline-secondary btn-sm w-100"
+               title="Clear filters" style="font-size:13px;">
+              <i class="fi-rs-cross-small"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Active filter badges -->
+        {% if search_query or start_date or end_date %}
+        <div class="d-flex flex-wrap gap-2 mt-2 pt-2" style="border-top:1px solid #f0f0f0;">
+          <span class="small text-muted" style="line-height:24px;">Active:</span>
+          {% if search_query %}
+            <span class="badge rounded-pill"
+                  style="background:#EFF6FF; color:#1D4ED8; font-size:11px; font-weight:500; padding:4px 10px;">
+              <i class="fi-rs-search me-1"></i>{{ search_query }}
+            </span>
+          {% endif %}
+          {% if start_date %}
+            <span class="badge rounded-pill"
+                  style="background:#F0FDF4; color:#166534; font-size:11px; font-weight:500; padding:4px 10px;">
+              From {{ start_date }}
+            </span>
+          {% endif %}
+          {% if end_date %}
+            <span class="badge rounded-pill"
+                  style="background:#F0FDF4; color:#166534; font-size:11px; font-weight:500; padding:4px 10px;">
+              To {{ end_date }}
+            </span>
+          {% endif %}
+        </div>
         {% endif %}
-      </small>
+      </form>
+
+      <!-- Error message -->
+      {% if error_message %}
+      <div class="alert alert-danger alert-sm mt-2 mb-0 py-2 px-3"
+           style="font-size:13px; border-radius:8px;">
+        <i class="fi-rs-exclamation me-1"></i> {{ error_message }}
+      </div>
+      {% endif %}
     </div>
   </div>
-</form>
 
-
-
-        <div class="card-body p-4">
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Order</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Total</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                        <tr class="order-row">
-                            <td>{{ order.order_number }}</td>
-                            <td>{{ order.created_at|date:"F d, Y" }}</td>
-                            <td>
-                                <span class="badge 
-                                {% if order.status == 'pending' %}
-                                     text-warning
-                                {% elif order.status == 'Delivered' %}
-                                     text-success
-                                {% elif order.status == 'Cancelled' %}
-                                     text-danger
-                                {% elif order.status == 'Returned' %}
-                                     text-secondary
-                                {% else %}
-                                     text-crimson
-                                {% endif %}">
-                                <i class="fi-rs-circle"></i> {{ order.status }}
-                            </span>
-
-                            </td>
-                            <td>
-                                {% if order.coupon %}
-                                    ₹{{ order.order_value }}
-                                {% else %}
-                                    ₹{{ order.order_total }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if order.status == 'pending' %}
-                                    <!-- Cancel Button -->
-                                    <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger btn-sm">
-                                        <i class="fi-rs-cross-circle"></i> Cancel
-                                    </a>
-                                {% elif order.status == 'Delivered' %}
-                                    <!-- Return Button -->
-                                    <a href="{% url 'return_order' order.id %}" class="btn btn-outline-warning btn-sm">
-                                        <i class="fi-rs-reply"></i> Return
-                                    </a>
-                                {% endif %}
-
-                                <!-- View Details -->
-                                <a href="{% url 'view_order' order.id %}" class="btn btn-outline-info btn-sm">
-                                    <i class="fi-rs-eye"></i> Details
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination Section -->
-            <div class="pagination mt-3">
-                <div class="d-flex justify-content-between">
-                    <span class="step-links">
-                        {% if orders.has_previous %}
-                            <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; First</a>
-                            <a href="?page={{ orders.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
-                        {% endif %}
-                        <span class="current">Page {{ orders.number }} of {{ orders.paginator.num_pages }}.</span>
-                        {% if orders.has_next %}
-                            <a href="?page={{ orders.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
-                            <a href="?page={{ orders.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Last &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-        </div>
+  <!-- Summary Stats -->
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded-3 text-center" style="background:#F9FAFB; border:1px solid #F0F0F0;">
+        <div class="small text-muted mb-1"
+             style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Total Orders</div>
+        <div class="fw-semibold" style="font-size:20px;">{{ total_count }}</div>
+      </div>
     </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded-3 text-center" style="background:#F0FDF4; border:1px solid #DCFCE7;">
+        <div class="small mb-1"
+             style="font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#166534;">Delivered</div>
+        <div class="fw-semibold" style="font-size:20px; color:#166534;">{{ delivered_count }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded-3 text-center" style="background:#FFFBEB; border:1px solid #FEF3C7;">
+        <div class="small mb-1"
+             style="font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#92400E;">Pending</div>
+        <div class="fw-semibold" style="font-size:20px; color:#92400E;">{{ pending_count }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded-3 text-center" style="background:#FEF2F2; border:1px solid #FECACA;">
+        <div class="small mb-1"
+             style="font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#991B1B;">Cancelled</div>
+        <div class="fw-semibold" style="font-size:20px; color:#991B1B;">{{ cancelled_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Table Card -->
+  <div class="card border shadow-none"
+       style="border-color:#e5e7eb !important; border-radius:12px; overflow:hidden;">
+    <div class="card-header d-flex justify-content-between align-items-center py-3 px-4"
+         style="background:#fff; border-bottom:1px solid #f0f0f0;">
+      <span class="fw-medium" style="font-size:14px;">Order History</span>
+      <span class="badge rounded-pill"
+            style="background:#F3F4F6; color:#6B7280; font-size:12px; font-weight:500; padding:4px 12px;">
+        {{ orders.paginator.count }} order{{ orders.paginator.count|pluralize }}
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:13px;">
+        <thead style="background:#F9FAFB;">
+          <tr>
+            <th class="px-4 py-3 fw-medium text-muted border-bottom"
+                style="font-size:11px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;">Order</th>
+            <th class="px-4 py-3 fw-medium text-muted border-bottom"
+                style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Date</th>
+            <th class="px-4 py-3 fw-medium text-muted border-bottom"
+                style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Status</th>
+            <th class="px-4 py-3 fw-medium text-muted border-bottom"
+                style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Total</th>
+            <th class="px-4 py-3 fw-medium text-muted border-bottom"
+                style="font-size:11px; text-transform:uppercase; letter-spacing:.04em;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr style="border-bottom:1px solid #F5F5F5;">
+
+            <!-- Order Number -->
+            <td class="px-4 py-3 fw-medium">{{ order.order_number }}</td>
+
+            <!-- Date -->
+            <td class="px-4 py-3 text-muted">{{ order.created_at|date:"d M Y" }}</td>
+
+            <!-- Status Badge -->
+            <td class="px-4 py-3">
+              {% if order.status == 'pending' %}
+                <span class="badge rounded-pill"
+                      style="background:#FFFBEB; color:#92400E; font-size:11px; font-weight:500; padding:4px 10px;">
+                  ● Pending
+                </span>
+              {% elif order.status == 'New' %}
+                <span class="badge rounded-pill"
+                      style="background:#EFF6FF; color:#1D4ED8; font-size:11px; font-weight:500; padding:4px 10px;">
+                  ● New
+                </span>
+              {% elif order.status == 'Delivered' %}
+                <span class="badge rounded-pill"
+                      style="background:#F0FDF4; color:#166534; font-size:11px; font-weight:500; padding:4px 10px;">
+                  ● Delivered
+                </span>
+              {% elif order.status == 'Cancelled' %}
+                <span class="badge rounded-pill"
+                      style="background:#FEF2F2; color:#991B1B; font-size:11px; font-weight:500; padding:4px 10px;">
+                  ● Cancelled
+                </span>
+              {% elif order.status == 'Returned' %}
+                <span class="badge rounded-pill"
+                      style="background:#F3F4F6; color:#4B5563; font-size:11px; font-weight:500; padding:4px 10px;">
+                  ● Returned
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Total -->
+            <td class="px-4 py-3 fw-medium">
+              {% if order.coupon %}
+                <span style="color:#166534;">₹{{ order.order_value }}</span>
+              {% else %}
+                ₹{{ order.order_total }}
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td class="px-4 py-3">
+              <div class="d-flex gap-2">
+                {% if order.status == 'pending' or order.status == 'New' %}
+                  <a href="{% url 'cancel_order' order.id %}"
+                     class="btn btn-sm btn-outline-danger"
+                     style="font-size:12px; padding:3px 10px; border-radius:6px;">
+                    Cancel
+                  </a>
+                {% elif order.status == 'Delivered' %}
+                  <a href="{% url 'return_order' order.id %}"
+                     class="btn btn-sm btn-outline-warning"
+                     style="font-size:12px; padding:3px 10px; border-radius:6px;">
+                    Return
+                  </a>
+                {% endif %}
+                <a href="{% url 'view_order' order.id %}"
+                   class="btn btn-sm btn-outline-secondary"
+                   style="font-size:12px; padding:3px 10px; border-radius:6px;">
+                  Details
+                </a>
+              </div>
+            </td>
+
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-5">
+              <div style="font-size:32px; margin-bottom:8px;">🛒</div>
+              <div style="font-size:14px;">No orders found.</div>
+              {% if search_query or start_date or end_date %}
+                <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-secondary mt-2">
+                  Clear filters
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.paginator.num_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center px-4 py-3"
+         style="border-top:1px solid #F0F0F0; background:#FAFAFA;">
+      <span class="small text-muted">
+        Showing {{ orders.start_index }}–{{ orders.end_index }} of {{ orders.paginator.count }}
+      </span>
+      <div class="d-flex gap-1">
+
+        {% if orders.has_previous %}
+          <a href="?page=1&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}"
+             class="btn btn-sm btn-outline-secondary" style="font-size:12px; padding:3px 10px;">«</a>
+          <a href="?page={{ orders.previous_page_number }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}"
+             class="btn btn-sm btn-outline-secondary" style="font-size:12px; padding:3px 10px;">‹ Prev</a>
+        {% endif %}
+
+        {% for num in orders.paginator.page_range %}
+          {% if num == orders.number %}
+            <span class="btn btn-sm btn-dark"
+                  style="font-size:12px; padding:3px 10px; cursor:default;">{{ num }}</span>
+          {% elif num >= orders.number|add:"-2" and num <= orders.number|add:"2" %}
+            <a href="?page={{ num }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}"
+               class="btn btn-sm btn-outline-secondary" style="font-size:12px; padding:3px 10px;">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if orders.has_next %}
+          <a href="?page={{ orders.next_page_number }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}"
+             class="btn btn-sm btn-outline-secondary" style="font-size:12px; padding:3px 10px;">Next ›</a>
+          <a href="?page={{ orders.paginator.num_pages }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}"
+             class="btn btn-sm btn-outline-secondary" style="font-size:12px; padding:3px 10px;">»</a>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
 </div>
 
 {% endblock content %}
