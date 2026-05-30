@@ -1,7 +1,7 @@
 import os
-import imghdr
+from PIL import Image
 from datetime import datetime
-
+from adminapp.views.validate_image import validate_image
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import cache_control, never_cache
 from django.contrib import messages
@@ -114,7 +114,7 @@ def admin_banner(request):
             else:
                 # Validate image type and size
                 valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-                file_type = imghdr.what(banner_image)
+                file_type = validate_image(banner_image)
 
                 if file_type not in valid_image_types:
                     messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
@@ -158,7 +158,7 @@ def edit_banner(request, banner_id):
             # Validate image if a new one is uploaded
             if banner_img:
                 valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-                file_type = imghdr.what(banner_img)
+                file_type = validate_image(banner_img)
 
                 if file_type not in valid_image_types:
                     messages.error(request, "Invalid image format. Accepted formats: JPEG, PNG, GIF, BMP, WebP.")

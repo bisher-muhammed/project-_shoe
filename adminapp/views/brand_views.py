@@ -5,7 +5,9 @@ from django.views.decorators.http import require_GET
 from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-import imghdr
+from PIL import Image
+from adminapp.views.validate_image import validate_image
+
 import os
 
 from adminapp.models import Brand  # Adjust the import if models are in a different module
@@ -36,7 +38,7 @@ def admin_brand(request):
             messages.error(request, "Please upload a brand image.")
         else:
             valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-            file_type = imghdr.what(brand_image)
+            file_type = validate_image(brand_image)
 
             if file_type not in valid_image_types:
                 messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
@@ -117,7 +119,7 @@ def edit_brand(request, brand_id):
         # Validate and update image
         if new_image:
             valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-            file_type = imghdr.what(new_image)
+            file_type = validate_image(new_image)
 
             if file_type not in valid_image_types:
                 messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")

@@ -1,5 +1,5 @@
 import os
-import imghdr
+from PIL import Image
 from datetime import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,7 +10,9 @@ from django.db import IntegrityError
 from django.views.decorators.cache import cache_control
 
 from adminapp.models import Category, Product, Offer, ProductOffer
-from adminapp.utils.admin_access import superuser_required  # Adjust if your decorator is elsewhere
+from adminapp.utils.admin_access import superuser_required
+from adminapp.views.validate_image import validate_image
+
 
 
 
@@ -44,7 +46,7 @@ def admin_category(request):
             errors = True
         else:
             valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-            file_type = imghdr.what(category_image)
+            file_type = validate_image(category_image)
 
             if file_type not in valid_image_types:
                 messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
@@ -120,7 +122,7 @@ def edit_category(request, category_id):
         # Image validation
         if new_image:
             valid_image_types = ['jpeg', 'png', 'gif', 'bmp', 'webp']
-            file_type = imghdr.what(new_image)
+            file_type = validate_image(new_image)
 
             if file_type not in valid_image_types:
                 messages.error(request, "Invalid file type. Upload only: JPEG, PNG, GIF, BMP, or WebP.")
